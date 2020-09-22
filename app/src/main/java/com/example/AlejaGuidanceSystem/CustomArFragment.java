@@ -1,4 +1,4 @@
-package com.example.alejatest1;
+package com.example.AlejaGuidanceSystem;
 
 import com.google.ar.core.Config;
 import com.google.ar.core.Session;

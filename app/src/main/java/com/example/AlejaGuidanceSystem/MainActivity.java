@@ -1,4 +1,4 @@
-package com.example.alejatest1;
+package com.example.AlejaGuidanceSystem;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -29,8 +29,6 @@ import com.google.ar.sceneform.rendering.ShapeFactory;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity implements Scene.OnUpdateListener {
 
@@ -83,8 +81,34 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
 	private float[] lastPosition = null;
 
-	private float dist(float[] a, float[] b) {
-		return (float) Math.sqrt((a[0] - b[0]) * (a[0] - b[0]) + (a[1] - b[1]) * (a[1] - b[1])  + (a[2] - b[2]) * (a[2] - b[2]));
+
+	private float[] v3diff(float[] a, float[] b) {
+		return new float[] { a[0] - b[0], a[1] - b[1], a[2] - b[2] };
+	}
+
+	private float[] v3div(float[] a, float f) {
+		return new float[] { a[0] / f, a[1] / f, a[2] / f };
+	}
+
+	private float v3dot(float[] a, float[] b) {
+		return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+	}
+
+	private float v3dist(float[] a, float[] b) {
+		float[] dif = v3diff(a, b);
+		return (float) Math.sqrt(v3dot(dif, dif));
+	}
+
+
+	private float v3normalize(float[] a) {
+		float[] dif = v3diff(a, b);
+		return (float) Math.sqrt(v3dot(dif, dif));
+	}
+
+	private static class Node {
+		public String id;
+		public Node[] connectedTo;
+		public float x, y, z;
 	}
 
 	@Override
