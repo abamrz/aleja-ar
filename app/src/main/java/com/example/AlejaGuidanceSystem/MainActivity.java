@@ -16,6 +16,7 @@ import com.google.ar.core.Config;
 import com.google.ar.core.Frame;
 import com.google.ar.core.Pose;
 import com.google.ar.core.Session;
+import com.google.ar.core.Trackable;
 import com.google.ar.core.TrackingState;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.FrameTime;
@@ -43,6 +44,8 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 	// list of spheres representing camera positions.
 	private ArrayList<AnchorNode> pathBalls;
 
+	private List<Node> allMapNodes;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -57,7 +60,16 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 			public void onClick(View v) {
 				if(cameraPosition == null) return;
 
+				Node node = new Node();
+				node.connectedTo = new ArrayList();
+				if(lastFocusedNode != null) node.connectedTo.add(lastFocusedNode);
+				node.x = cameraPosition[0];
+				node.y = cameraPosition[1];
+				node.z = cameraPosition[2];
 
+				addMapNode(node);
+
+				lastFocusedNode = node;
 			}
 		});
 
@@ -88,13 +100,17 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 		config.setAugmentedImageDatabase(aid);
 	}
 
-	private Pose anchorToWorld = null;
 	private int counter = 0;
 
 	private float[] lastPosition = null;
 
 
 	private float[] cameraPosition = null;
+	private Node lastFocusedNode = null;
+
+	private Session trackable = null;
+	private Pose trackableToWorld = null;
+	private Pose trackableToReference = null;
 
 
 	private float[] v3diff(float[] a, float[] b) {
@@ -125,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
 	private static class Node {
 		public String id;
-		public Node[] connectedTo;
+		public List<Node> connectedTo;
 		public float x, y, z;
 	}
 
@@ -138,37 +154,26 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
 		Log.d("MyApp", "onUpdate");
 
-		TextView myAwesomeTextView = findViewById(R.id.textView);
-
 
 		Pose cameraToWorld = frame.getCamera().getPose();
-		float[] cameraPosition2 = cameraToWorld.transformPoint(new float[]{0.0f, 0.0f, 0.0f});
 
-		Anchor a = null;
-		if(frame.getCamera().getTrackingState() == TrackingState.TRACKING) {
+		if (trackable != null) {
+			Pose referenceToWorld = trackableToWorld.compose(trackableToReference.inverse());
 
-			a = session.createAnchor(Pose.makeTranslation(cameraPosition2[0], cameraPosition2[1], cameraPosition2[2]));
-		}
-
-
-		if (anchorToWorld != null && counter > 0) {
-
-			Pose referenceToAnchor = Pose.makeTranslation(0, 0.3f, 0);
-
-			Pose cameraToReference = anchorToWorld.inverse().compose(cameraToWorld);
-
-			float[] cameraPosition = cameraToReference.transformPoint(new float[]{0.0f, 0.0f, 0.0f});
+			Pose cameraToReference = referenceToWorld.inverse().compose(cameraToWorld);
+			cameraPosition = cameraToReference.transformPoint(new float[]{0.0f, 0.0f, 0.0f});
 
 			if(lastPosition == null || v3dist(cameraPosition, lastPosition) > 0.2) {
-				lastPosition = new float[] { cameraPosition[0], cameraPosition[1], cameraPosition[2] + 0.2f } ;
+				lastPosition = new float[] { cameraPosition[0], cameraPosition[1], cameraPosition[2] } ;
 
-				createBall(session.createAnchor(anchorToWorld.compose(Pose.makeTranslation(lastPosition))), pathBalls, bsr);
+				createBall(trackable.createAnchor(referenceToWorld.compose(Pose.makeTranslation(lastPosition))), pathBalls, bsr);
 			}
 
 			String logString = String.format("Camera position %.3f %.3f %.3f", cameraPosition[0], cameraPosition[1], cameraPosition[2]);
 			Log.d("MyApp2", logString);
 
 
+			TextView myAwesomeTextView = (TextView) findViewById(R.id.textView);
 			myAwesomeTextView.setText(logString);
 
 			counter = 0;
@@ -181,24 +186,29 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 			if (image.getTrackingState() == TrackingState.TRACKING) {
 				removeBalls(balls);
 
+				//Trackable bla =  (Trackable)session;
 				Log.d("MyApp", "tracked " + image.getName());
 				Log.d("MyApp", "Pose: " + image.getCenterPose().toString());
 
-				Anchor anchorx = image.createAnchor(image.getCenterPose());
+				/*trackable = image;
+				trackableToWorld = image.getCenterPose();
+				trackableToReference = Pose.makeTranslation(0, 100, 0);*/
 
-				anchorToWorld = anchorx.getPose();
+				trackable = session;
+				trackableToWorld = image.getCenterPose();
+				trackableToReference = Pose.makeTranslation(0, 100, 0);
+
+
 
 				for (int i = 0; i < 40; i++) {
 					Pose upPose = Pose.makeTranslation(0, i * 0.2f, 0);
-					Pose combinedPose = upPose.compose(anchorToWorld); // Pose.makeTranslation(0, i * 0.1f, 0);
+					//Pose combinedPose = upPose.compose(anchorToWorld); // Pose.makeTranslation(0, i * 0.1f, 0);
 					//Anchor anchor = session.createAnchor(combinedPose);
-					Anchor anchor = image.createAnchor(image.getCenterPose().compose(upPose));
+					Anchor anchor = trackable.createAnchor(trackableToWorld.compose(upPose));
 					createBall(anchor, balls, rsr);
 				}
 			}
 		}
-
-		//if(a != null) createBall(a);
 	}
 
 	private void createBall(Anchor anchor, List<AnchorNode> myBalls, Renderable renderable) {
@@ -213,5 +223,10 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 		for (AnchorNode ball : myBallsToRemove) {
 			arFragment.getArSceneView().getScene().removeChild(ball);
 		}
+	}
+
+
+	private void addMapNode(Node node) {
+		allMapNodes.add(node);
 	}
 }
