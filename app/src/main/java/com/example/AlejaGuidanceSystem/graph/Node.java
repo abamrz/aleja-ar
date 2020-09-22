@@ -11,10 +11,10 @@ public class Node {
 
 
     public Node(double x, double y, double z, String id) {
-    this.x=x;
-    this.y=y;
-    this.z=z;
-    this.id=id;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.id = id;
     }
 
 
