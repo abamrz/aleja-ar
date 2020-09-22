@@ -189,7 +189,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 				Anchor anchorx = image.createAnchor(image.getCenterPose());
 				anchorToWorld = anchorx.getPose();
 
-				// displaying a straight line of spheress
+				// displaying a straight line of spheres
 				for (int i = 0; i < 40; i++) {
 					Pose upPose = Pose.makeTranslation(0, i * 0.2f, 0);
 					Pose combinedPose = upPose.compose(anchorToWorld); // Pose.makeTranslation(0, i * 0.1f, 0);
