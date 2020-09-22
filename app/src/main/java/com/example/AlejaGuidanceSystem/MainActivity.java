@@ -99,10 +99,13 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 		return (float) Math.sqrt(v3dot(dif, dif));
 	}
 
+	private float v3length(float[] a) {
+		return (float) Math.sqrt(v3dot(a, a));
+	}
 
-	private float v3normalize(float[] a) {
-		float[] dif = v3diff(a, b);
-		return (float) Math.sqrt(v3dot(dif, dif));
+	private float[] v3normalize(float[] a) {
+		float length = v3length(a);
+		return v3div(a, length + 0.001f);
 	}
 
 	private static class Node {
@@ -141,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
 			float[] cameraPosition = cameraToReference.transformPoint(new float[]{0.0f, 0.0f, 0.0f});
 
-			if(lastPosition == null || dist(cameraPosition, lastPosition) > 0.2) {
+			if(lastPosition == null || v3dist(cameraPosition, lastPosition) > 0.2) {
 				lastPosition = new float[] { cameraPosition[0], cameraPosition[1], cameraPosition[2] + 0.2f } ;
 
 				createBall(session.createAnchor(anchorToWorld.compose(Pose.makeTranslation(lastPosition))), pathBalls, bsr);
