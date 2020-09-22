@@ -35,11 +35,12 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
 	// AR-Fragment is responsible for hosting the scene.
 	private CustomArFragment arFragment;
-	// red-sphere-Renderable.
+	// red- and blue-sphere-renderable.
 	private ModelRenderable rsr;
 	private ModelRenderable bsr;
-	// list of spheres on display, so that they can be removed from the scene when new ones are loaded
+	// list of spheres on display, so that they can be removed from the scene when new ones are loaded.
 	private ArrayList<AnchorNode> balls;
+	// list of spheres representing camera positions.
 	private ArrayList<AnchorNode> pathBalls;
 
 	@Override
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 		setContentView(R.layout.activity_main);
 
 		arFragment = (CustomArFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
+		// adding a listener so that this activity can react to updates in the fragment
 		arFragment.getArSceneView().getScene().addOnUpdateListener(this);
 
 
@@ -62,26 +64,27 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 		balls = new ArrayList<>();
 		pathBalls = new ArrayList<>();
 
+		// creating the spheres
 		MaterialFactory.makeOpaqueWithColor(this, new Color(android.graphics.Color.RED))
 				.thenAccept(
-						material -> {
-							rsr = ShapeFactory.makeSphere(0.02f, new Vector3(0.0f, 0.0f, 0.0f), material);
-						}
+						material -> rsr = ShapeFactory.makeSphere(0.02f, new Vector3(0.0f, 0.0f, 0.0f), material)
 				);
-
 		MaterialFactory.makeOpaqueWithColor(this, new Color(android.graphics.Color.BLUE))
 				.thenAccept(
-						material -> {
-							bsr = ShapeFactory.makeSphere(0.01f, new Vector3(0.0f, 0.0f, 0.0f), material);
-						}
+						material -> bsr = ShapeFactory.makeSphere(0.01f, new Vector3(0.0f, 0.0f, 0.0f), material)
 				);
 
 	}
 
+	/**
+	 *
+	 * @param config
+	 * @param session
+	 */
 	public void setupDatabase(Config config, Session session) {
-		Bitmap foxBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ar_pattern);
+		Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ar_pattern);
 		AugmentedImageDatabase aid = new AugmentedImageDatabase(session);
-		aid.addImage("ar_pattern", foxBitmap, 0.2f);
+		aid.addImage("ar_pattern", bitmap, 0.2f);
 		config.setAugmentedImageDatabase(aid);
 	}
 
@@ -135,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
 		Log.d("MyApp", "onUpdate");
 
-		TextView myAwesomeTextView = (TextView) findViewById(R.id.textView);
+		TextView myAwesomeTextView = findViewById(R.id.textView);
 
 
 		Pose cameraToWorld = frame.getCamera().getPose();
