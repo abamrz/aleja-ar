@@ -38,6 +38,7 @@ import java.util.Collection;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements Scene.OnUpdateListener {
 
@@ -70,8 +71,6 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 			public void onClick(View v) {
 				if (cameraPosition == null) return;
 
-				nodeIdCounter = 0;
-
 
 				Node node = new Node(
 						cameraPosition[0],
@@ -87,19 +86,15 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 				}
 				lastFocusedNode = node;
 
-				regeneratePathBalls();
+				nodeIdCounter++;
 
+				regeneratePathBalls();
 			}
 		});
 
 		balls = new ArrayList<>();
 		pathBalls = new ArrayList<>();
 		graph = new SimpleWeightedGraph<Node, DefaultWeightedEdge>(DefaultWeightedEdge.class);
-
-		for (DefaultWeightedEdge x : graph.edgeSet()) {
-			Node source = graph.getEdgeSource(x);
-			Node target = graph.getEdgeTarget(x);
-		}
 
 		// creating the spheres
 		MaterialFactory.makeOpaqueWithColor(this, new Color(android.graphics.Color.RED))
@@ -118,22 +113,22 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
 	}
 
+
 	/**
-	 * @param config
-	 * @param session
+	 * setting up the Augmented Images Database by adding images that should be detected.
 	 */
 	public void setupDatabase(Config config, Session session) {
+		// test image
 		Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ar_pattern);
+
 		AugmentedImageDatabase aid = new AugmentedImageDatabase(session);
+		// adding Augmented Images to Database
 		aid.addImage("ar_pattern", bitmap, 0.2f);
+
 		config.setAugmentedImageDatabase(aid);
 	}
 
-	private int counter = 0;
-
 	private float[] lastPosition = null;
-
-
 	private float[] cameraPosition = null;
 	private Node lastFocusedNode = null;
 
@@ -177,15 +172,19 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 		return v3div(a, length + 0.001f);
 	}
 
+
+	/**
+	 * function that will be called every time the camera frame updates
+	 */
 	@Override
 	public void onUpdate(FrameTime frameTime) {
-
+		// finding the current fragment of the scene
 		Session session = arFragment.getArSceneView().getSession();
 		Frame frame = arFragment.getArSceneView().getArFrame();
+		// all the items ARCore has tracked
 		Collection<AugmentedImage> images = frame.getUpdatedTrackables(AugmentedImage.class);
 
-		Log.d("MyApp", "onUpdate");
-
+//		Log.d("MyApp", "onUpdate");
 
 		Pose cameraToWorld = frame.getCamera().getPose();
 
@@ -195,22 +194,24 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 			Pose cameraToReference = referenceToWorld.inverse().compose(cameraToWorld);
 			cameraPosition = cameraToReference.transformPoint(new float[]{0.0f, 0.0f, 0.0f});
 
-			if (lastPosition == null || v3dist(cameraPosition, lastPosition) > 0.2) {
+			/*if (lastPosition == null || v3dist(cameraPosition, lastPosition) > 0.2) {
 				lastPosition = new float[]{cameraPosition[0], cameraPosition[1], cameraPosition[2]};
 
 				createBall(trackable.createAnchor(referenceToWorld.compose(Pose.makeTranslation(lastPosition))), pathBalls, bsr);
-			}
+			}*/
 
-			String logString = String.format("Camera position %.3f %.3f %.3f", cameraPosition[0], cameraPosition[1], cameraPosition[2]);
+			// printing the camera position to console and to screen of device running the app
+			String logString = String.format(Locale.GERMAN, "Camera position %.3f %.3f %.3f", cameraPosition[0], cameraPosition[1], cameraPosition[2]);
 			Log.d("MyApp2", logString);
-
 
 			TextView myAwesomeTextView = (TextView) findViewById(R.id.textView);
 			myAwesomeTextView.setText(logString);
 		}
 
+		// checking all detected images for one of the reference pictures
 		for (AugmentedImage image : images) {
 			if (image.getTrackingState() == TrackingState.TRACKING) {
+				// removing old balls from screen so that they don't have to be rendered in
 				removeBalls(balls);
 
 				//Trackable bla =  (Trackable)session;
@@ -225,18 +226,24 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 				trackableToWorld = image.getCenterPose();
 				trackableToReference = Pose.makeTranslation(0, 100, 0);
 
-
-				for (int i = 0; i < 40; i++) {
+				// displaying a straight line of spheres
+				/*for (int i = 0; i < 40; i++) {
 					Pose upPose = Pose.makeTranslation(0, i * 0.2f, 0);
 					//Pose combinedPose = upPose.compose(anchorToWorld); // Pose.makeTranslation(0, i * 0.1f, 0);
 					//Anchor anchor = session.createAnchor(combinedPose);
 					Anchor anchor = trackable.createAnchor(trackableToWorld.compose(upPose));
 					createBall(anchor, balls, rsr);
-				}
+				}*/
 			}
 		}
 	}
 
+	/**
+	 * Method to place a sphere to a certain anchor
+	 * @param anchor where sphere is placed
+	 * @param myBalls the list of balls this sphere belongs to
+	 * @param renderable the sphere that should be added to the anchor
+	 */
 	private void createBall(Anchor anchor, List<AnchorNode> myBalls, Renderable renderable) {
 		AnchorNode anchorNode = new AnchorNode(anchor);
 		anchorNode.setRenderable(renderable);
@@ -245,6 +252,9 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
 	}
 
+	/**
+	 * Method to remove all renderable spheres from a list of balls
+	 */
 	private void removeBalls(List<AnchorNode> myBallsToRemove) {
 		for (AnchorNode ball : myBallsToRemove) {
 			arFragment.getArSceneView().getScene().removeChild(ball);
