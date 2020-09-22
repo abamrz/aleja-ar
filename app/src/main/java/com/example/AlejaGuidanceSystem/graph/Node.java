@@ -30,6 +30,10 @@ public class Node {
         return z;
     }
 
+    public float[] getPositionF() {
+        return new float[] {(float)x, (float)y, (float)z};
+    }
+
     public String getId() {
         return id;
     }
