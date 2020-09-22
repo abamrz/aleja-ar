@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 
 import com.google.ar.core.Anchor;
@@ -39,7 +40,6 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 	private ModelRenderable bsr;
 	// list of spheres on display, so that they can be removed from the scene when new ones are loaded
 	private ArrayList<AnchorNode> balls;
-
 	private ArrayList<AnchorNode> pathBalls;
 
 	@Override
@@ -49,6 +49,15 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
 		arFragment = (CustomArFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
 		arFragment.getArSceneView().getScene().addOnUpdateListener(this);
+
+
+		findViewById(R.id.addToBranchButton).setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				if(cameraPosition == null) return;
+
+
+			}
+		});
 
 		balls = new ArrayList<>();
 		pathBalls = new ArrayList<>();
@@ -80,6 +89,9 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 	private int counter = 0;
 
 	private float[] lastPosition = null;
+
+
+	private float[] cameraPosition = null;
 
 
 	private float[] v3diff(float[] a, float[] b) {
