@@ -1,4 +1,4 @@
-package com.example.alejatest1;
+package com.example.AlejaGuidanceSystem;
 
 import android.content.Context;
 
