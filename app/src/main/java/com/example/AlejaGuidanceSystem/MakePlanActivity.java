@@ -9,15 +9,15 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
+import com.example.AlejaGuidanceSystem.Utility.ObjectInReference;
 import com.example.AlejaGuidanceSystem.graph.Node;
-import com.google.ar.core.Anchor;
 import com.google.ar.core.AugmentedImage;
 import com.google.ar.core.AugmentedImageDatabase;
 import com.google.ar.core.Config;
 import com.google.ar.core.Frame;
 import com.google.ar.core.Pose;
 import com.google.ar.core.Session;
-import com.google.ar.core.Trackable;
 import com.google.ar.core.TrackingState;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.FrameTime;
@@ -30,14 +30,11 @@ import com.google.ar.sceneform.rendering.Renderable;
 import com.google.ar.sceneform.rendering.ShapeFactory;
 
 import org.jgrapht.Graph;
-import org.jgrapht.Graphs;
-import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;
 
 import java.util.Collection;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
@@ -58,21 +55,6 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 	private boolean regenerateScene = false;
 
 	private int nodeIdCounter = 0;
-
-	private static class ObjectInReference {
-		Pose poseInReference;
-		AnchorNode node;
-
-		public ObjectInReference(AnchorNode node, Pose p) {
-			this.node = node;
-			this.poseInReference = p;
-		}
-
-		public void recalculatePosition(Pose referenceToWorld) {
-			Pose nodePose = referenceToWorld.compose(this.poseInReference);
-			VectorOperations.applyPoseToAnchorNode(this.node, nodePose);
-		}
-	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -385,32 +367,16 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 	 */
 	private void removeBalls(List<ObjectInReference> myBallsToRemove) {
 		for (ObjectInReference ball : myBallsToRemove) {
-			arFragment.getArSceneView().getScene().removeChild(ball.node);
+			arFragment.getArSceneView().getScene().removeChild(ball.getNode());
 		}
 	}
-
-	private AnchorNode createBallInReference(float[] positionInReference, List<ObjectInReference> myBalls, Renderable renderable) {
-		Pose nodePose = Pose.makeTranslation(positionInReference);
-
-		AnchorNode anchorNode = new AnchorNode();
-		anchorNode.setRenderable(renderable);
-		arFragment.getArSceneView().getScene().addChild(anchorNode);
-
-		ObjectInReference obj = new ObjectInReference(anchorNode, nodePose);
-		obj.recalculatePosition(referenceToWorld);
-		myBalls.add(obj);
-
-		return anchorNode;
-	}
-
-
 
 
 	private void regeneratePathBalls() {
 		removeBalls(pathBalls);
 
 		for(Node node : graph.vertexSet()) {
-			createBallInReference(node.getPositionF(), pathBalls, lbsr);
+			GraphicsUtility.createBallInReference(node.getPositionF(), pathBalls, lbsr, arFragment.getArSceneView().getScene(), referenceToWorld);
 		}
 
 
@@ -428,7 +394,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			float[] dir = VectorOperations.v3normalize(VectorOperations.v3diff(targetPos, sourcePos));
 			for(int i = 1; i < numSep; i++) {
 				float[] pos = VectorOperations.v3add(sourcePos, VectorOperations.v3mulf(dir, stepDist * i));
-				createBallInReference(pos, pathBalls, bsr);
+				GraphicsUtility.createBallInReference(pos, pathBalls, bsr, arFragment.getArSceneView().getScene(), referenceToWorld);
 			}
 		}
 

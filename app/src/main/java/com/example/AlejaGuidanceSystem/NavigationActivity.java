@@ -10,21 +10,31 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 
+import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
+import com.example.AlejaGuidanceSystem.Utility.ObjectInReference;
 import com.example.AlejaGuidanceSystem.graph.Node;
 import com.google.ar.core.AugmentedImage;
 import com.google.ar.core.Frame;
+import com.google.ar.core.Pose;
 import com.google.ar.core.Session;
 import com.google.ar.core.TrackingState;
+import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.FrameTime;
 import com.google.ar.sceneform.Scene;
+import com.google.ar.sceneform.math.Vector3;
+import com.google.ar.sceneform.rendering.Color;
+import com.google.ar.sceneform.rendering.MaterialFactory;
 import com.google.ar.sceneform.rendering.ModelRenderable;
+import com.google.ar.sceneform.rendering.Renderable;
+import com.google.ar.sceneform.rendering.ShapeFactory;
 
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.alg.DijkstraShortestPath;
-import org.jgrapht.graph.SimpleWeightedGraph;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 
 public class NavigationActivity extends AppCompatActivity {
@@ -36,7 +46,15 @@ public class NavigationActivity extends AppCompatActivity {
 	private ModelRenderable renderable;
 
 	// plan for the area
-	private Graph<Node, DefaultWeightedEdge> graph;
+	private ARGraph graph;
+
+	// red-, blue- and largeGreen-sphere
+	private ModelRenderable rsr;
+	private ModelRenderable bsr;
+	private ModelRenderable lgsr;
+
+	private Pose referenceToWorld = null;
+	private ArrayList<ObjectInReference> pathBalls;
 
 	@Override
 	@SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
@@ -77,6 +95,20 @@ public class NavigationActivity extends AppCompatActivity {
 
 		arFragment = (CustomArFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
 		arFragment.getArSceneView().getScene().addOnUpdateListener(this::onUpdateFrame);
+
+		// creating the spheres
+		MaterialFactory.makeOpaqueWithColor(this, new Color(android.graphics.Color.RED))
+				.thenAccept(
+						material -> rsr = ShapeFactory.makeSphere(0.02f, new Vector3(0.0f, 0.0f, 0.0f), material)
+				);
+		MaterialFactory.makeOpaqueWithColor(this, new Color(android.graphics.Color.BLUE))
+				.thenAccept(
+						material -> bsr = ShapeFactory.makeSphere(0.005f, new Vector3(0.0f, 0.0f, 0.0f), material)
+				);
+		MaterialFactory.makeOpaqueWithColor(this, new Color(android.graphics.Color.GREEN))
+				.thenAccept(
+						material -> lgsr = ShapeFactory.makeSphere(0.02f, new Vector3(0.0f, 0.0f, 0.0f), material)
+				);
 	}
 
 
@@ -99,5 +131,63 @@ public class NavigationActivity extends AppCompatActivity {
 				}
 			}
 		}
+	}
+
+	private void showPath(float[] startPos, Node sink) {
+		ARGraph temp = new ARGraph(graph);
+		Node pos = new Node(startPos, "temp");
+		temp.addVertex(pos);
+
+		DefaultWeightedEdge toDel = temp.nearestPointInGraph(startPos).bestEdge;
+		Node src = temp.getEdgeSource(toDel), target = temp.getEdgeTarget(toDel);
+		temp.addEdge(src, pos);
+		temp.addEdge(pos, target);
+		temp.removeEdge(toDel);
+
+		List<DefaultWeightedEdge> path = DijkstraShortestPath.findPathBetween(temp, pos, sink);
+
+		createMyBalls(path, temp);
+	}
+
+	private void createMyBalls(List<DefaultWeightedEdge> edges, Graph<Node, DefaultWeightedEdge> graph) {
+		for(Node node : extractNodes(edges, graph)) {
+			this.createBallInReference(node.getPositionF(), pathBalls, lgsr);
+		}
+
+		for(DefaultWeightedEdge e : edges) {
+			Node source = graph.getEdgeSource(e);
+			Node target = graph.getEdgeTarget(e);
+
+			float dist = VectorOperations.v3dist(source.getPositionF(), target.getPositionF());
+			float sepDist = 0.025f;
+			int numSep = (int)Math.ceil(dist / sepDist);
+
+			float stepDist = dist / (numSep);
+			float[] sourcePos = source.getPositionF();
+			float[] targetPos = target.getPositionF();
+			float[] dir = VectorOperations.v3normalize(VectorOperations.v3diff(targetPos, sourcePos));
+			for(int i = 1; i < numSep; i++) {
+				float[] pos = VectorOperations.v3add(sourcePos, VectorOperations.v3mulf(dir, stepDist * i));
+				this.createBallInReference(pos, pathBalls, bsr);
+			}
+		}
+	}
+
+	private List<Node> extractNodes(List<DefaultWeightedEdge> edges, Graph<Node, DefaultWeightedEdge> graph) {
+		List<Node> nodes = new ArrayList<>();
+
+		if(edges.size() > 0) {
+			nodes.add(graph.getEdgeSource(edges.get(0)));
+
+			for(DefaultWeightedEdge e : edges) {
+				nodes.add(graph.getEdgeTarget(e));
+			}
+		}
+
+		return nodes;
+	}
+
+	private AnchorNode createBallInReference(float[] positionInReference, List<ObjectInReference> myBalls, Renderable renderable) {
+		return GraphicsUtility.createBallInReference(positionInReference, myBalls, renderable, arFragment.getArSceneView().getScene(), referenceToWorld);
 	}
 }

@@ -6,6 +6,8 @@ import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;
+import org.jgrapht.GraphPath;
+import org.jgrapht.alg.DijkstraShortestPath;
 
 
 public class ARGraph extends SimpleWeightedGraph<Node, DefaultWeightedEdge> {
@@ -19,23 +21,31 @@ public class ARGraph extends SimpleWeightedGraph<Node, DefaultWeightedEdge> {
 		Graphs.addGraph(this, src);
 	}
 
-	private static class NearestPointInfo {
+
+	public GraphPath<Node, DefaultWeightedEdge> calculateShortestPath( Node sink) {
+
+
+		return null;
+	}
+
+
+	public static class NearestPointInfo {
 		float distance;
 		DefaultWeightedEdge bestEdge;
 		float interpolatingFactor;
 		float[] nearestPosition;
 	}
 
-	public NearestPointInfo nearestPointInGraph(Graph<Node, DefaultWeightedEdge> graph, float[] probePosition) {
+	public NearestPointInfo nearestPointInGraph( float[] probePosition) {
 
 		float shortestDist = Float.MAX_VALUE;
 		DefaultWeightedEdge bestEdge = null;
 		float bestInterpolatingFactor = 0;
 		float[] nearestPosition = null;
 
-		for(DefaultWeightedEdge e : graph.edgeSet()) {
-			Node source = graph.getEdgeSource(e);
-			Node target = graph.getEdgeTarget(e);
+		for(DefaultWeightedEdge e : this.edgeSet()) {
+			Node source = this.getEdgeSource(e);
+			Node target = this.getEdgeTarget(e);
 
 			float[] sourcePos = source.getPositionF();
 			float[] targetPos = target.getPositionF();
