@@ -6,6 +6,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
 
 import com.example.AlejaGuidanceSystem.graph.Node;
 import com.google.ar.core.AugmentedImage;
@@ -25,6 +28,8 @@ import java.util.Collection;
 
 
 public class NavigationActivity extends AppCompatActivity {
+	// Buttons
+	private ImageButton return_button, search_button;
 
 	// AR
 	private CustomArFragment arFragment;
@@ -38,6 +43,24 @@ public class NavigationActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_navigation);
+
+		//initialize the buttons
+		return_button = (ImageButton) findViewById(R.id.return_button);
+		search_button = (ImageButton) findViewById(R.id.search_button);
+
+		return_button.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View view){
+				//TODO: Go back to WelcomeActivity
+			}
+		});
+		search_button.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View view){
+				//TODO: Search functionality
+			}
+		});
+
 
 		graph = new ARGraph();
 		Node a = new Node(0,0,0,"a");
