@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 		arFragment.getArSceneView().getScene().addOnUpdateListener(this);
 
 
-		findViewById(R.id.addToBranchButton).setOnClickListener(new View.OnClickListener() {
+		/*findViewById(R.id.addToBranchButton).setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				if (cameraPosition == null) return;
 
@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
 				regeneratePathBalls();
 			}
-		});
+		});*/
 
 		balls = new ArrayList<>();
 		pathBalls = new ArrayList<>();
