@@ -17,7 +17,7 @@ public class CustomArFragment extends ArFragment {
 		config.setFocusMode(Config.FocusMode.AUTO);
 		session.configure(config);
 		this.getArSceneView().setupSession(session);
-
+		
 		// setting up database for augmented images.
 		((MainActivity) getActivity()).setupDatabase(config, session);
 
