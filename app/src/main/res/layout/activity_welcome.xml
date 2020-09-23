@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#4CAF50"
+    android:backgroundTint="#4CAF50"
+    android:fadingEdge="horizontal|vertical|none"
+    tools:context="com.example.AlejaGuidanceSystem.WelcomeActivity">
+
+    <Button
+        android:id="@+id/use_existing_plan_button"
+        android:layout_width="102dp"
+        android:layout_height="81dp"
+        android:layout_marginEnd="72dp"
+        android:layout_marginBottom="324dp"
+        android:backgroundTint="#00FFFFFF"
+        android:text="@string/__use_existing_plan"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <Button
+        android:id="@+id/make_plan_button"
+        android:layout_width="102dp"
+        android:layout_height="81dp"
+        android:layout_marginStart="76dp"
+        android:layout_marginBottom="324dp"
+        android:backgroundTint="#00FFFFFF"
+        android:text="@string/__make_plan"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/welcome_to_aleja_textview"
+        android:layout_width="139dp"
+        android:layout_height="88dp"
+        android:layout_marginTop="220dp"
+        android:layout_marginEnd="136dp"
+        android:background="#009688"
+        android:backgroundTint="#009688"
+        android:text="@string/__welcome_to_aleja"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+        app:autoSizeTextType="uniform"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
