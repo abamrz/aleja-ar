@@ -13,38 +13,41 @@
         android:id="@+id/use_existing_plan_button"
         android:layout_width="102dp"
         android:layout_height="81dp"
-        android:layout_marginEnd="72dp"
-        android:layout_marginBottom="324dp"
         android:backgroundTint="#00FFFFFF"
         android:text="@string/__use_existing_plan"
         android:textAlignment="center"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/make_plan_button"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/welcome_to_aleja_textview" />
 
     <Button
         android:id="@+id/make_plan_button"
         android:layout_width="102dp"
         android:layout_height="81dp"
-        android:layout_marginStart="76dp"
-        android:layout_marginBottom="324dp"
         android:backgroundTint="#00FFFFFF"
         android:text="@string/__make_plan"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/use_existing_plan_button"
+        app:layout_constraintTop_toBottomOf="@+id/welcome_to_aleja_textview" />
 
     <TextView
         android:id="@+id/welcome_to_aleja_textview"
         android:layout_width="139dp"
         android:layout_height="88dp"
-        android:layout_marginTop="220dp"
-        android:layout_marginEnd="136dp"
         android:background="#009688"
         android:backgroundTint="#009688"
         android:text="@string/__welcome_to_aleja"
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
         app:autoSizeTextType="uniform"
+        app:layout_constraintBottom_toTopOf="@+id/use_existing_plan_button"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -21,8 +21,8 @@ public class WelcomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
 
-        make_plan_button = findViewById(R.id.make_plan_button);
-        use_existing_button = findViewById(R.id.use_existing_plan_button);
+        make_plan_button = (Button) findViewById(R.id.make_plan_button);
+        use_existing_button = (Button) findViewById(R.id.use_existing_plan_button);
 
 
         make_plan_button.setOnClickListener(new View.OnClickListener(){
