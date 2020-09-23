@@ -137,42 +137,6 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 	private Pose trackableToReference = null;
 
 
-	private float[] v3diff(float[] a, float[] b) {
-		return new float[]{a[0] - b[0], a[1] - b[1], a[2] - b[2]};
-	}
-
-	private float[] v3add(float[] a, float[] b) {
-		return new float[]{a[0] + b[0], a[1] + b[1], a[2] + b[2]};
-	}
-
-	private float[] v3div(float[] a, float f) {
-		return new float[]{a[0] / f, a[1] / f, a[2] / f};
-	}
-
-	private float[] v3mulf(float[] a, float f) {
-		return new float[]{a[0] * f, a[1] * f, a[2] * f};
-	}
-
-
-	private float v3dot(float[] a, float[] b) {
-		return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-	}
-
-	private float v3dist(float[] a, float[] b) {
-		float[] dif = v3diff(a, b);
-		return (float) Math.sqrt(v3dot(dif, dif));
-	}
-
-	private float v3length(float[] a) {
-		return (float) Math.sqrt(v3dot(a, a));
-	}
-
-	private float[] v3normalize(float[] a) {
-		float length = v3length(a);
-		return v3div(a, length + 0.001f);
-	}
-
-
 	/**
 	 * function that will be called every time the camera frame updates
 	 */
@@ -286,16 +250,16 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 			Node source = graph.getEdgeSource(e);
 			Node target = graph.getEdgeTarget(e);
 
-			float dist = v3dist(source.getPositionF(), target.getPositionF());
+			float dist = VectorOperations.v3dist(source.getPositionF(), target.getPositionF());
 			float sepDist = 0.025f;
 			int numSep = (int)Math.ceil(dist / sepDist);
 
 			float stepDist = dist / (numSep);
 			float[] sourcePos = source.getPositionF();
 			float[] targetPos = target.getPositionF();
-			float[] dir = v3normalize(v3diff(targetPos, sourcePos));
+			float[] dir = VectorOperations.v3normalize(VectorOperations.v3diff(targetPos, sourcePos));
 			for(int i = 1; i < numSep; i++) {
-				float[] pos = v3add(sourcePos, v3mulf(dir, stepDist * i));
+				float[] pos = VectorOperations.v3add(sourcePos, VectorOperations.v3mulf(dir, stepDist * i));
 				createBallInReference(pos, pathBalls, bsr);
 			}
 		}
