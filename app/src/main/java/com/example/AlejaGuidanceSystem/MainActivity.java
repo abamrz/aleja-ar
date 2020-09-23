@@ -205,7 +205,52 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 				}*/
 			}
 		}
+
+		if(cameraPosition != null) {
+			float shortestDist = Float.MAX_VALUE;
+			DefaultWeightedEdge bestEdge = null;
+			float[] bestPos = null;
+			float bestInterpolatingFactor = 0;
+
+			for(DefaultWeightedEdge e : graph.edgeSet()) {
+				Node source = graph.getEdgeSource(e);
+				Node target = graph.getEdgeTarget(e);
+
+				float[] sourcePos = source.getPositionF();
+				float[] targetPos = target.getPositionF();
+
+				float f = VectorOperations.nearestPointToLine(sourcePos, targetPos, cameraPosition);
+				if(f < 0) f = 0;
+				if(f > 1) f = 1;
+
+				float[] pos = VectorOperations.v3interpolate(sourcePos, targetPos, f);
+
+				float dist = VectorOperations.v3dist(cameraPosition, pos);
+				if(bestEdge == null || dist < shortestDist) {
+					bestEdge = e;
+					shortestDist = dist;
+					bestPos = pos;
+					bestInterpolatingFactor = f;
+				}
+			}
+
+			if(bestPos != null && frame.getCamera().getTrackingState() == TrackingState.TRACKING) {
+				Pose referenceToWorld = trackableToWorld.compose(trackableToReference.inverse());
+				Pose nodePose = referenceToWorld.compose(Pose.makeTranslation(bestPos));
+
+				if(nearestPosNode == null) {
+					nearestPosNode = new AnchorNode();
+					nearestPosNode.setRenderable(rsr);
+					VectorOperations.applyPoseToAnchorNode(nearestPosNode, nodePose);
+					arFragment.getArSceneView().getScene().addChild(nearestPosNode);
+				} else {
+					VectorOperations.applyPoseToAnchorNode(nearestPosNode, nodePose);
+				}
+			}
+		}
 	}
+
+	private AnchorNode nearestPosNode = null;
 
 	/**
 	 * Method to place a sphere to a certain anchor
@@ -226,6 +271,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 	 */
 	private void removeBalls(List<AnchorNode> myBallsToRemove) {
 		for (AnchorNode ball : myBallsToRemove) {
+			ball.getAnchor().detach();
 			arFragment.getArSceneView().getScene().removeChild(ball);
 		}
 	}
