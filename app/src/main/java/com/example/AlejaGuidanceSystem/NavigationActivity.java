@@ -19,6 +19,7 @@ import com.google.ar.sceneform.rendering.ModelRenderable;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.alg.DijkstraShortestPath;
+import org.jgrapht.graph.SimpleWeightedGraph;
 
 import java.util.Collection;
 
@@ -37,6 +38,19 @@ public class NavigationActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_navigation);
+
+		graph = new ARGraph();
+		Node a = new Node(0,0,0,"a");
+		Node b = new Node(0,0,0,"b");
+		Node c = new Node(0,0,0,"c");
+
+		graph.addVertex(a);
+		graph.addVertex(b);
+		graph.addVertex(c);
+
+		graph.addEdge(a, b);
+		graph.addEdge(a,c);
+
 
 		arFragment = (CustomArFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
 		arFragment.getArSceneView().getScene().addOnUpdateListener(this::onUpdateFrame);
