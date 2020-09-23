@@ -234,36 +234,11 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 
 		if(cameraPosition != null) {
-			float shortestDist = Float.MAX_VALUE;
-			DefaultWeightedEdge bestEdge = null;
-			float[] bestPos = null;
-			float bestInterpolatingFactor = 0;
+			NearestPointInfo nearestPointInfo = nearestPointInGraph(graph, cameraPosition);
 
-			for(DefaultWeightedEdge e : graph.edgeSet()) {
-				Node source = graph.getEdgeSource(e);
-				Node target = graph.getEdgeTarget(e);
-
-				float[] sourcePos = source.getPositionF();
-				float[] targetPos = target.getPositionF();
-
-				float f = VectorOperations.nearestPointToLine(sourcePos, targetPos, cameraPosition);
-				if(f < 0) f = 0;
-				if(f > 1) f = 1;
-
-				float[] pos = VectorOperations.v3interpolate(sourcePos, targetPos, f);
-
-				float dist = VectorOperations.v3dist(cameraPosition, pos);
-				if(bestEdge == null || dist < shortestDist) {
-					bestEdge = e;
-					shortestDist = dist;
-					bestPos = pos;
-					bestInterpolatingFactor = f;
-				}
-			}
-
-			if(bestPos != null && frame.getCamera().getTrackingState() == TrackingState.TRACKING) {
-				Pose nodePose = referenceToWorld.compose(Pose.makeTranslation(bestPos));
-
+			if(nearestPointInfo != null && frame.getCamera().getTrackingState() == TrackingState.TRACKING) {
+				Pose nodePose = referenceToWorld.compose(Pose.makeTranslation(nearestPointInfo.nearestPosition));
+				
 				if(nearestPosNode == null) {
 					nearestPosNode = new AnchorNode();
 					nearestPosNode.setRenderable(rsr);
@@ -275,6 +250,52 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			}
 		}
 
+	}
+
+	private static class NearestPointInfo {
+		float distance;
+		DefaultWeightedEdge bestEdge;
+		float interpolatingFactor;
+		float[] nearestPosition;
+	}
+
+	private NearestPointInfo nearestPointInGraph(Graph<Node, DefaultWeightedEdge> graph, float[] probePosition) {
+
+		float shortestDist = Float.MAX_VALUE;
+		DefaultWeightedEdge bestEdge = null;
+		float bestInterpolatingFactor = 0;
+		float[] nearestPosition = null;
+
+		for(DefaultWeightedEdge e : graph.edgeSet()) {
+			Node source = graph.getEdgeSource(e);
+			Node target = graph.getEdgeTarget(e);
+
+			float[] sourcePos = source.getPositionF();
+			float[] targetPos = target.getPositionF();
+
+			float f = VectorOperations.nearestPointToLine(sourcePos, targetPos, probePosition);
+			if(f < 0) f = 0;
+			if(f > 1) f = 1;
+
+			float[] pos = VectorOperations.v3interpolate(sourcePos, targetPos, f);
+
+			float dist = VectorOperations.v3dist(probePosition, pos);
+			if(bestEdge == null || dist < shortestDist) {
+				bestEdge = e;
+				shortestDist = dist;
+				nearestPosition = pos;
+				bestInterpolatingFactor = f;
+			}
+		}
+
+		if(nearestPosition == null) return null;
+
+		NearestPointInfo nearestPointInfo = new NearestPointInfo();
+		nearestPointInfo.bestEdge = bestEdge;
+		nearestPointInfo.distance = shortestDist;
+		nearestPointInfo.interpolatingFactor = bestInterpolatingFactor;
+		nearestPointInfo.nearestPosition = nearestPosition;
+		return nearestPointInfo;
 	}
 
 	private AnchorNode nearestPosNode = null;
