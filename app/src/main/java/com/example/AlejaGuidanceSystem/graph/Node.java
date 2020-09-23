@@ -17,6 +17,13 @@ public class Node {
         this.id = id;
     }
 
+    public Node(float[] v, String id) {
+        this.x = v[0];
+        this.y = v[1];
+        this.z = v[2];
+        this.id = id;
+    }
+
 
     public double getX() {
         return x;

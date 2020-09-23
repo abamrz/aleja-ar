@@ -30,6 +30,7 @@ import com.google.ar.sceneform.rendering.Renderable;
 import com.google.ar.sceneform.rendering.ShapeFactory;
 
 import org.jgrapht.Graph;
+import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;
@@ -87,12 +88,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			public void onClick(View v) {
 				if (cameraPosition == null) return;
 
-				Node node = new Node(
-						cameraPosition[0],
-						cameraPosition[1],
-						cameraPosition[2],
-						"node" + nodeIdCounter
-				);
+				Node node = new Node(cameraPosition, "node" + nodeIdCounter);
 
 				graph.addVertex(node);
 
@@ -100,6 +96,90 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 					graph.addEdge(lastFocusedNode, node);
 				}
 				lastFocusedNode = node;
+
+				nodeIdCounter++;
+
+				regenerateScene = true;
+			}
+		});
+
+
+		findViewById(R.id.newBranchButton).setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				if (cameraPosition == null) return;
+
+				NearestPointInfo npi = nearestPointInGraph(graph, cameraPosition);
+				if(npi == null) return;
+
+				Node source = graph.getEdgeSource(npi.bestEdge);
+				Node target = graph.getEdgeTarget(npi.bestEdge);
+
+				Node chosenNode = null;
+				if(npi.interpolatingFactor < 0.0001) {
+					chosenNode = source;
+				}
+				if(npi.interpolatingFactor > 0.9999) {
+					chosenNode = target;
+				}
+
+				if(chosenNode == null) {
+					graph.removeEdge(source, target);
+
+					chosenNode = new Node(npi.nearestPosition, "node" + nodeIdCounter);
+					nodeIdCounter++;
+
+					graph.addVertex(chosenNode);
+
+					graph.addEdge(source, chosenNode);
+					graph.addEdge(chosenNode, target);
+				}
+
+				Node node = new Node( cameraPosition, "node" + nodeIdCounter );
+				graph.addVertex(node);
+				graph.addEdge(chosenNode, node);
+				lastFocusedNode = node;
+
+				nodeIdCounter++;
+
+				regenerateScene = true;
+			}
+		});
+
+		findViewById(R.id.closeCircleButton).setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				if (cameraPosition == null) return;
+				if (lastFocusedNode == null) return;
+
+				NearestPointInfo npi = nearestPointInGraph(graph, cameraPosition);
+				if(npi == null) return;
+
+				Node source = graph.getEdgeSource(npi.bestEdge);
+				Node target = graph.getEdgeTarget(npi.bestEdge);
+
+				Node chosenNode = null;
+				if(npi.interpolatingFactor < 0.0001) {
+					chosenNode = graph.getEdgeSource(npi.bestEdge);
+				}
+				if(npi.interpolatingFactor > 0.9999) {
+					chosenNode = graph.getEdgeTarget(npi.bestEdge);
+				}
+
+				if(chosenNode == null) {
+					graph.removeEdge(source, target);
+
+					chosenNode = new Node(npi.nearestPosition, "node" + nodeIdCounter);
+					nodeIdCounter++;
+
+					graph.addVertex(chosenNode);
+
+					graph.addEdge(source, chosenNode);
+					graph.addEdge(chosenNode, target);
+				}
+
+				if(chosenNode == lastFocusedNode) return;
+
+				graph.addEdge(chosenNode, lastFocusedNode);
+				lastFocusedNode = null;
 
 				nodeIdCounter++;
 
@@ -238,7 +318,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 			if(nearestPointInfo != null && frame.getCamera().getTrackingState() == TrackingState.TRACKING) {
 				Pose nodePose = referenceToWorld.compose(Pose.makeTranslation(nearestPointInfo.nearestPosition));
-				
+
 				if(nearestPosNode == null) {
 					nearestPosNode = new AnchorNode();
 					nearestPosNode.setRenderable(rsr);
