@@ -77,7 +77,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+		setContentView(R.layout.activity_make_plan);
 
 		arFragment = (CustomArFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
 		// adding a listener so that this activity can react to updates in the fragment
