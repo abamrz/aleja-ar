@@ -48,7 +48,7 @@ public class WelcomeActivity extends AppCompatActivity {
     }
 
     public void openUseExistingPlanActivity(){
-        Intent intent = new Intent(this, UseExistingPlanActivity.class);
+        Intent intent = new Intent(this, NavigationActivity.class);
         startActivity(intent);
     }
 

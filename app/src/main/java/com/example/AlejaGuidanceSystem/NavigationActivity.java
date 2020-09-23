@@ -55,7 +55,7 @@ public class NavigationActivity extends AppCompatActivity {
 		Collection<AugmentedImage> images = frame.getUpdatedTrackables(AugmentedImage.class);
 
 		for(AugmentedImage image : images) {
-			if(image.getTrackingState() == TrackingState.TRACKING) {
+			if(image.getTrackingState() == TrackingState.TRACKING && image.getTrackingMethod() == AugmentedImage.TrackingMethod.FULL_TRACKING) {
 				// checking if correct image was detected
 				if(image.getName().equals("ar_pattern")) {
 					Log.d("NavigationActivity", "Image 'ar_pattern' was detected.");
