@@ -43,55 +43,57 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_centerInParent="true"
-                android:orientation="horizontal"
-                android:gravity="center">
+                android:gravity="center"
+                android:orientation="horizontal">
 
                 <RelativeLayout
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.15">
-                </RelativeLayout>
+                    android:layout_height="0dp"
+                    android:layout_weight="0.20"></RelativeLayout>
 
                 <Button
                     android:id="@+id/use_existing_plan_button"
                     android:layout_width="150dp"
-                    android:layout_height="50dp"
-                    android:layout_margin="30dp"
+                    android:layout_height="wrap_content"
                     android:backgroundTint="#00FFFFFF"
+                    android:minHeight="100dp"
                     android:text="@string/__use_existing_plan"
                     android:textAlignment="center" />
 
                 <RelativeLayout
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.15">
-                </RelativeLayout>
+                    android:layout_height="0dp"
+                    android:layout_weight="0.10"></RelativeLayout>
 
                 <Button
                     android:id="@+id/make_plan_button"
                     android:layout_width="150dp"
-                    android:layout_height="50dp"
-                    android:layout_margin="30dp"
+                    android:layout_height="wrap_content"
                     android:backgroundTint="#00FFFFFF"
-                    android:text="@string/__make_plan"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent" />
+                    android:minHeight="100dp"
+                    android:text="@string/__make_plan" />
 
                 <RelativeLayout
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.15">
-                </RelativeLayout>
-
+                    android:layout_height="0dp"
+                    android:layout_weight="0.20"></RelativeLayout>
             </LinearLayout>
-        </LinearLayout>
 
+
+
+        </LinearLayout>
     </RelativeLayout>
+
+    <Button
+        android:id="@+id/exit_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#00FFFFFF"
+        android:text="@string/exit" />
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.15"></RelativeLayout>
-
-
+        android:layout_weight="0.15">
+    </RelativeLayout>
 </LinearLayout>

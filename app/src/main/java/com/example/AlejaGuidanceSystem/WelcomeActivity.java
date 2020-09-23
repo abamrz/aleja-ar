@@ -1,16 +1,16 @@
 package com.example.AlejaGuidanceSystem;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-public class WelcomeActivity extends AppCompatActivity {
+public class WelcomeActivity extends Activity {
 
     private Button make_plan_button;
     private Button use_existing_button;
+    private Button exit_button;
 
     public WelcomeActivity() {
         super();
@@ -23,6 +23,7 @@ public class WelcomeActivity extends AppCompatActivity {
 
         make_plan_button = findViewById(R.id.make_plan_button);
         use_existing_button = findViewById(R.id.use_existing_plan_button);
+        exit_button = findViewById(R.id.exit_button);
 
 
         make_plan_button.setOnClickListener(new View.OnClickListener(){
@@ -38,6 +39,14 @@ public class WelcomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 openUseExistingPlanActivity();
+            }
+        });
+
+        exit_button.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                finish();
             }
         });
     }
