@@ -49,14 +49,29 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 	private ModelRenderable bsr;
 	private ModelRenderable lbsr;
 	// list of spheres on display, so that they can be removed from the scene when new ones are loaded.
-	private ArrayList<AnchorNode> balls;
+	private ArrayList<ObjectInReference> balls;
 	// list of spheres representing camera positions.
-	private ArrayList<AnchorNode> pathBalls;
+	private ArrayList<ObjectInReference> pathBalls;
 
 	private Graph<Node, DefaultWeightedEdge> graph;
 	private boolean regenerateScene = false;
 
 	private int nodeIdCounter = 0;
+
+	private static class ObjectInReference {
+		Pose poseInReference;
+		AnchorNode node;
+
+		public ObjectInReference(AnchorNode node, Pose p) {
+			this.node = node;
+			this.poseInReference = p;
+		}
+
+		public void recalculatePosition(Pose referenceToWorld) {
+			Pose nodePose = referenceToWorld.compose(this.poseInReference);
+			VectorOperations.applyPoseToAnchorNode(this.node, nodePose);
+		}
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -135,6 +150,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 	private Session trackable = null;
 	private Pose trackableToWorld = null;
 	private Pose trackableToReference = null;
+	private Pose referenceToWorld = null;
 
 
 	/**
@@ -150,32 +166,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 		// Log.d("MyApp", "onUpdate");
 
-		Pose cameraToWorld = frame.getCamera().getPose();
 
-		if(trackable != null && regenerateScene && frame.getCamera().getTrackingState() == TrackingState.TRACKING) {
-			regeneratePathBalls();
-			regenerateScene = false;
-		}
-
-		if (trackable != null) {
-			Pose referenceToWorld = trackableToWorld.compose(trackableToReference.inverse());
-
-			Pose cameraToReference = referenceToWorld.inverse().compose(cameraToWorld);
-			cameraPosition = cameraToReference.transformPoint(new float[]{0.0f, 0.0f, 0.0f});
-
-			/*if (lastPosition == null || v3dist(cameraPosition, lastPosition) > 0.2) {
-				lastPosition = new float[]{cameraPosition[0], cameraPosition[1], cameraPosition[2]};
-
-				createBall(trackable.createAnchor(referenceToWorld.compose(Pose.makeTranslation(lastPosition))), pathBalls, bsr);
-			}*/
-
-			// printing the camera position to console and to screen of device running the app
-			String logString = String.format(Locale.GERMAN, "Camera position %.3f %.3f %.3f", cameraPosition[0], cameraPosition[1], cameraPosition[2]);
-			Log.d("MyApp2", logString);
-
-			TextView myAwesomeTextView = (TextView) findViewById(R.id.textView);
-			myAwesomeTextView.setText(logString);
-		}
 
 		// checking all detected images for one of the reference pictures
 		for (AugmentedImage image : images) {
@@ -194,6 +185,11 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 				trackable = session;
 				trackableToWorld = image.getCenterPose();
 				trackableToReference = Pose.makeTranslation(0, 100, 0);
+				referenceToWorld = trackableToWorld.compose(trackableToReference.inverse());
+
+				for(ObjectInReference obj : pathBalls) {
+					obj.recalculatePosition(referenceToWorld);
+				}
 
 				// displaying a straight line of spheres
 				/*for (int i = 0; i < 40; i++) {
@@ -205,6 +201,37 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 				}*/
 			}
 		}
+
+		if(trackable != null && regenerateScene && frame.getCamera().getTrackingState() == TrackingState.TRACKING) {
+			regeneratePathBalls();
+			regenerateScene = false;
+		}
+
+		if (trackable != null) {
+			Pose cameraToWorld = frame.getCamera().getPose();
+			Pose cameraToReference = referenceToWorld.inverse().compose(cameraToWorld);
+			cameraPosition = cameraToReference.transformPoint(new float[]{0.0f, 0.0f, 0.0f});
+
+			/*if (lastPosition == null || v3dist(cameraPosition, lastPosition) > 0.2) {
+				lastPosition = new float[]{cameraPosition[0], cameraPosition[1], cameraPosition[2]};
+
+				createBall(trackable.createAnchor(referenceToWorld.compose(Pose.makeTranslation(lastPosition))), pathBalls, bsr);
+			}*/
+
+			// printing the camera position to console and to screen of device running the app
+
+
+			int sceneformChildren = 			arFragment.getArSceneView().getScene().getChildren().size();
+			int numAnchors = session.getAllAnchors().size();
+
+
+			String logString = String.format(Locale.GERMAN, "Camera position %.3f %.3f %.3f %d %d", cameraPosition[0], cameraPosition[1], cameraPosition[2], sceneformChildren, numAnchors);
+			Log.d("MyApp2", logString);
+
+			TextView myAwesomeTextView = (TextView) findViewById(R.id.textView);
+			myAwesomeTextView.setText(logString);
+		}
+
 
 		if(cameraPosition != null) {
 			float shortestDist = Float.MAX_VALUE;
@@ -235,7 +262,6 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			}
 
 			if(bestPos != null && frame.getCamera().getTrackingState() == TrackingState.TRACKING) {
-				Pose referenceToWorld = trackableToWorld.compose(trackableToReference.inverse());
 				Pose nodePose = referenceToWorld.compose(Pose.makeTranslation(bestPos));
 
 				if(nearestPosNode == null) {
@@ -248,37 +274,32 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 				}
 			}
 		}
+
 	}
 
 	private AnchorNode nearestPosNode = null;
 
 	/**
-	 * Method to place a sphere to a certain anchor
-	 * @param anchor where sphere is placed
-	 * @param myBalls the list of balls this sphere belongs to
-	 * @param renderable the sphere that should be added to the anchor
-	 */
-	private void createBall(Anchor anchor, List<AnchorNode> myBalls, Renderable renderable) {
-		AnchorNode anchorNode = new AnchorNode(anchor);
-		anchorNode.setRenderable(renderable);
-		arFragment.getArSceneView().getScene().addChild(anchorNode);
-		myBalls.add(anchorNode);
-
-	}
-
-	/**
 	 * Method to remove all renderable spheres from a list of balls
 	 */
-	private void removeBalls(List<AnchorNode> myBallsToRemove) {
-		for (AnchorNode ball : myBallsToRemove) {
-			ball.getAnchor().detach();
-			arFragment.getArSceneView().getScene().removeChild(ball);
+	private void removeBalls(List<ObjectInReference> myBallsToRemove) {
+		for (ObjectInReference ball : myBallsToRemove) {
+			arFragment.getArSceneView().getScene().removeChild(ball.node);
 		}
 	}
 
-	private void createBallInReference(float[] positionInReference, List<AnchorNode> myBalls, Renderable renderable) {
-		Pose referenceToWorld = trackableToWorld.compose(trackableToReference.inverse());
-		createBall(trackable.createAnchor(referenceToWorld.compose(Pose.makeTranslation(positionInReference))), myBalls, renderable);
+	private AnchorNode createBallInReference(float[] positionInReference, List<ObjectInReference> myBalls, Renderable renderable) {
+		Pose nodePose = Pose.makeTranslation(positionInReference);
+
+		AnchorNode anchorNode = new AnchorNode();
+		anchorNode.setRenderable(renderable);
+		arFragment.getArSceneView().getScene().addChild(anchorNode);
+
+		ObjectInReference obj = new ObjectInReference(anchorNode, nodePose);
+		obj.recalculatePosition(referenceToWorld);
+		myBalls.add(obj);
+
+		return anchorNode;
 	}
 
 
