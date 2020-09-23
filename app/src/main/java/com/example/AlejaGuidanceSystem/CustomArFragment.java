@@ -19,7 +19,7 @@ public class CustomArFragment extends ArFragment {
 		this.getArSceneView().setupSession(session);
 		
 		// setting up database for augmented images.
-		((MainActivity) getActivity()).setupDatabase(config, session);
+		((MakePlanActivity) getActivity()).setupDatabase(config, session);
 
 		return config;
 	}
