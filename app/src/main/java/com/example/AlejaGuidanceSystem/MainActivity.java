@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 	private ArrayList<AnchorNode> pathBalls;
 
 	private Graph<Node, DefaultWeightedEdge> graph;
+	private boolean regenerateScene = false;
 
 	private int nodeIdCounter = 0;
 
@@ -71,7 +72,6 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 			public void onClick(View v) {
 				if (cameraPosition == null) return;
 
-
 				Node node = new Node(
 						cameraPosition[0],
 						cameraPosition[1],
@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
 				nodeIdCounter++;
 
-				regeneratePathBalls();
+				regenerateScene = true;
 			}
 		});
 
@@ -184,9 +184,14 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 		// all the items ARCore has tracked
 		Collection<AugmentedImage> images = frame.getUpdatedTrackables(AugmentedImage.class);
 
-//		Log.d("MyApp", "onUpdate");
+		// Log.d("MyApp", "onUpdate");
 
 		Pose cameraToWorld = frame.getCamera().getPose();
+
+		if(trackable != null && regenerateScene && frame.getCamera().getTrackingState() == TrackingState.TRACKING) {
+			regeneratePathBalls();
+			regenerateScene = false;
+		}
 
 		if (trackable != null) {
 			Pose referenceToWorld = trackableToWorld.compose(trackableToReference.inverse());
