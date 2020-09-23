@@ -6,15 +6,15 @@ import androidx.annotation.Nullable;
 
 public class Node {
 
-    double x, y, z;
-    String id;
+    private double x, y, z;
+    private String id;
 
 
     public Node(double x, double y, double z, String id) {
-    this.x=x;
-    this.y=y;
-    this.z=z;
-    this.id=id;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.id = id;
     }
 
 
@@ -28,6 +28,10 @@ public class Node {
 
     public double getZ() {
         return z;
+    }
+
+    public float[] getPositionF() {
+        return new float[] {(float)x, (float)y, (float)z};
     }
 
     public String getId() {
@@ -61,6 +65,6 @@ public class Node {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         Node node = (Node) obj;
-        return x==node.x && y==node.y && z==node.z;
+        return x==node.getX() && y==node.getY() && z==node.getZ();
     }
 }
