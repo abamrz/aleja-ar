@@ -44,7 +44,7 @@ public class Utility {
      *          integer = new Integer(4);
      *      }
      *
-     * @param context: Context of the currend Activity
+     * @param context: Context of the current Activity
      * @param id: The key to load the desired object
      * @param obj: The object reference to load the saved content
      */
