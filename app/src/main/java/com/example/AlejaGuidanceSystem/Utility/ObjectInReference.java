@@ -1,6 +1,5 @@
 package com.example.AlejaGuidanceSystem.Utility;
 
-import com.example.AlejaGuidanceSystem.VectorOperations;
 import com.google.ar.core.Pose;
 import com.google.ar.sceneform.AnchorNode;
 

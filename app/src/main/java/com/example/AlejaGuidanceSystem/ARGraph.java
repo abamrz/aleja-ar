@@ -1,13 +1,12 @@
 package com.example.AlejaGuidanceSystem;
 
+import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
 import com.example.AlejaGuidanceSystem.graph.Node;
 
-import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.jgrapht.GraphPath;
-import org.jgrapht.alg.DijkstraShortestPath;
 
 
 public class ARGraph extends SimpleWeightedGraph<Node, DefaultWeightedEdge> {
