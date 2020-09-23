@@ -38,6 +38,7 @@ public class WelcomeActivity extends Activity {
 
             @Override
             public void onClick(View v) {
+                //TODO: choose the right map/graph
                 openUseExistingPlanActivity();
             }
         });
