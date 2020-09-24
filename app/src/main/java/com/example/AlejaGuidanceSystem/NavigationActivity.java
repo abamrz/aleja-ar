@@ -3,6 +3,7 @@ package com.example.AlejaGuidanceSystem;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -71,7 +72,7 @@ public class NavigationActivity extends AppCompatActivity {
 		return_button.setOnClickListener(new View.OnClickListener(){
 			@Override
 			public void onClick(View view){
-				//TODO: Go back to WelcomeActivity
+				returnToWelcomeScreen();
 			}
 		});
 		search_button.setOnClickListener(new View.OnClickListener(){
@@ -86,7 +87,7 @@ public class NavigationActivity extends AppCompatActivity {
 		search_button.setEnabled(false);
 
 		// load the selected graph
-		graph = (ARGraph) getIntent().getSerializableExtra("Graph");
+		//graph = (ARGraph) getIntent().getSerializableExtra("Graph");
 
 		// sample graph
 		graph = new ARGraph();
@@ -117,6 +118,12 @@ public class NavigationActivity extends AppCompatActivity {
 		float[] camera =  {0,0,0};
 		pathBalls = new ArrayList<>();
 		showPath(camera, c);
+	}
+
+	private void returnToWelcomeScreen() {
+		Intent intent = new Intent(this, WelcomeActivity.class);
+		startActivity(intent);
+		finish();
 	}
 
 

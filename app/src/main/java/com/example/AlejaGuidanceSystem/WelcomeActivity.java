@@ -91,12 +91,14 @@ public class WelcomeActivity extends Activity {
 
     public void openUseExistingPlanActivity(ARGraph graph){
         Intent intent = new Intent(this, NavigationActivity.class);
-        intent.putExtra("Graph", graph);
+        //intent.putExtra("Graph", graph);
         startActivity(intent);
+        finish();
     }
 
     public void openMakePlanActivity(){
         Intent intent = new Intent(this, MakePlanActivity.class);
         startActivity(intent);
+        finish();
     }
 }
