@@ -1,8 +1,10 @@
 package com.example.AlejaGuidanceSystem;
 
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -80,6 +82,8 @@ public class NavigationActivity extends AppCompatActivity {
 			@Override
 			public void onClick(View view){
 				//TODO: Search functionality
+				//showSearchDialog();
+
 				GraphicsUtility.removeMyBalls(arFragment.getArSceneView().getScene(), pathBalls);
 				showPath(cameraPosition, c);
 			}
@@ -116,6 +120,26 @@ public class NavigationActivity extends AppCompatActivity {
 				);
 
 		pathBalls = new ArrayList<>();
+	}
+
+	private void showSearchDialog(){
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle(R.string.search_title);
+		builder.setPositiveButton("Go", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialogInterface, int i) {
+				//TODO: Start navigation to destination
+			}
+		});
+		builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int i) {
+				dialog.cancel();
+			}
+		});
+
+		AlertDialog search_dialog = builder.create();
+		search_dialog.show();
 	}
 
 	/**
