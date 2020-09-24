@@ -4,17 +4,11 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.ContextMenu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
-
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.PopupMenu;
-
 import com.example.AlejaGuidanceSystem.graph.Node;
-
 import java.util.ArrayList;
 
 public class WelcomeActivity extends Activity {
@@ -96,14 +90,15 @@ public class WelcomeActivity extends Activity {
     }
 
     public void openUseExistingPlanActivity(ARGraph graph){
-        //TODO: send graph to NavigationActivity
-
         Intent intent = new Intent(this, NavigationActivity.class);
+        //intent.putExtra("Graph", graph);
         startActivity(intent);
+        finish();
     }
 
     public void openMakePlanActivity(){
         Intent intent = new Intent(this, MakePlanActivity.class);
         startActivity(intent);
+        finish();
     }
 }
