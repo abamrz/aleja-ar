@@ -78,16 +78,14 @@ public class NavigationActivity extends AppCompatActivity {
 			}
 		});
 
-
+		// sample graph
 		graph = new ARGraph();
 		Node a = new Node(0,0,0,"a");
 		Node b = new Node(2,0,0,"b");
 		Node c = new Node(0,2,0,"c");
-
 		graph.addVertex(a);
 		graph.addVertex(b);
 		graph.addVertex(c);
-
 		graph.addEdge(a,b);
 		graph.addEdge(a,c);
 
@@ -132,27 +130,47 @@ public class NavigationActivity extends AppCompatActivity {
 		}
 	}
 
+
+	/**
+	 * Displays a path shortest path to a destination on the screen
+	 * @param startPos current (camera-)position of the user
+	 * @param sink the destination-node
+	 */
 	private void showPath(float[] startPos, Node sink) {
-		ARGraph temp = new ARGraph(graph);
-		Node pos = new Node(startPos, "temp");
-		temp.addVertex(pos);
+		// creating a copy of the graph to freely add and remove nodes and edges
+		ARGraph graphCopy = new ARGraph(graph);
+		// adding the current position of the user as a node to the copied graph
+		Node user = new Node(startPos, "StartOfUser");
+		graphCopy.addVertex(user);
 
-		DefaultWeightedEdge toDel = temp.nearestPointInGraph(startPos).bestEdge;
-		Node src = temp.getEdgeSource(toDel), target = temp.getEdgeTarget(toDel);
-		temp.addEdge(src, pos);
-		temp.addEdge(pos, target);
-		temp.removeEdge(toDel);
+		// removing closest edge to user and adding new edges from its endpoints to user
+		DefaultWeightedEdge closestEdge = graphCopy.nearestPointInGraph(startPos).bestEdge;
+		Node edgeSource = graphCopy.getEdgeSource(closestEdge), edgeTarget = graphCopy.getEdgeTarget(closestEdge);
+		graphCopy.addEdge(edgeSource, user);
+		graphCopy.addEdge(user, edgeTarget);
+		graphCopy.removeEdge(closestEdge);
 
-		List<DefaultWeightedEdge> path = DijkstraShortestPath.findPathBetween(temp, pos, sink);
+		// List of edges on the shortest path from user to destination
+		List<DefaultWeightedEdge> path = DijkstraShortestPath.findPathBetween(graphCopy, user, sink);
 
-		createMyBalls(path, temp);
+		// creating a visible path on the screen
+		createMyBalls(path, graphCopy);
 	}
 
+	/**
+	 * Creates a visible Path.
+	 * A large green sphere is displayed at the position of every node on the path.
+	 * Nodes are connected by blue spheres.
+	 * @param edges the path that will be displayed.
+	 * @param graph the graph containing the path.
+	 */
 	private void createMyBalls(List<DefaultWeightedEdge> edges, Graph<Node, DefaultWeightedEdge> graph) {
+		// large green balls for every node
 		for(Node node : extractNodes(edges, graph)) {
 			this.createBallInReference(node.getPositionF(), pathBalls, lgsr);
 		}
 
+		// blue balls on every edge
 		for(DefaultWeightedEdge e : edges) {
 			Node source = graph.getEdgeSource(e);
 			Node target = graph.getEdgeTarget(e);
@@ -172,6 +190,17 @@ public class NavigationActivity extends AppCompatActivity {
 		}
 	}
 
+	private AnchorNode createBallInReference(float[] positionInReference, List<ObjectInReference> myBalls, Renderable renderable) {
+		return GraphicsUtility.createBallInReference(positionInReference, myBalls, renderable, arFragment.getArSceneView().getScene(), referenceToWorld);
+	}
+
+
+	/**
+	 * extracts all nodes that appear in a list of edges
+	 * @param edges the path containing the nodes
+	 * @param graph the graph containing the path
+	 * @return list of all nodes
+	 */
 	private List<Node> extractNodes(List<DefaultWeightedEdge> edges, Graph<Node, DefaultWeightedEdge> graph) {
 		List<Node> nodes = new ArrayList<>();
 
@@ -184,9 +213,5 @@ public class NavigationActivity extends AppCompatActivity {
 		}
 
 		return nodes;
-	}
-
-	private AnchorNode createBallInReference(float[] positionInReference, List<ObjectInReference> myBalls, Renderable renderable) {
-		return GraphicsUtility.createBallInReference(positionInReference, myBalls, renderable, arFragment.getArSceneView().getScene(), referenceToWorld);
 	}
 }
