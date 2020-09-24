@@ -20,12 +20,30 @@ public class ARGraph extends SimpleWeightedGraph<Node, DefaultWeightedEdge> {
 		Graphs.addGraph(this, src);
 	}
 
+	/**
+	 * super.addVertex-method throws a "No loops allowed"-exception if two equal Nodes have an edge between them
+	 * this methods avoids two nodes with the same coordinates being added to the graph
+	 */
+/*	@Override
+	public boolean addVertex(Node node) {
+		if(super.vertexSet().stream().anyMatch(n -> n.getX() == node.getX() && n.getY() == node.getY()  &&
+				n.getZ() == node.getZ())) {
+			return false;
+		}
+		return super.addVertex(node);
+	}*/
 
-	public GraphPath<Node, DefaultWeightedEdge> calculateShortestPath( Node sink) {
-
-
+	/**
+	 * if graph does not contain both nodes, the super.addEdge-method will throw an exception.
+	 * To avoid this problem, this method checks, whether safe usage is possible.
+	 */
+/*	@Override
+	public DefaultWeightedEdge addEdge(Node source, Node sink) {
+		if(this.containsVertex(source) && this.containsVertex(sink)) {
+			return super.addEdge(source, sink);
+		}
 		return null;
-	}
+	}*/
 
 
 	public static class NearestPointInfo {

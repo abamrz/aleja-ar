@@ -72,6 +72,6 @@ public class Node {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         Node node = (Node) obj;
-        return x==node.getX() && y==node.getY() && z==node.getZ();
+        return x==node.getX() && y==node.getY() && z==node.getZ() && id.equals(((Node) obj).getId());
     }
 }

@@ -81,14 +81,14 @@ public class NavigationActivity extends AppCompatActivity {
 
 		graph = new ARGraph();
 		Node a = new Node(0,0,0,"a");
-		Node b = new Node(0,0,0,"b");
-		Node c = new Node(0,0,0,"c");
+		Node b = new Node(2,0,0,"b");
+		Node c = new Node(0,2,0,"c");
 
 		graph.addVertex(a);
 		graph.addVertex(b);
 		graph.addVertex(c);
 
-		graph.addEdge(a, b);
+		graph.addEdge(a,b);
 		graph.addEdge(a,c);
 
 
