@@ -55,6 +55,7 @@ public class NavigationActivity extends AppCompatActivity {
 
 	private Pose referenceToWorld = Pose.IDENTITY;
 	private ArrayList<ObjectInReference> pathBalls;
+	private float[] cameraPosition;
 
 	@Override
 	@SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
@@ -80,8 +81,7 @@ public class NavigationActivity extends AppCompatActivity {
 			public void onClick(View view){
 				//TODO: Search functionality
 				GraphicsUtility.removeMyBalls(arFragment.getArSceneView().getScene(), pathBalls);
-				float[] camera =  {0,0,0};
-				showPath(camera, c);
+				showPath(cameraPosition, c);
 			}
 		});
 		search_button.setEnabled(false);
@@ -147,6 +147,12 @@ public class NavigationActivity extends AppCompatActivity {
 					search_button.setEnabled(true);
 				}
 			}
+		}
+
+		if (referenceToWorld != null) {
+			Pose cameraToWorld = frame.getCamera().getPose();
+			Pose cameraToReference = referenceToWorld.inverse().compose(cameraToWorld);
+			cameraPosition = cameraToReference.transformPoint(new float[]{0.0f, 0.0f, 0.0f});
 		}
 	}
 
