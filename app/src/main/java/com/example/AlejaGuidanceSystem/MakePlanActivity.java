@@ -44,8 +44,10 @@ import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;
 
+import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -66,6 +68,8 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 	private boolean regenerateScene = false;
 
 	private int nodeIdCounter = 0;
+
+	private LinkedList<Pose> referenceToWorldLastPoses = new LinkedList<>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -99,20 +103,20 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			if (cameraPosition == null) return;
 
 			NearestPointInfo npi = nearestPointInGraph(graph, cameraPosition);
-			if(npi == null) return;
+			if (npi == null) return;
 
 			Node source = graph.getEdgeSource(npi.bestEdge);
 			Node target = graph.getEdgeTarget(npi.bestEdge);
 
 			Node chosenNode = null;
-			if(npi.interpolatingFactor < 0.0001) {
+			if (npi.interpolatingFactor < 0.0001) {
 				chosenNode = source;
 			}
-			if(npi.interpolatingFactor > 0.9999) {
+			if (npi.interpolatingFactor > 0.9999) {
 				chosenNode = target;
 			}
 
-			if(chosenNode == null) {
+			if (chosenNode == null) {
 				graph.removeEdge(source, target);
 
 				chosenNode = new Node(npi.nearestPosition, "node" + nodeIdCounter);
@@ -124,7 +128,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 				graph.addEdge(chosenNode, target);
 			}
 
-			Node node = new Node( cameraPosition, "node" + nodeIdCounter );
+			Node node = new Node(cameraPosition, "node" + nodeIdCounter);
 			graph.addVertex(node);
 			graph.addEdge(chosenNode, node);
 			lastFocusedNode = node;
@@ -139,20 +143,20 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			if (lastFocusedNode == null) return;
 
 			NearestPointInfo npi = nearestPointInGraph(graph, cameraPosition);
-			if(npi == null) return;
+			if (npi == null) return;
 
 			Node source = graph.getEdgeSource(npi.bestEdge);
 			Node target = graph.getEdgeTarget(npi.bestEdge);
 
 			Node chosenNode = null;
-			if(npi.interpolatingFactor < 0.0001) {
+			if (npi.interpolatingFactor < 0.0001) {
 				chosenNode = graph.getEdgeSource(npi.bestEdge);
 			}
-			if(npi.interpolatingFactor > 0.9999) {
+			if (npi.interpolatingFactor > 0.9999) {
 				chosenNode = graph.getEdgeTarget(npi.bestEdge);
 			}
 
-			if(chosenNode == null) {
+			if (chosenNode == null) {
 				graph.removeEdge(source, target);
 
 				chosenNode = new Node(npi.nearestPosition, "node" + nodeIdCounter);
@@ -164,7 +168,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 				graph.addEdge(chosenNode, target);
 			}
 
-			if(chosenNode == lastFocusedNode) return;
+			if (chosenNode == lastFocusedNode) return;
 
 			graph.addEdge(chosenNode, lastFocusedNode);
 			lastFocusedNode = null;
@@ -178,9 +182,9 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			if (cameraPosition == null) return;
 
 			Optional<Node> closestOpt = graph.vertexSet().stream().min((n1, n2) -> {
-				return VectorOperations.v3dist(n1.getPositionF(),cameraPosition) < VectorOperations.v3dist(n2.getPositionF(), cameraPosition) ? -1 : 1;
+				return VectorOperations.v3dist(n1.getPositionF(), cameraPosition) < VectorOperations.v3dist(n2.getPositionF(), cameraPosition) ? -1 : 1;
 			});
-			if(!closestOpt.isPresent()) {
+			if (!closestOpt.isPresent()) {
 				return;
 			}
 			final Node closest = closestOpt.get();
@@ -200,7 +204,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 			String[] typeStrings = {"Waypoint", "Kitchen", "Exit", "Coffee", "Office", "Elevator"};
 			Node.NodeType[] types = {Node.NodeType.WAYPOINT, Node.NodeType.KITCHEN, Node.NodeType.EXIT, Node.NodeType.COFFEE,
-										Node.NodeType.OFFICE, Node.NodeType.ELEVATOR};
+					Node.NodeType.OFFICE, Node.NodeType.ELEVATOR};
 
 			final ArrayAdapter<String> adp = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, typeStrings);
 
@@ -225,8 +229,8 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 
 		findViewById(R.id.saveButton).setOnClickListener(v -> {
-					Utility.saveObject(this, "schlabber", graph);
-				});
+			Utility.saveObject(this, "schlabber", graph);
+		});
 
 		pathBalls = new ArrayList<>();
 
@@ -244,11 +248,13 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 						material -> lbsr = ShapeFactory.makeSphere(0.02f, new Vector3(0.0f, 0.0f, 0.0f), material)
 				);
 
-		graph =  (ARGraph) Utility.loadObject(this, "schlabber");
+		/*graph =  (ARGraph) Utility.loadObject(this, "schlabber");
 		if(graph == null) {
 			graph = new ARGraph();
 		}
-		regenerateScene = true;
+		regenerateScene = true;*/
+
+		graph = new ARGraph();
 
 	}
 
@@ -291,11 +297,10 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 		// Log.d("MyApp", "onUpdate");
 
 
-
 		// checking all detected images for one of the reference pictures
 		for (AugmentedImage image : images) {
 			if (image.getTrackingState() == TrackingState.TRACKING && image.getTrackingMethod() == AugmentedImage.TrackingMethod.FULL_TRACKING) {
-				if(image.getName().equals("dr_christian_rehn")) {
+				if (image.getName().equals("dr_christian_rehn")) {
 
 					//Trackable bla =  (Trackable)session;
 					Log.d("MyApp", "tracked " + image.getName());
@@ -308,9 +313,14 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 					trackable = session;
 					trackableToWorld = image.getCenterPose();
 					trackableToReference = Pose.makeTranslation(0, 100, 0);
-					referenceToWorld = trackableToWorld.compose(trackableToReference.inverse());
 
-					for(ObjectInReference obj : pathBalls) {
+					Pose currentReferenceToWorld = trackableToWorld.compose(trackableToReference.inverse());
+					referenceToWorldLastPoses.add(currentReferenceToWorld);
+					if (referenceToWorldLastPoses.size() > 200)
+						referenceToWorldLastPoses.removeFirst();
+					referenceToWorld = VectorOperations.averagePoses(referenceToWorldLastPoses);
+
+					for (ObjectInReference obj : pathBalls) {
 						obj.recalculatePosition(referenceToWorld);
 					}
 
@@ -326,7 +336,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			}
 		}
 
-		if(trackable != null && regenerateScene && frame.getCamera().getTrackingState() == TrackingState.TRACKING) {
+		if (trackable != null && regenerateScene && frame.getCamera().getTrackingState() == TrackingState.TRACKING) {
 			regeneratePathBalls();
 			regenerateScene = false;
 		}
@@ -345,7 +355,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			// printing the camera position to console and to screen of device running the app
 
 
-			int sceneformChildren = 			arFragment.getArSceneView().getScene().getChildren().size();
+			int sceneformChildren = arFragment.getArSceneView().getScene().getChildren().size();
 			int numAnchors = session.getAllAnchors().size();
 
 
@@ -357,13 +367,13 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 		}
 
 
-		if(cameraPosition != null) {
+		if (cameraPosition != null) {
 			NearestPointInfo nearestPointInfo = nearestPointInGraph(graph, cameraPosition);
 
-			if(nearestPointInfo != null && frame.getCamera().getTrackingState() == TrackingState.TRACKING) {
+			if (nearestPointInfo != null && frame.getCamera().getTrackingState() == TrackingState.TRACKING) {
 				Pose nodePose = referenceToWorld.compose(Pose.makeTranslation(nearestPointInfo.nearestPosition));
 
-				if(nearestPosNode == null) {
+				if (nearestPosNode == null) {
 					nearestPosNode = new AnchorNode();
 					nearestPosNode.setRenderable(rsr);
 					VectorOperations.applyPoseToAnchorNode(nearestPosNode, nodePose);
@@ -390,7 +400,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 		float bestInterpolatingFactor = 0;
 		float[] nearestPosition = null;
 
-		for(DefaultWeightedEdge e : graph.edgeSet()) {
+		for (DefaultWeightedEdge e : graph.edgeSet()) {
 			Node source = graph.getEdgeSource(e);
 			Node target = graph.getEdgeTarget(e);
 
@@ -398,13 +408,13 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			float[] targetPos = target.getPositionF();
 
 			float f = VectorOperations.nearestPointToLine(sourcePos, targetPos, probePosition);
-			if(f < 0) f = 0;
-			if(f > 1) f = 1;
+			if (f < 0) f = 0;
+			if (f > 1) f = 1;
 
 			float[] pos = VectorOperations.v3interpolate(sourcePos, targetPos, f);
 
 			float dist = VectorOperations.v3dist(probePosition, pos);
-			if(bestEdge == null || dist < shortestDist) {
+			if (bestEdge == null || dist < shortestDist) {
 				bestEdge = e;
 				shortestDist = dist;
 				nearestPosition = pos;
@@ -412,7 +422,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			}
 		}
 
-		if(nearestPosition == null) return null;
+		if (nearestPosition == null) return null;
 
 		NearestPointInfo nearestPointInfo = new NearestPointInfo();
 		nearestPointInfo.bestEdge = bestEdge;
@@ -426,26 +436,26 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 
 	private void regeneratePathBalls() {
-		 GraphicsUtility.removeMyBalls(arFragment.getArSceneView().getScene(), pathBalls);
+		GraphicsUtility.removeMyBalls(arFragment.getArSceneView().getScene(), pathBalls);
 
-		for(Node node : graph.vertexSet()) {
+		for (Node node : graph.vertexSet()) {
 			GraphicsUtility.createBallInReference(node.getPositionF(), pathBalls, lbsr, arFragment.getArSceneView().getScene(), referenceToWorld);
 		}
 
 
-		for(DefaultWeightedEdge e : graph.edgeSet()) {
+		for (DefaultWeightedEdge e : graph.edgeSet()) {
 			Node source = graph.getEdgeSource(e);
 			Node target = graph.getEdgeTarget(e);
 
 			float dist = VectorOperations.v3dist(source.getPositionF(), target.getPositionF());
 			float sepDist = 0.025f;
-			int numSep = (int)Math.ceil(dist / sepDist);
+			int numSep = (int) Math.ceil(dist / sepDist);
 
 			float stepDist = dist / (numSep);
 			float[] sourcePos = source.getPositionF();
 			float[] targetPos = target.getPositionF();
 			float[] dir = VectorOperations.v3normalize(VectorOperations.v3diff(targetPos, sourcePos));
-			for(int i = 1; i < numSep; i++) {
+			for (int i = 1; i < numSep; i++) {
 				float[] pos = VectorOperations.v3add(sourcePos, VectorOperations.v3mulf(dir, stepDist * i));
 				GraphicsUtility.createBallInReference(pos, pathBalls, bsr, arFragment.getArSceneView().getScene(), referenceToWorld);
 			}
