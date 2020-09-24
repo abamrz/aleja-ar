@@ -72,7 +72,7 @@ public class NavigationActivity extends AppCompatActivity {
 		return_button.setOnClickListener(new View.OnClickListener(){
 			@Override
 			public void onClick(View view){
-				returnToWelcomeScreen();
+				finish();
 			}
 		});
 		search_button.setOnClickListener(new View.OnClickListener(){
@@ -87,7 +87,7 @@ public class NavigationActivity extends AppCompatActivity {
 		search_button.setEnabled(false);
 
 		// load the selected graph
-		//graph = (ARGraph) getIntent().getSerializableExtra("Graph");
+		graph = (ARGraph) getIntent().getSerializableExtra("Graph");
 
 		// sample graph
 		graph = new ARGraph();
@@ -117,13 +117,6 @@ public class NavigationActivity extends AppCompatActivity {
 
 		pathBalls = new ArrayList<>();
 	}
-
-	private void returnToWelcomeScreen() {
-		Intent intent = new Intent(this, WelcomeActivity.class);
-		startActivity(intent);
-		finish();
-	}
-
 
 	/**
 	 * listener-method, called every time the camera frame is updated

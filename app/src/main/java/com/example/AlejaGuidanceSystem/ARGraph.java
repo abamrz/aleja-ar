@@ -8,8 +8,10 @@ import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.jgrapht.GraphPath;
 
+import java.io.Serializable;
 
-public class ARGraph extends SimpleWeightedGraph<Node, DefaultWeightedEdge> {
+
+public class ARGraph extends SimpleWeightedGraph<Node, DefaultWeightedEdge> implements Serializable {
 
 	public ARGraph() {
 		super(DefaultWeightedEdge.class);

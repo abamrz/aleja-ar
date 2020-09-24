@@ -3,8 +3,10 @@ package com.example.AlejaGuidanceSystem.graph;
 
 import androidx.annotation.Nullable;
 
+import java.io.Serializable;
 
-public class Node {
+
+public class Node implements Serializable {
 
     private double x, y, z;
     private String id;
