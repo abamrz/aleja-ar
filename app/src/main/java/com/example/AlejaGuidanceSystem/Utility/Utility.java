@@ -48,8 +48,9 @@ public class Utility {
      * @param id: The key to load the desired object
      * @param obj: The object reference to load the saved content
      */
-    public static void loadObject(Context context, String id, Object obj){
+    public static Object loadObject(Context context, String id){
         ObjectInput ois;
+        Object obj;
         try {
             FileInputStream fis = context.openFileInput(id +  ".data");
             ois = new ObjectInputStream(fis);
@@ -57,7 +58,10 @@ public class Utility {
             ois.close();
         } catch (Exception e) {
             e.printStackTrace();
+            return  null;
         }
+
+        return obj;
     }
 
 }

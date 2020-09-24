@@ -2,7 +2,6 @@ package com.example.AlejaGuidanceSystem;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
 
 import com.google.ar.core.AugmentedImageDatabase;
 import com.google.ar.core.Config;
@@ -30,11 +29,13 @@ public class CustomArFragment extends ArFragment {
 
 	private void setupDatabase(Config config, Session session) {
 		// test image
-		Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ar_pattern);
+		Bitmap bitmap1 = BitmapFactory.decodeResource(getResources(), R.drawable.ar_pattern);
+		Bitmap bitmap2 = BitmapFactory.decodeResource(getResources(), R.drawable.dr_christian_rehn);
 
 		AugmentedImageDatabase aid = new AugmentedImageDatabase(session);
 		// adding Augmented Images to Database
-		aid.addImage("ar_pattern", bitmap, 0.2f);
+		aid.addImage("ar_pattern", bitmap1, 0.2f);
+		aid.addImage("dr_christian_rehn", bitmap2, 0.2f);
 
 		config.setAugmentedImageDatabase(aid);
 	}

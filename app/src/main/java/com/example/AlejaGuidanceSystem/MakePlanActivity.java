@@ -20,7 +20,9 @@ import android.widget.TextView;
 
 import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
 import com.example.AlejaGuidanceSystem.Utility.ObjectInReference;
+import com.example.AlejaGuidanceSystem.Utility.Utility;
 import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
+import com.example.AlejaGuidanceSystem.graph.ARGraph;
 import com.example.AlejaGuidanceSystem.graph.Node;
 import com.google.ar.core.AugmentedImage;
 import com.google.ar.core.AugmentedImageDatabase;
@@ -60,7 +62,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 	// list of spheres representing camera positions.
 	private ArrayList<ObjectInReference> pathBalls;
 
-	private Graph<Node, DefaultWeightedEdge> graph;
+	private ARGraph graph;
 	private boolean regenerateScene = false;
 
 	private int nodeIdCounter = 0;
@@ -221,8 +223,12 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			builder.show();
 		});
 
+
+		findViewById(R.id.saveButton).setOnClickListener(v -> {
+					Utility.saveObject(this, "schlabber", graph);
+				});
+
 		pathBalls = new ArrayList<>();
-		graph = new SimpleWeightedGraph<Node, DefaultWeightedEdge>(DefaultWeightedEdge.class);
 
 		// creating the spheres
 		MaterialFactory.makeOpaqueWithColor(this, new Color(android.graphics.Color.RED))
@@ -238,6 +244,11 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 						material -> lbsr = ShapeFactory.makeSphere(0.02f, new Vector3(0.0f, 0.0f, 0.0f), material)
 				);
 
+		graph =  (ARGraph) Utility.loadObject(this, "schlabber");
+		if(graph == null) {
+			graph = new ARGraph();
+		}
+		regenerateScene = true;
 
 	}
 
@@ -283,26 +294,27 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 		// checking all detected images for one of the reference pictures
 		for (AugmentedImage image : images) {
-			if (image.getTrackingState() == TrackingState.TRACKING) {
+			if (image.getTrackingState() == TrackingState.TRACKING && image.getTrackingMethod() == AugmentedImage.TrackingMethod.FULL_TRACKING) {
+				if(image.getName().equals("dr_christian_rehn")) {
 
-				//Trackable bla =  (Trackable)session;
-				Log.d("MyApp", "tracked " + image.getName());
-				Log.d("MyApp", "Pose: " + image.getCenterPose().toString());
+					//Trackable bla =  (Trackable)session;
+					Log.d("MyApp", "tracked " + image.getName());
+					Log.d("MyApp", "Pose: " + image.getCenterPose().toString());
 
 				/*trackable = image;
 				trackableToWorld = image.getCenterPose();
 				trackableToReference = Pose.makeTranslation(0, 100, 0);*/
 
-				trackable = session;
-				trackableToWorld = image.getCenterPose();
-				trackableToReference = Pose.makeTranslation(0, 100, 0);
-				referenceToWorld = trackableToWorld.compose(trackableToReference.inverse());
+					trackable = session;
+					trackableToWorld = image.getCenterPose();
+					trackableToReference = Pose.makeTranslation(0, 100, 0);
+					referenceToWorld = trackableToWorld.compose(trackableToReference.inverse());
 
-				for(ObjectInReference obj : pathBalls) {
-					obj.recalculatePosition(referenceToWorld);
-				}
+					for(ObjectInReference obj : pathBalls) {
+						obj.recalculatePosition(referenceToWorld);
+					}
 
-				// displaying a straight line of spheres
+					// displaying a straight line of spheres
 				/*for (int i = 0; i < 40; i++) {
 					Pose upPose = Pose.makeTranslation(0, i * 0.2f, 0);
 					//Pose combinedPose = upPose.compose(anchorToWorld); // Pose.makeTranslation(0, i * 0.1f, 0);
@@ -310,6 +322,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 					Anchor anchor = trackable.createAnchor(trackableToWorld.compose(upPose));
 					createBall(anchor, balls, rsr);
 				}*/
+				}
 			}
 		}
 
