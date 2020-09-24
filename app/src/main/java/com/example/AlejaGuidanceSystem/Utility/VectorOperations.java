@@ -1,9 +1,13 @@
 package com.example.AlejaGuidanceSystem.Utility;
 
+import android.util.Log;
+
 import com.google.ar.core.Pose;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
+
+import java.util.Arrays;
 
 public class VectorOperations {
 	public static float[] v3diff(float[] a, float[] b) {
@@ -63,6 +67,7 @@ public class VectorOperations {
 
 	public static void applyPoseToAnchorNode(AnchorNode node, Pose pose) {
 		node.setWorldPosition(VectorOperations.vectorFromArray(pose.getTranslation()));
+		Log.d("MyVectorTest", Arrays.toString(pose.getTranslation()));
 		node.setWorldRotation(VectorOperations.quaternionFromArray(pose.getRotationQuaternion()));
 
 	}

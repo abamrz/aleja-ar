@@ -46,8 +46,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 	private ModelRenderable rsr;
 	private ModelRenderable bsr;
 	private ModelRenderable lbsr;
-	// list of spheres on display, so that they can be removed from the scene when new ones are loaded.
-	private ArrayList<ObjectInReference> balls;
+
 	// list of spheres representing camera positions.
 	private ArrayList<ObjectInReference> pathBalls;
 
@@ -169,7 +168,6 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			}
 		});
 
-		balls = new ArrayList<>();
 		pathBalls = new ArrayList<>();
 		graph = new SimpleWeightedGraph<Node, DefaultWeightedEdge>(DefaultWeightedEdge.class);
 
@@ -233,8 +231,6 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 		// checking all detected images for one of the reference pictures
 		for (AugmentedImage image : images) {
 			if (image.getTrackingState() == TrackingState.TRACKING) {
-				// removing old balls from screen so that they don't have to be rendered in
-				removeBalls(balls);
 
 				//Trackable bla =  (Trackable)session;
 				Log.d("MyApp", "tracked " + image.getName());
@@ -362,18 +358,9 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 	private AnchorNode nearestPosNode = null;
 
-	/**
-	 * Method to remove all renderable spheres from a list of balls
-	 */
-	private void removeBalls(List<ObjectInReference> myBallsToRemove) {
-		for (ObjectInReference ball : myBallsToRemove) {
-			arFragment.getArSceneView().getScene().removeChild(ball.getNode());
-		}
-	}
-
 
 	private void regeneratePathBalls() {
-		removeBalls(pathBalls);
+		 GraphicsUtility.removeMyBalls(arFragment.getArSceneView().getScene(), pathBalls);
 
 		for(Node node : graph.vertexSet()) {
 			GraphicsUtility.createBallInReference(node.getPositionF(), pathBalls, lbsr, arFragment.getArSceneView().getScene(), referenceToWorld);

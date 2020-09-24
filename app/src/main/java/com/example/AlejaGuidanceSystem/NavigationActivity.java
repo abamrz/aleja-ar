@@ -79,7 +79,7 @@ public class NavigationActivity extends AppCompatActivity {
 			@Override
 			public void onClick(View view){
 				//TODO: Search functionality
-				pathBalls = new ArrayList<>();
+				GraphicsUtility.removeMyBalls(arFragment.getArSceneView().getScene(), pathBalls);
 				float[] camera =  {0,0,0};
 				showPath(camera, c);
 			}
@@ -112,9 +112,7 @@ public class NavigationActivity extends AppCompatActivity {
 						material -> lgsr = ShapeFactory.makeSphere(0.02f, new Vector3(0.0f, 0.0f, 0.0f), material)
 				);
 
-		float[] camera =  {0,0,0};
 		pathBalls = new ArrayList<>();
-		showPath(camera, c);
 	}
 
 
@@ -139,6 +137,7 @@ public class NavigationActivity extends AppCompatActivity {
 					Pose trackableToReference = Pose.makeTranslation(0, 0.1f, 0);
 					referenceToWorld = trackableToWorld.compose(trackableToReference.inverse());
 					if(pathBalls != null) {
+						Log.d("MyVectorTest", "updateBallPosition " + pathBalls.size());
 						for(ObjectInReference obj : pathBalls) {
 							obj.recalculatePosition(referenceToWorld);
 						}
@@ -196,6 +195,9 @@ public class NavigationActivity extends AppCompatActivity {
 		for(Node node : extractNodes(edges, graph)) {
 			this.createBallInReference(node.getPositionF(), pathBalls, lgsr);
 			Log.d("MyTest", String.format("%s: %.2f %.2f %.2f", node.getId(), node.getX(), node.getY(), node.getZ() ));
+			// "nice nice nice"
+			//
+			//       - Lukas, 2020
 		}
 
 		// blue balls on every edge

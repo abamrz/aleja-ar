@@ -24,4 +24,12 @@ public class GraphicsUtility {
 		return anchorNode;
 	}
 
+	public static void removeMyBalls(Scene scene, List<ObjectInReference> myBallsToRemove) {
+
+		for (ObjectInReference ball : myBallsToRemove) {
+			scene.removeChild(ball.getNode());
+		}
+		myBallsToRemove.clear();
+	}
+
 }
