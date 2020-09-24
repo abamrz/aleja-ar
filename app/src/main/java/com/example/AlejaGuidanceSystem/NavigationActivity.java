@@ -68,7 +68,6 @@ public class NavigationActivity extends AppCompatActivity {
 		//initialize the buttons
 		return_button = (ImageButton) findViewById(R.id.return_button);
 		search_button = (ImageButton) findViewById(R.id.search_button);
-
 		return_button.setOnClickListener(new View.OnClickListener(){
 			@Override
 			public void onClick(View view){
@@ -85,6 +84,9 @@ public class NavigationActivity extends AppCompatActivity {
 			}
 		});
 		search_button.setEnabled(false);
+
+		// load the selected graph
+		graph = (ARGraph) getIntent().getSerializableExtra("Graph");
 
 		// sample graph
 		graph = new ARGraph();
