@@ -42,7 +42,7 @@ public class Node implements Serializable {
     }
 
     public float[] getPositionF() {
-        return new float[] {(float)x, (float)y, (float)z};
+        return new float[]{(float) x, (float) y, (float) z};
     }
 
     public String getId() {
@@ -91,13 +91,11 @@ public class Node implements Serializable {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         Node node = (Node) obj;
-        return x==node.getX() && y==node.getY() && z==node.getZ() && id.equals(((Node) obj).getId());
+        return x == node.getX() && y == node.getY() && z == node.getZ() && id.equals(((Node) obj).getId());
     }
 
     public static enum NodeType {
         WAYPOINT, KITCHEN, EXIT, COFFEE, OFFICE, ELEVATOR;
     }
+
 }
-
-
-
