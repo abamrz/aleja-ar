@@ -2,6 +2,7 @@
   <dictionary name="lukas">
     <words>
       <w>renderable</w>
+      <w>trackable</w>
     </words>
   </dictionary>
 </component>

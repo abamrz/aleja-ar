@@ -52,7 +52,7 @@ public class NavigationActivity extends AppCompatActivity {
 	private ModelRenderable bsr;
 	private ModelRenderable lgsr;
 
-	private Pose referenceToWorld = null;
+	private Pose referenceToWorld = Pose.IDENTITY;
 	private ArrayList<ObjectInReference> pathBalls;
 
 	@Override
@@ -60,6 +60,10 @@ public class NavigationActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_navigation);
+
+		Node a = new Node(0.01f,0,0,"a");
+		Node b = new Node(1,0,0,"b");
+		Node c = new Node(1,1,0,"c");
 
 		//initialize the buttons
 		return_button = (ImageButton) findViewById(R.id.return_button);
@@ -75,19 +79,20 @@ public class NavigationActivity extends AppCompatActivity {
 			@Override
 			public void onClick(View view){
 				//TODO: Search functionality
+				pathBalls = new ArrayList<>();
+				float[] camera =  {0,0,0};
+				showPath(camera, c);
 			}
 		});
+		search_button.setEnabled(false);
 
 		// sample graph
 		graph = new ARGraph();
-		Node a = new Node(0,0,0,"a");
-		Node b = new Node(2,0,0,"b");
-		Node c = new Node(0,2,0,"c");
 		graph.addVertex(a);
 		graph.addVertex(b);
 		graph.addVertex(c);
 		graph.addEdge(a,b);
-		graph.addEdge(a,c);
+		graph.addEdge(b,c);
 
 
 		arFragment = (CustomArFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
@@ -106,6 +111,10 @@ public class NavigationActivity extends AppCompatActivity {
 				.thenAccept(
 						material -> lgsr = ShapeFactory.makeSphere(0.02f, new Vector3(0.0f, 0.0f, 0.0f), material)
 				);
+
+		float[] camera =  {0,0,0};
+		pathBalls = new ArrayList<>();
+		showPath(camera, c);
 	}
 
 
@@ -124,7 +133,17 @@ public class NavigationActivity extends AppCompatActivity {
 			if(image.getTrackingState() == TrackingState.TRACKING && image.getTrackingMethod() == AugmentedImage.TrackingMethod.FULL_TRACKING) {
 				// checking if correct image was detected
 				if(image.getName().equals("ar_pattern")) {
-					Log.d("NavigationActivity", "Image 'ar_pattern' was detected.");
+					Log.d("Navigation", "Image 'ar_pattern' was detected.");
+
+					Pose trackableToWorld = image.getCenterPose();
+					Pose trackableToReference = Pose.makeTranslation(0, 0.1f, 0);
+					referenceToWorld = trackableToWorld.compose(trackableToReference.inverse());
+					if(pathBalls != null) {
+						for(ObjectInReference obj : pathBalls) {
+							obj.recalculatePosition(referenceToWorld);
+						}
+					}
+					search_button.setEnabled(true);
 				}
 			}
 		}
@@ -146,9 +165,17 @@ public class NavigationActivity extends AppCompatActivity {
 		// removing closest edge to user and adding new edges from its endpoints to user
 		DefaultWeightedEdge closestEdge = graphCopy.nearestPointInGraph(startPos).bestEdge;
 		Node edgeSource = graphCopy.getEdgeSource(closestEdge), edgeTarget = graphCopy.getEdgeTarget(closestEdge);
-		graphCopy.addEdge(edgeSource, user);
+		graphCopy.addEdge(user, edgeSource);
 		graphCopy.addEdge(user, edgeTarget);
 		graphCopy.removeEdge(closestEdge);
+
+		for(DefaultWeightedEdge e : graphCopy.edgeSet()) {
+			float[] sourcePos = graphCopy.getEdgeSource(e).getPositionF();
+			float[] targetPos = graphCopy.getEdgeTarget(e).getPositionF();
+			graphCopy.setEdgeWeight(e, VectorOperations.v3dist(sourcePos, targetPos));
+
+			Log.d("MyTestE", graphCopy.getEdgeSource(e).getId() + " to " + graphCopy.getEdgeTarget(e).getId());
+		}
 
 		// List of edges on the shortest path from user to destination
 		List<DefaultWeightedEdge> path = DijkstraShortestPath.findPathBetween(graphCopy, user, sink);
@@ -168,6 +195,7 @@ public class NavigationActivity extends AppCompatActivity {
 		// large green balls for every node
 		for(Node node : extractNodes(edges, graph)) {
 			this.createBallInReference(node.getPositionF(), pathBalls, lgsr);
+			Log.d("MyTest", String.format("%s: %.2f %.2f %.2f", node.getId(), node.getX(), node.getY(), node.getZ() ));
 		}
 
 		// blue balls on every edge
