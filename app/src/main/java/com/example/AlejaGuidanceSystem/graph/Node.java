@@ -10,6 +10,8 @@ public class Node implements Serializable {
 
     private double x, y, z;
     private String id;
+    private NodeType type = NodeType.WAYPOINT;
+    private String label;
 
 
     public Node(double x, double y, double z, String id) {
@@ -63,6 +65,21 @@ public class Node implements Serializable {
         this.id = id;
     }
 
+    public NodeType getType() {
+        return type;
+    }
+
+    public void setType(NodeType type) {
+        this.type = type;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
 
     @Override
     public int hashCode() {
@@ -76,4 +93,11 @@ public class Node implements Serializable {
         Node node = (Node) obj;
         return x==node.getX() && y==node.getY() && z==node.getZ() && id.equals(((Node) obj).getId());
     }
+
+    public static enum NodeType {
+        WAYPOINT, KITCHEN, EXIT, COFFEE, OFFICE, ELEVATOR;
+    }
 }
+
+
+

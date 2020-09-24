@@ -2,11 +2,20 @@ package com.example.AlejaGuidanceSystem;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
@@ -37,6 +46,7 @@ import java.util.Collection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdateListener {
 
@@ -65,107 +75,150 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 		arFragment.getArSceneView().getScene().addOnUpdateListener(this);
 
 
-		findViewById(R.id.addToBranchButton).setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				if (cameraPosition == null) return;
+		findViewById(R.id.addToBranchButton).setOnClickListener(v -> {
+			if (cameraPosition == null) return;
 
-				Node node = new Node(cameraPosition, "node" + nodeIdCounter);
+			Node node = new Node(cameraPosition, "node" + nodeIdCounter);
 
-				graph.addVertex(node);
+			graph.addVertex(node);
 
-				if (lastFocusedNode != null) {
-					graph.addEdge(lastFocusedNode, node);
-				}
-				lastFocusedNode = node;
-
-				nodeIdCounter++;
-
-				regenerateScene = true;
+			if (lastFocusedNode != null) {
+				graph.addEdge(lastFocusedNode, node);
 			}
+			lastFocusedNode = node;
+
+			nodeIdCounter++;
+
+			regenerateScene = true;
 		});
 
 
-		findViewById(R.id.newBranchButton).setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				if (cameraPosition == null) return;
+		findViewById(R.id.newBranchButton).setOnClickListener(v -> {
+			if (cameraPosition == null) return;
 
-				NearestPointInfo npi = nearestPointInGraph(graph, cameraPosition);
-				if(npi == null) return;
+			NearestPointInfo npi = nearestPointInGraph(graph, cameraPosition);
+			if(npi == null) return;
 
-				Node source = graph.getEdgeSource(npi.bestEdge);
-				Node target = graph.getEdgeTarget(npi.bestEdge);
+			Node source = graph.getEdgeSource(npi.bestEdge);
+			Node target = graph.getEdgeTarget(npi.bestEdge);
 
-				Node chosenNode = null;
-				if(npi.interpolatingFactor < 0.0001) {
-					chosenNode = source;
-				}
-				if(npi.interpolatingFactor > 0.9999) {
-					chosenNode = target;
-				}
+			Node chosenNode = null;
+			if(npi.interpolatingFactor < 0.0001) {
+				chosenNode = source;
+			}
+			if(npi.interpolatingFactor > 0.9999) {
+				chosenNode = target;
+			}
 
-				if(chosenNode == null) {
-					graph.removeEdge(source, target);
+			if(chosenNode == null) {
+				graph.removeEdge(source, target);
 
-					chosenNode = new Node(npi.nearestPosition, "node" + nodeIdCounter);
-					nodeIdCounter++;
-
-					graph.addVertex(chosenNode);
-
-					graph.addEdge(source, chosenNode);
-					graph.addEdge(chosenNode, target);
-				}
-
-				Node node = new Node( cameraPosition, "node" + nodeIdCounter );
-				graph.addVertex(node);
-				graph.addEdge(chosenNode, node);
-				lastFocusedNode = node;
-
+				chosenNode = new Node(npi.nearestPosition, "node" + nodeIdCounter);
 				nodeIdCounter++;
 
-				regenerateScene = true;
+				graph.addVertex(chosenNode);
+
+				graph.addEdge(source, chosenNode);
+				graph.addEdge(chosenNode, target);
 			}
+
+			Node node = new Node( cameraPosition, "node" + nodeIdCounter );
+			graph.addVertex(node);
+			graph.addEdge(chosenNode, node);
+			lastFocusedNode = node;
+
+			nodeIdCounter++;
+
+			regenerateScene = true;
 		});
 
-		findViewById(R.id.closeCircleButton).setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				if (cameraPosition == null) return;
-				if (lastFocusedNode == null) return;
+		findViewById(R.id.closeCircleButton).setOnClickListener(v -> {
+			if (cameraPosition == null) return;
+			if (lastFocusedNode == null) return;
 
-				NearestPointInfo npi = nearestPointInGraph(graph, cameraPosition);
-				if(npi == null) return;
+			NearestPointInfo npi = nearestPointInGraph(graph, cameraPosition);
+			if(npi == null) return;
 
-				Node source = graph.getEdgeSource(npi.bestEdge);
-				Node target = graph.getEdgeTarget(npi.bestEdge);
+			Node source = graph.getEdgeSource(npi.bestEdge);
+			Node target = graph.getEdgeTarget(npi.bestEdge);
 
-				Node chosenNode = null;
-				if(npi.interpolatingFactor < 0.0001) {
-					chosenNode = graph.getEdgeSource(npi.bestEdge);
-				}
-				if(npi.interpolatingFactor > 0.9999) {
-					chosenNode = graph.getEdgeTarget(npi.bestEdge);
-				}
+			Node chosenNode = null;
+			if(npi.interpolatingFactor < 0.0001) {
+				chosenNode = graph.getEdgeSource(npi.bestEdge);
+			}
+			if(npi.interpolatingFactor > 0.9999) {
+				chosenNode = graph.getEdgeTarget(npi.bestEdge);
+			}
 
-				if(chosenNode == null) {
-					graph.removeEdge(source, target);
+			if(chosenNode == null) {
+				graph.removeEdge(source, target);
 
-					chosenNode = new Node(npi.nearestPosition, "node" + nodeIdCounter);
-					nodeIdCounter++;
-
-					graph.addVertex(chosenNode);
-
-					graph.addEdge(source, chosenNode);
-					graph.addEdge(chosenNode, target);
-				}
-
-				if(chosenNode == lastFocusedNode) return;
-
-				graph.addEdge(chosenNode, lastFocusedNode);
-				lastFocusedNode = null;
-
+				chosenNode = new Node(npi.nearestPosition, "node" + nodeIdCounter);
 				nodeIdCounter++;
 
-				regenerateScene = true;
+				graph.addVertex(chosenNode);
+
+				graph.addEdge(source, chosenNode);
+				graph.addEdge(chosenNode, target);
 			}
+
+			if(chosenNode == lastFocusedNode) return;
+
+			graph.addEdge(chosenNode, lastFocusedNode);
+			lastFocusedNode = null;
+
+			nodeIdCounter++;
+
+			regenerateScene = true;
+		});
+
+		findViewById(R.id.setAttributeButton).setOnClickListener(v -> {
+			if (cameraPosition == null) return;
+
+			Optional<Node> closestOpt = graph.vertexSet().stream().min((n1, n2) -> {
+				return VectorOperations.v3dist(n1.getPositionF(),cameraPosition) < VectorOperations.v3dist(n2.getPositionF(), cameraPosition) ? -1 : 1;
+			});
+			if(!closestOpt.isPresent()) {
+				return;
+			}
+			final Node closest = closestOpt.get();
+
+
+			Context context = this;
+			LinearLayout layout = new LinearLayout(context);
+			layout.setOrientation(LinearLayout.VERTICAL);
+
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Node Attributes");
+			// Set up the input
+			final EditText input = new EditText(context);
+			input.setHint("Label");
+			input.setInputType(InputType.TYPE_CLASS_TEXT);
+			layout.addView(input);
+
+			String[] typeStrings = {"Waypoint", "Kitchen", "Exit", "Coffee", "Office", "Elevator"};
+			Node.NodeType[] types = {Node.NodeType.WAYPOINT, Node.NodeType.KITCHEN, Node.NodeType.EXIT, Node.NodeType.COFFEE,
+										Node.NodeType.OFFICE, Node.NodeType.ELEVATOR};
+
+			final ArrayAdapter<String> adp = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, typeStrings);
+
+			final Spinner derSpinner = new Spinner(context);
+			derSpinner.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+			derSpinner.setAdapter(adp);
+			layout.addView(derSpinner);
+
+			builder.setView(layout);
+
+			// Set up the buttons
+			builder.setPositiveButton("OK", (dialog, which) -> {
+				closest.setLabel(input.getText().toString());
+				closest.setType(types[derSpinner.getSelectedItemPosition()]);
+
+				Log.d("AttributesTest", closest.getId() + ": label: " + closest.getLabel() + ", type: " + closest.getType().toString());
+			});
+			builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+			builder.show();
 		});
 
 		pathBalls = new ArrayList<>();

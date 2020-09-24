@@ -1,12 +1,10 @@
-package com.example.AlejaGuidanceSystem;
+package com.example.AlejaGuidanceSystem.graph;
 
 import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
-import com.example.AlejaGuidanceSystem.graph.Node;
 
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;
-import org.jgrapht.GraphPath;
 
 import java.io.Serializable;
 
@@ -49,10 +47,10 @@ public class ARGraph extends SimpleWeightedGraph<Node, DefaultWeightedEdge> impl
 
 
 	public static class NearestPointInfo {
-		float distance;
-		DefaultWeightedEdge bestEdge;
-		float interpolatingFactor;
-		float[] nearestPosition;
+		public float distance;
+		public DefaultWeightedEdge bestEdge;
+		public float interpolatingFactor;
+		public float[] nearestPosition;
 	}
 
 	public NearestPointInfo nearestPointInGraph( float[] probePosition) {
