@@ -66,8 +66,12 @@ public class NavigationActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_navigation);
 
 		Node a = new Node(0.01f,0,0,"a");
-		Node b = new Node(1,0,0,"b");
-		Node c = new Node(1,1,0,"c");
+		Node b = new Node(0,-2,0,"b");
+		Node c = new Node(0,-4,0,"c");
+		Node d = new Node(12,-2,0,"d");
+		Node e = new Node(17,-2,0,"e");
+		Node f = new Node(17,-4,0,"f");
+
 
 		//initialize the buttons
 		return_button = (ImageButton) findViewById(R.id.return_button);
@@ -98,8 +102,14 @@ public class NavigationActivity extends AppCompatActivity {
 		graph.addVertex(a);
 		graph.addVertex(b);
 		graph.addVertex(c);
+		graph.addVertex(d);
+		graph.addVertex(e);
+		graph.addVertex(f);
 		graph.addEdge(a,b);
 		graph.addEdge(b,c);
+		graph.addEdge(b,d);
+		graph.addEdge(d, e);
+		graph.addEdge(e, f);
 
 
 		arFragment = (CustomArFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
@@ -148,8 +158,8 @@ public class NavigationActivity extends AppCompatActivity {
 		for(AugmentedImage image : images) {
 			if(image.getTrackingState() == TrackingState.TRACKING && image.getTrackingMethod() == AugmentedImage.TrackingMethod.FULL_TRACKING) {
 				// checking if correct image was detected
-				 if(image.getName().equals("ar_pattern")) {
-				//if(image.getName().equals("dr_christian_rehn")) {
+				// if(image.getName().equals("ar_pattern")) {
+				if(image.getName().equals("dr_christian_rehn")) {
 					Log.d("Navigation", "Image 'ar_pattern' was detected.");
 
 					Pose trackableToWorld = image.getCenterPose();
