@@ -13,6 +13,7 @@ import android.widget.ImageButton;
 
 import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
 import com.example.AlejaGuidanceSystem.Utility.ObjectInReference;
+import com.example.AlejaGuidanceSystem.Utility.PoseAveraginator;
 import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
 import com.example.AlejaGuidanceSystem.graph.ARGraph;
 import com.example.AlejaGuidanceSystem.graph.Node;
@@ -60,6 +61,9 @@ public class NavigationActivity extends AppCompatActivity {
 	private ArrayList<ObjectInReference> pathBalls;
 	private float[] cameraPosition;
 
+
+	private PoseAveraginator referenceToWorldAveraginator = new PoseAveraginator(200);
+
 	@Override
 	@SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
 	protected void onCreate(Bundle savedInstanceState) {
@@ -84,7 +88,7 @@ public class NavigationActivity extends AppCompatActivity {
 				GraphicsUtility.removeMyBalls(arFragment.getArSceneView().getScene(), pathBalls);
 
 				Optional<Node> sink = graph.vertexSet().stream().max((v1, v2) ->
-						VectorOperations.v3length(v1.getPositionF()) < VectorOperations.v3length(v1.getPositionF()) ? -1 : 1
+						VectorOperations.v3length(v1.getPositionF()) < VectorOperations.v3length(v2.getPositionF()) ? -1 : 1
 				);
 
 				showPath(cameraPosition, sink.get());
@@ -154,8 +158,12 @@ public class NavigationActivity extends AppCompatActivity {
 					Log.d("Navigation", "Image 'ar_pattern' was detected.");
 
 					Pose trackableToWorld = image.getCenterPose();
-					Pose trackableToReference = Pose.makeTranslation(0, 0.1f, 0);
-					referenceToWorld = trackableToWorld.compose(trackableToReference.inverse());
+					Pose trackableToReference = Pose.makeTranslation(0, 0, 0);
+
+					Pose currentReferenceToWorld = trackableToWorld.compose(trackableToReference.inverse());
+					referenceToWorld = referenceToWorldAveraginator.add(currentReferenceToWorld);
+
+
 					if(pathBalls != null) {
 						Log.d("MyVectorTest", "updateBallPosition " + pathBalls.size());
 						for(ObjectInReference obj : pathBalls) {

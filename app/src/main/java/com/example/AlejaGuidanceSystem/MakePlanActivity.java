@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
 import com.example.AlejaGuidanceSystem.Utility.ObjectInReference;
+import com.example.AlejaGuidanceSystem.Utility.PoseAveraginator;
 import com.example.AlejaGuidanceSystem.Utility.Utility;
 import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
 import com.example.AlejaGuidanceSystem.graph.ARGraph;
@@ -69,7 +70,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 	private int nodeIdCounter = 0;
 
-	private LinkedList<Pose> referenceToWorldLastPoses = new LinkedList<>();
+	private PoseAveraginator referenceToWorldAveraginator = new PoseAveraginator(200);
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -232,6 +233,13 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			Utility.saveObject(this, "schlabber", graph);
 		});
 
+		findViewById(R.id.deleteButton).setOnClickListener(v -> {
+			graph = new ARGraph();
+			regenerateScene = true;
+			arFragment.getArSceneView().getScene().removeChild(nearestPosNode);
+			nearestPosNode = null;
+		});
+
 		pathBalls = new ArrayList<>();
 
 		// creating the spheres
@@ -254,8 +262,8 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 		}
 		regenerateScene = true;*/
 
-		graph = new ARGraph();
-
+		graph = (ARGraph) Utility.loadObject(this, "schlabber");
+		regenerateScene = true;
 	}
 
 
@@ -312,13 +320,10 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 					trackable = session;
 					trackableToWorld = image.getCenterPose();
-					trackableToReference = Pose.makeTranslation(0, 100, 0);
+					trackableToReference = Pose.makeTranslation(0, 0, 0);
 
 					Pose currentReferenceToWorld = trackableToWorld.compose(trackableToReference.inverse());
-					referenceToWorldLastPoses.add(currentReferenceToWorld);
-					if (referenceToWorldLastPoses.size() > 200)
-						referenceToWorldLastPoses.removeFirst();
-					referenceToWorld = VectorOperations.averagePoses(referenceToWorldLastPoses);
+					referenceToWorld = referenceToWorldAveraginator.add(currentReferenceToWorld);
 
 					for (ObjectInReference obj : pathBalls) {
 						obj.recalculatePosition(referenceToWorld);

@@ -65,6 +65,18 @@
             android:layout_margin="2dp"
             android:minLines="3"
             android:text="Save Graph" />
+
+
+
+        <Button
+            android:id="@+id/deleteButton"
+            style="@android:style/ButtonBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="2dp"
+            android:minLines="3"
+            android:text="Anti Schlabber" />
     </LinearLayout>
 
     <fragment
