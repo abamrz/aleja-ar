@@ -158,8 +158,8 @@ public class NavigationActivity extends AppCompatActivity {
 		for(AugmentedImage image : images) {
 			if(image.getTrackingState() == TrackingState.TRACKING && image.getTrackingMethod() == AugmentedImage.TrackingMethod.FULL_TRACKING) {
 				// checking if correct image was detected
-				// if(image.getName().equals("ar_pattern")) {
-				if(image.getName().equals("dr_christian_rehn")) {
+				if(image.getName().equals("ar_pattern")) {
+				// if(image.getName().equals("dr_christian_rehn")) {
 					Log.d("Navigation", "Image 'ar_pattern' was detected.");
 
 					Pose trackableToWorld = image.getCenterPose();
