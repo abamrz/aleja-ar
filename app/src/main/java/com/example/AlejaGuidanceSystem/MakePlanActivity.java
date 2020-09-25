@@ -300,7 +300,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 		// checking all detected images for one of the reference pictures
 		for (AugmentedImage image : images) {
 			if (image.getTrackingState() == TrackingState.TRACKING && image.getTrackingMethod() == AugmentedImage.TrackingMethod.FULL_TRACKING) {
-				if (image.getName().equals("dr_christian_rehn")) {
+				if (image.getName().equals("ar_pattern")) {
 
 					//Trackable bla =  (Trackable)session;
 					Log.d("MyApp", "tracked " + image.getName());
