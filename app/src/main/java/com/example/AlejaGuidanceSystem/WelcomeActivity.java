@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import androidx.annotation.NonNull;
 
+import com.example.AlejaGuidanceSystem.Utility.Utility;
 import com.example.AlejaGuidanceSystem.graph.ARGraph;
 import com.example.AlejaGuidanceSystem.graph.Node;
 import java.util.ArrayList;
@@ -73,19 +74,9 @@ public class WelcomeActivity extends Activity {
         String graphName = item.getTitle().toString();
 
         //TODO: load graph by name from database
-        ARGraph graph = null;
-        //DUmmy Graph
-        {
-            Node a = new Node(0.01f,0,0,"a");
-            Node b = new Node(1,0,0,"b");
-            Node c = new Node(1,1,0,"c");
-            graph = new ARGraph();
-            graph.addVertex(a);
-            graph.addVertex(b);
-            graph.addVertex(c);
-            graph.addEdge(a,b);
-            graph.addEdge(b,c);
-        }
+        ARGraph graph = (ARGraph) Utility.loadObject(this, "schlabber");
+
+
         openUseExistingPlanActivity(graph);
 
         return super.onContextItemSelected(item);

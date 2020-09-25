@@ -37,6 +37,7 @@ import org.jgrapht.alg.DijkstraShortestPath;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 
 public class NavigationActivity extends AppCompatActivity {
@@ -65,14 +66,6 @@ public class NavigationActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_navigation);
 
-		Node a = new Node(0.01f,0,0,"a");
-		Node b = new Node(0,-2,0,"b");
-		Node c = new Node(0,-4,0,"c");
-		Node d = new Node(12,-2,0,"d");
-		Node e = new Node(17,-2,0,"e");
-		Node f = new Node(17,-4,0,"f");
-
-
 		//initialize the buttons
 		return_button = (ImageButton) findViewById(R.id.return_button);
 		search_button = (ImageButton) findViewById(R.id.search_button);
@@ -89,28 +82,18 @@ public class NavigationActivity extends AppCompatActivity {
 				//showSearchDialog();
 
 				GraphicsUtility.removeMyBalls(arFragment.getArSceneView().getScene(), pathBalls);
-				showPath(cameraPosition, c);
+
+				Optional<Node> sink = graph.vertexSet().stream().max((v1, v2) ->
+						VectorOperations.v3length(v1.getPositionF()) < VectorOperations.v3length(v1.getPositionF()) ? -1 : 1
+				);
+
+				showPath(cameraPosition, sink.get());
 			}
 		});
 		search_button.setEnabled(false);
 
 		// load the selected graph
 		graph = (ARGraph) getIntent().getSerializableExtra("Graph");
-
-		// sample graph
-		graph = new ARGraph();
-		graph.addVertex(a);
-		graph.addVertex(b);
-		graph.addVertex(c);
-		graph.addVertex(d);
-		graph.addVertex(e);
-		graph.addVertex(f);
-		graph.addEdge(a,b);
-		graph.addEdge(b,c);
-		graph.addEdge(b,d);
-		graph.addEdge(d, e);
-		graph.addEdge(e, f);
-
 
 		arFragment = (CustomArFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
 		arFragment.getArSceneView().getScene().addOnUpdateListener(this::onUpdateFrame);
@@ -135,10 +118,18 @@ public class NavigationActivity extends AppCompatActivity {
 	private void showSearchDialog(){
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle(R.string.search_title);
-		builder.setPositiveButton("Go", (dialogInterface, i) -> {
-			//TODO: Start navigation to destination
+		builder.setPositiveButton("Go", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialogInterface, int i) {
+				//TODO: Start navigation to destination
+			}
 		});
-		builder.setNegativeButton("Cancel", (dialog, i) -> dialog.cancel());
+		builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int i) {
+				dialog.cancel();
+			}
+		});
 
 		AlertDialog search_dialog = builder.create();
 		search_dialog.show();
