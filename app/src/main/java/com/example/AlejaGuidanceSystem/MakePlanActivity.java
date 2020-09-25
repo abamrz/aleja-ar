@@ -2,22 +2,34 @@ package com.example.AlejaGuidanceSystem;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
+import com.example.AlejaGuidanceSystem.Utility.ObjectInReference;
+import com.example.AlejaGuidanceSystem.Utility.Utility;
+import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
+import com.example.AlejaGuidanceSystem.graph.ARGraph;
 import com.example.AlejaGuidanceSystem.graph.Node;
-import com.google.ar.core.Anchor;
 import com.google.ar.core.AugmentedImage;
 import com.google.ar.core.AugmentedImageDatabase;
 import com.google.ar.core.Config;
 import com.google.ar.core.Frame;
 import com.google.ar.core.Pose;
 import com.google.ar.core.Session;
-import com.google.ar.core.Trackable;
 import com.google.ar.core.TrackingState;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.FrameTime;
@@ -26,19 +38,19 @@ import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.Color;
 import com.google.ar.sceneform.rendering.MaterialFactory;
 import com.google.ar.sceneform.rendering.ModelRenderable;
-import com.google.ar.sceneform.rendering.Renderable;
 import com.google.ar.sceneform.rendering.ShapeFactory;
 
 import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;
 
+import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdateListener {
 
@@ -48,68 +60,179 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 	private ModelRenderable rsr;
 	private ModelRenderable bsr;
 	private ModelRenderable lbsr;
-	// list of spheres on display, so that they can be removed from the scene when new ones are loaded.
-	private ArrayList<ObjectInReference> balls;
+
 	// list of spheres representing camera positions.
 	private ArrayList<ObjectInReference> pathBalls;
 
-	private Graph<Node, DefaultWeightedEdge> graph;
+	private ARGraph graph;
 	private boolean regenerateScene = false;
 
 	private int nodeIdCounter = 0;
 
-	private static class ObjectInReference {
-		Pose poseInReference;
-		AnchorNode node;
-
-		public ObjectInReference(AnchorNode node, Pose p) {
-			this.node = node;
-			this.poseInReference = p;
-		}
-
-		public void recalculatePosition(Pose referenceToWorld) {
-			Pose nodePose = referenceToWorld.compose(this.poseInReference);
-			VectorOperations.applyPoseToAnchorNode(this.node, nodePose);
-		}
-	}
+	private LinkedList<Pose> referenceToWorldLastPoses = new LinkedList<>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+		setContentView(R.layout.activity_make_plan);
 
 		arFragment = (CustomArFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
 		// adding a listener so that this activity can react to updates in the fragment
 		arFragment.getArSceneView().getScene().addOnUpdateListener(this);
 
 
-		findViewById(R.id.addToBranchButton).setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				if (cameraPosition == null) return;
+		findViewById(R.id.addToBranchButton).setOnClickListener(v -> {
+			if (cameraPosition == null) return;
 
-				Node node = new Node(
-						cameraPosition[0],
-						cameraPosition[1],
-						cameraPosition[2],
-						"node" + nodeIdCounter
-				);
+			Node node = new Node(cameraPosition, "node" + nodeIdCounter);
 
-				graph.addVertex(node);
+			graph.addVertex(node);
 
-				if (lastFocusedNode != null) {
-					graph.addEdge(lastFocusedNode, node);
-				}
-				lastFocusedNode = node;
-
-				nodeIdCounter++;
-
-				regenerateScene = true;
+			if (lastFocusedNode != null) {
+				graph.addEdge(lastFocusedNode, node);
 			}
+			lastFocusedNode = node;
+
+			nodeIdCounter++;
+
+			regenerateScene = true;
 		});
 
-		balls = new ArrayList<>();
+
+		findViewById(R.id.newBranchButton).setOnClickListener(v -> {
+			if (cameraPosition == null) return;
+
+			NearestPointInfo npi = nearestPointInGraph(graph, cameraPosition);
+			if (npi == null) return;
+
+			Node source = graph.getEdgeSource(npi.bestEdge);
+			Node target = graph.getEdgeTarget(npi.bestEdge);
+
+			Node chosenNode = null;
+			if (npi.interpolatingFactor < 0.0001) {
+				chosenNode = source;
+			}
+			if (npi.interpolatingFactor > 0.9999) {
+				chosenNode = target;
+			}
+
+			if (chosenNode == null) {
+				graph.removeEdge(source, target);
+
+				chosenNode = new Node(npi.nearestPosition, "node" + nodeIdCounter);
+				nodeIdCounter++;
+
+				graph.addVertex(chosenNode);
+
+				graph.addEdge(source, chosenNode);
+				graph.addEdge(chosenNode, target);
+			}
+
+			Node node = new Node(cameraPosition, "node" + nodeIdCounter);
+			graph.addVertex(node);
+			graph.addEdge(chosenNode, node);
+			lastFocusedNode = node;
+
+			nodeIdCounter++;
+
+			regenerateScene = true;
+		});
+
+		findViewById(R.id.closeCircleButton).setOnClickListener(v -> {
+			if (cameraPosition == null) return;
+			if (lastFocusedNode == null) return;
+
+			NearestPointInfo npi = nearestPointInGraph(graph, cameraPosition);
+			if (npi == null) return;
+
+			Node source = graph.getEdgeSource(npi.bestEdge);
+			Node target = graph.getEdgeTarget(npi.bestEdge);
+
+			Node chosenNode = null;
+			if (npi.interpolatingFactor < 0.0001) {
+				chosenNode = graph.getEdgeSource(npi.bestEdge);
+			}
+			if (npi.interpolatingFactor > 0.9999) {
+				chosenNode = graph.getEdgeTarget(npi.bestEdge);
+			}
+
+			if (chosenNode == null) {
+				graph.removeEdge(source, target);
+
+				chosenNode = new Node(npi.nearestPosition, "node" + nodeIdCounter);
+				nodeIdCounter++;
+
+				graph.addVertex(chosenNode);
+
+				graph.addEdge(source, chosenNode);
+				graph.addEdge(chosenNode, target);
+			}
+
+			if (chosenNode == lastFocusedNode) return;
+
+			graph.addEdge(chosenNode, lastFocusedNode);
+			lastFocusedNode = null;
+
+			nodeIdCounter++;
+
+			regenerateScene = true;
+		});
+
+		findViewById(R.id.setAttributeButton).setOnClickListener(v -> {
+			if (cameraPosition == null) return;
+
+			Optional<Node> closestOpt = graph.vertexSet().stream().min((n1, n2) -> {
+				return VectorOperations.v3dist(n1.getPositionF(), cameraPosition) < VectorOperations.v3dist(n2.getPositionF(), cameraPosition) ? -1 : 1;
+			});
+			if (!closestOpt.isPresent()) {
+				return;
+			}
+			final Node closest = closestOpt.get();
+
+
+			Context context = this;
+			LinearLayout layout = new LinearLayout(context);
+			layout.setOrientation(LinearLayout.VERTICAL);
+
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Node Attributes");
+			// Set up the input
+			final EditText input = new EditText(context);
+			input.setHint("Label");
+			input.setInputType(InputType.TYPE_CLASS_TEXT);
+			layout.addView(input);
+
+			String[] typeStrings = {"Waypoint", "Kitchen", "Exit", "Coffee", "Office", "Elevator"};
+			Node.NodeType[] types = {Node.NodeType.WAYPOINT, Node.NodeType.KITCHEN, Node.NodeType.EXIT, Node.NodeType.COFFEE,
+					Node.NodeType.OFFICE, Node.NodeType.ELEVATOR};
+
+			final ArrayAdapter<String> adp = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, typeStrings);
+
+			final Spinner derSpinner = new Spinner(context);
+			derSpinner.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+			derSpinner.setAdapter(adp);
+			layout.addView(derSpinner);
+
+			builder.setView(layout);
+
+			// Set up the buttons
+			builder.setPositiveButton("OK", (dialog, which) -> {
+				closest.setLabel(input.getText().toString());
+				closest.setType(types[derSpinner.getSelectedItemPosition()]);
+
+				Log.d("AttributesTest", closest.getId() + ": label: " + closest.getLabel() + ", type: " + closest.getType().toString());
+			});
+			builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+			builder.show();
+		});
+
+
+		findViewById(R.id.saveButton).setOnClickListener(v -> {
+			Utility.saveObject(this, "schlabber", graph);
+		});
+
 		pathBalls = new ArrayList<>();
-		graph = new SimpleWeightedGraph<Node, DefaultWeightedEdge>(DefaultWeightedEdge.class);
 
 		// creating the spheres
 		MaterialFactory.makeOpaqueWithColor(this, new Color(android.graphics.Color.RED))
@@ -125,6 +248,13 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 						material -> lbsr = ShapeFactory.makeSphere(0.02f, new Vector3(0.0f, 0.0f, 0.0f), material)
 				);
 
+		/*graph =  (ARGraph) Utility.loadObject(this, "schlabber");
+		if(graph == null) {
+			graph = new ARGraph();
+		}
+		regenerateScene = true;*/
+
+		graph = new ARGraph();
 
 	}
 
@@ -167,31 +297,34 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 		// Log.d("MyApp", "onUpdate");
 
 
-
 		// checking all detected images for one of the reference pictures
 		for (AugmentedImage image : images) {
-			if (image.getTrackingState() == TrackingState.TRACKING) {
-				// removing old balls from screen so that they don't have to be rendered in
-				removeBalls(balls);
+			if (image.getTrackingState() == TrackingState.TRACKING && image.getTrackingMethod() == AugmentedImage.TrackingMethod.FULL_TRACKING) {
+				if (image.getName().equals("dr_christian_rehn")) {
 
-				//Trackable bla =  (Trackable)session;
-				Log.d("MyApp", "tracked " + image.getName());
-				Log.d("MyApp", "Pose: " + image.getCenterPose().toString());
+					//Trackable bla =  (Trackable)session;
+					Log.d("MyApp", "tracked " + image.getName());
+					Log.d("MyApp", "Pose: " + image.getCenterPose().toString());
 
 				/*trackable = image;
 				trackableToWorld = image.getCenterPose();
 				trackableToReference = Pose.makeTranslation(0, 100, 0);*/
 
-				trackable = session;
-				trackableToWorld = image.getCenterPose();
-				trackableToReference = Pose.makeTranslation(0, 100, 0);
-				referenceToWorld = trackableToWorld.compose(trackableToReference.inverse());
+					trackable = session;
+					trackableToWorld = image.getCenterPose();
+					trackableToReference = Pose.makeTranslation(0, 100, 0);
 
-				for(ObjectInReference obj : pathBalls) {
-					obj.recalculatePosition(referenceToWorld);
-				}
+					Pose currentReferenceToWorld = trackableToWorld.compose(trackableToReference.inverse());
+					referenceToWorldLastPoses.add(currentReferenceToWorld);
+					if (referenceToWorldLastPoses.size() > 200)
+						referenceToWorldLastPoses.removeFirst();
+					referenceToWorld = VectorOperations.averagePoses(referenceToWorldLastPoses);
 
-				// displaying a straight line of spheres
+					for (ObjectInReference obj : pathBalls) {
+						obj.recalculatePosition(referenceToWorld);
+					}
+
+					// displaying a straight line of spheres
 				/*for (int i = 0; i < 40; i++) {
 					Pose upPose = Pose.makeTranslation(0, i * 0.2f, 0);
 					//Pose combinedPose = upPose.compose(anchorToWorld); // Pose.makeTranslation(0, i * 0.1f, 0);
@@ -199,10 +332,11 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 					Anchor anchor = trackable.createAnchor(trackableToWorld.compose(upPose));
 					createBall(anchor, balls, rsr);
 				}*/
+				}
 			}
 		}
 
-		if(trackable != null && regenerateScene && frame.getCamera().getTrackingState() == TrackingState.TRACKING) {
+		if (trackable != null && regenerateScene && frame.getCamera().getTrackingState() == TrackingState.TRACKING) {
 			regeneratePathBalls();
 			regenerateScene = false;
 		}
@@ -221,7 +355,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			// printing the camera position to console and to screen of device running the app
 
 
-			int sceneformChildren = 			arFragment.getArSceneView().getScene().getChildren().size();
+			int sceneformChildren = arFragment.getArSceneView().getScene().getChildren().size();
 			int numAnchors = session.getAllAnchors().size();
 
 
@@ -233,38 +367,13 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 		}
 
 
-		if(cameraPosition != null) {
-			float shortestDist = Float.MAX_VALUE;
-			DefaultWeightedEdge bestEdge = null;
-			float[] bestPos = null;
-			float bestInterpolatingFactor = 0;
+		if (cameraPosition != null) {
+			NearestPointInfo nearestPointInfo = nearestPointInGraph(graph, cameraPosition);
 
-			for(DefaultWeightedEdge e : graph.edgeSet()) {
-				Node source = graph.getEdgeSource(e);
-				Node target = graph.getEdgeTarget(e);
+			if (nearestPointInfo != null && frame.getCamera().getTrackingState() == TrackingState.TRACKING) {
+				Pose nodePose = referenceToWorld.compose(Pose.makeTranslation(nearestPointInfo.nearestPosition));
 
-				float[] sourcePos = source.getPositionF();
-				float[] targetPos = target.getPositionF();
-
-				float f = VectorOperations.nearestPointToLine(sourcePos, targetPos, cameraPosition);
-				if(f < 0) f = 0;
-				if(f > 1) f = 1;
-
-				float[] pos = VectorOperations.v3interpolate(sourcePos, targetPos, f);
-
-				float dist = VectorOperations.v3dist(cameraPosition, pos);
-				if(bestEdge == null || dist < shortestDist) {
-					bestEdge = e;
-					shortestDist = dist;
-					bestPos = pos;
-					bestInterpolatingFactor = f;
-				}
-			}
-
-			if(bestPos != null && frame.getCamera().getTrackingState() == TrackingState.TRACKING) {
-				Pose nodePose = referenceToWorld.compose(Pose.makeTranslation(bestPos));
-
-				if(nearestPosNode == null) {
+				if (nearestPosNode == null) {
 					nearestPosNode = new AnchorNode();
 					nearestPosNode.setRenderable(rsr);
 					VectorOperations.applyPoseToAnchorNode(nearestPosNode, nodePose);
@@ -277,57 +386,78 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 	}
 
-	private AnchorNode nearestPosNode = null;
+	private static class NearestPointInfo {
+		float distance;
+		DefaultWeightedEdge bestEdge;
+		float interpolatingFactor;
+		float[] nearestPosition;
+	}
 
-	/**
-	 * Method to remove all renderable spheres from a list of balls
-	 */
-	private void removeBalls(List<ObjectInReference> myBallsToRemove) {
-		for (ObjectInReference ball : myBallsToRemove) {
-			arFragment.getArSceneView().getScene().removeChild(ball.node);
+	private NearestPointInfo nearestPointInGraph(Graph<Node, DefaultWeightedEdge> graph, float[] probePosition) {
+
+		float shortestDist = Float.MAX_VALUE;
+		DefaultWeightedEdge bestEdge = null;
+		float bestInterpolatingFactor = 0;
+		float[] nearestPosition = null;
+
+		for (DefaultWeightedEdge e : graph.edgeSet()) {
+			Node source = graph.getEdgeSource(e);
+			Node target = graph.getEdgeTarget(e);
+
+			float[] sourcePos = source.getPositionF();
+			float[] targetPos = target.getPositionF();
+
+			float f = VectorOperations.nearestPointToLine(sourcePos, targetPos, probePosition);
+			if (f < 0) f = 0;
+			if (f > 1) f = 1;
+
+			float[] pos = VectorOperations.v3interpolate(sourcePos, targetPos, f);
+
+			float dist = VectorOperations.v3dist(probePosition, pos);
+			if (bestEdge == null || dist < shortestDist) {
+				bestEdge = e;
+				shortestDist = dist;
+				nearestPosition = pos;
+				bestInterpolatingFactor = f;
+			}
 		}
+
+		if (nearestPosition == null) return null;
+
+		NearestPointInfo nearestPointInfo = new NearestPointInfo();
+		nearestPointInfo.bestEdge = bestEdge;
+		nearestPointInfo.distance = shortestDist;
+		nearestPointInfo.interpolatingFactor = bestInterpolatingFactor;
+		nearestPointInfo.nearestPosition = nearestPosition;
+		return nearestPointInfo;
 	}
 
-	private AnchorNode createBallInReference(float[] positionInReference, List<ObjectInReference> myBalls, Renderable renderable) {
-		Pose nodePose = Pose.makeTranslation(positionInReference);
-
-		AnchorNode anchorNode = new AnchorNode();
-		anchorNode.setRenderable(renderable);
-		arFragment.getArSceneView().getScene().addChild(anchorNode);
-
-		ObjectInReference obj = new ObjectInReference(anchorNode, nodePose);
-		obj.recalculatePosition(referenceToWorld);
-		myBalls.add(obj);
-
-		return anchorNode;
-	}
-
-
+	private AnchorNode nearestPosNode = null;
 
 
 	private void regeneratePathBalls() {
-		removeBalls(pathBalls);
+		GraphicsUtility.removeMyBalls(arFragment.getArSceneView().getScene(), pathBalls);
 
-		for(Node node : graph.vertexSet()) {
-			createBallInReference(node.getPositionF(), pathBalls, lbsr);
+		for (Node node : graph.vertexSet()) {
+			GraphicsUtility.createBallInReference(node.getPositionF(), pathBalls, lbsr, arFragment.getArSceneView().getScene(), referenceToWorld);
 		}
 
 
-		for(DefaultWeightedEdge e : graph.edgeSet()) {
+		for (DefaultWeightedEdge e : graph.edgeSet()) {
 			Node source = graph.getEdgeSource(e);
 			Node target = graph.getEdgeTarget(e);
 
 			float dist = VectorOperations.v3dist(source.getPositionF(), target.getPositionF());
 			float sepDist = 0.025f;
-			int numSep = (int)Math.ceil(dist / sepDist);
+			int numSep = (int) Math.ceil(dist / sepDist);
 
 			float stepDist = dist / (numSep);
 			float[] sourcePos = source.getPositionF();
 			float[] targetPos = target.getPositionF();
 			float[] dir = VectorOperations.v3normalize(VectorOperations.v3diff(targetPos, sourcePos));
-			for(int i = 1; i < numSep; i++) {
+			for (int i = 1; i < numSep; i++) {
 				float[] pos = VectorOperations.v3add(sourcePos, VectorOperations.v3mulf(dir, stepDist * i));
-				createBallInReference(pos, pathBalls, bsr);
+				GraphicsUtility.createBallInReference(pos, pathBalls, bsr, arFragment.getArSceneView().getScene(), referenceToWorld);
 			}
 		}
 

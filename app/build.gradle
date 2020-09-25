@@ -12,6 +12,12 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
     }
 
     buildTypes {
@@ -31,6 +37,11 @@ android {
         ignoreWarnings true
         baseline file('app/build/reports/lint-baseline.xml')
     }
+
+    sourceSets {
+        androidTest.assets.srcDirs +=
+                files("$projectDir/schemas".toString())
+    }
 }
 
 dependencies {
@@ -39,7 +50,9 @@ dependencies {
     implementation 'com.google.ar.sceneform.ux:sceneform-ux:1.17.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
     implementation 'org.jgrapht:jgrapht-core:1.0.0'
-    testImplementation 'junit:junit:4.12'
+    implementation "android.arch.persistence.room:runtime:1.0.0"
+    annotationProcessor "android.arch.persistence.room:compiler:1.0.0"
+    testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 

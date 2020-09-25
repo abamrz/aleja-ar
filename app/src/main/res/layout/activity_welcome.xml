@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,47 +7,93 @@
     android:background="#4CAF50"
     android:backgroundTint="#4CAF50"
     android:fadingEdge="horizontal|vertical|none"
-    tools:context="com.example.AlejaGuidanceSystem.WelcomeActivity">
+    tools:context="com.example.AlejaGuidanceSystem.WelcomeActivity"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.15">
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.70">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/welcome_to_aleja_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/__welcome_to_aleja"
+                android:textSize="30dp"
+                android:textAlignment="center"
+                android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                app:autoSizeTextType="uniform" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="0.20"></RelativeLayout>
+
+                <Button
+                    android:id="@+id/use_existing_plan_button"
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="#00FFFFFF"
+                    android:minHeight="100dp"
+                    android:text="@string/__use_existing_plan"
+                    android:textAlignment="center" />
+
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="0.10"></RelativeLayout>
+
+                <Button
+                    android:id="@+id/make_plan_button"
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="#00FFFFFF"
+                    android:minHeight="100dp"
+                    android:text="@string/__make_plan" />
+
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="0.20"></RelativeLayout>
+            </LinearLayout>
+
+
+
+        </LinearLayout>
+    </RelativeLayout>
 
     <Button
-        android:id="@+id/use_existing_plan_button"
-        android:layout_width="102dp"
-        android:layout_height="81dp"
+        android:id="@+id/exit_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:backgroundTint="#00FFFFFF"
-        android:text="@string/__use_existing_plan"
-        android:textAlignment="center"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/make_plan_button"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/welcome_to_aleja_textview" />
+        android:text="@string/exit" />
 
-    <Button
-        android:id="@+id/make_plan_button"
-        android:layout_width="102dp"
-        android:layout_height="81dp"
-        android:backgroundTint="#00FFFFFF"
-        android:text="@string/__make_plan"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/use_existing_plan_button"
-        app:layout_constraintTop_toBottomOf="@+id/welcome_to_aleja_textview" />
-
-    <TextView
-        android:id="@+id/welcome_to_aleja_textview"
-        android:layout_width="139dp"
-        android:layout_height="88dp"
-        android:background="#009688"
-        android:backgroundTint="#009688"
-        android:text="@string/__welcome_to_aleja"
-        android:textAlignment="center"
-        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-        app:autoSizeTextType="uniform"
-        app:layout_constraintBottom_toTopOf="@+id/use_existing_plan_button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.15">
+    </RelativeLayout>
+</LinearLayout>

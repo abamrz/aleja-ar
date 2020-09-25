@@ -11,7 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:gravity="center">
 
 
         <Button
@@ -20,6 +21,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:layout_margin="2dp"
+            android:minLines="3"
             android:text="Add to Branch" />
 
         <Button
@@ -28,6 +31,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:layout_margin="2dp"
+            android:minLines="3"
             android:text="New Branch" />
 
         <Button
@@ -36,7 +41,30 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:layout_margin="2dp"
+            android:minLines="3"
             android:text="Close Circle" />
+
+        <Button
+            android:id="@+id/setAttributeButton"
+            style="@android:style/ButtonBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="2dp"
+            android:minLines="3"
+            android:text="Set Attributes" />
+
+
+        <Button
+            android:id="@+id/saveButton"
+            style="@android:style/ButtonBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="2dp"
+            android:minLines="3"
+            android:text="Save Graph" />
     </LinearLayout>
 
     <fragment
