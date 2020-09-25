@@ -76,15 +76,15 @@ public class WelcomeActivity extends Activity {
         ARGraph graph = null;
         //DUmmy Graph
         {
+            Node a = new Node(0.01f,0,0,"a");
+            Node b = new Node(1,0,0,"b");
+            Node c = new Node(1,1,0,"c");
             graph = new ARGraph();
-            Node a = new Node(0, 0, 0, "a");
-            Node b = new Node(0, 10, 0, "b");
-            Node c = new Node(5, 5, 0, "c");
             graph.addVertex(a);
             graph.addVertex(b);
             graph.addVertex(c);
-            graph.addEdge(a, b);
-            graph.addEdge(a, c);
+            graph.addEdge(a,b);
+            graph.addEdge(b,c);
         }
         openUseExistingPlanActivity(graph);
 
