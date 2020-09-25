@@ -35,7 +35,7 @@ public class CustomArFragment extends ArFragment {
 		AugmentedImageDatabase aid = new AugmentedImageDatabase(session);
 		// adding Augmented Images to Database
 		aid.addImage("ar_pattern", bitmap1, 0.2f);
-		aid.addImage("dr_christian_rehn", bitmap2, 0.2f);
+		// aid.addImage("dr_christian_rehn", bitmap2, 0.2f);
 
 		config.setAugmentedImageDatabase(aid);
 	}

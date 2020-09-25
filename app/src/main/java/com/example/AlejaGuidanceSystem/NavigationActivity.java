@@ -125,18 +125,10 @@ public class NavigationActivity extends AppCompatActivity {
 	private void showSearchDialog(){
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle(R.string.search_title);
-		builder.setPositiveButton("Go", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialogInterface, int i) {
-				//TODO: Start navigation to destination
-			}
+		builder.setPositiveButton("Go", (dialogInterface, i) -> {
+			//TODO: Start navigation to destination
 		});
-		builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int i) {
-				dialog.cancel();
-			}
-		});
+		builder.setNegativeButton("Cancel", (dialog, i) -> dialog.cancel());
 
 		AlertDialog search_dialog = builder.create();
 		search_dialog.show();
@@ -156,8 +148,8 @@ public class NavigationActivity extends AppCompatActivity {
 		for(AugmentedImage image : images) {
 			if(image.getTrackingState() == TrackingState.TRACKING && image.getTrackingMethod() == AugmentedImage.TrackingMethod.FULL_TRACKING) {
 				// checking if correct image was detected
-				// if(image.getName().equals("ar_pattern")) {
-				if(image.getName().equals("dr_christian_rehn")) {
+				 if(image.getName().equals("ar_pattern")) {
+				//if(image.getName().equals("dr_christian_rehn")) {
 					Log.d("Navigation", "Image 'ar_pattern' was detected.");
 
 					Pose trackableToWorld = image.getCenterPose();
