@@ -108,4 +108,21 @@ public class VectorOperations {
 
 		return poses.get(0);
 	}
+
+	public static float[] createQuaternionFromAxisAngle(float xx, float yy, float zz, float a)
+	{
+		// Here we calculate the sin( theta / 2) once for optimization
+		float factor = (float) Math.sin( a / 2.0 );
+
+		// Calculate the x, y and z of the quaternion
+		float x = xx * factor;
+		float y = yy * factor;
+		float z = zz * factor;
+
+		// Calcualte the w value by cos( theta / 2 )
+		float w = (float)Math.cos( a / 2.0 );
+
+		return new float[]{x, y, z, w};
+	}
+
 }

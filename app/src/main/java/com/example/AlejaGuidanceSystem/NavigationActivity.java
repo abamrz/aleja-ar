@@ -4,12 +4,16 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
 import com.example.AlejaGuidanceSystem.Utility.ObjectInReference;
@@ -26,19 +30,24 @@ import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.FrameTime;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.Color;
+import com.google.ar.sceneform.rendering.DpToMetersViewSizer;
 import com.google.ar.sceneform.rendering.MaterialFactory;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.Renderable;
 import com.google.ar.sceneform.rendering.ShapeFactory;
+import com.google.ar.sceneform.rendering.ViewRenderable;
+import com.google.ar.sceneform.rendering.ViewSizer;
 
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.alg.DijkstraShortestPath;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 
 public class NavigationActivity extends AppCompatActivity {
@@ -60,6 +69,8 @@ public class NavigationActivity extends AppCompatActivity {
 	private Pose referenceToWorld = Pose.IDENTITY;
 	private ArrayList<ObjectInReference> pathBalls;
 	private float[] cameraPosition;
+
+	private ArrayList<ObjectInReference> labels = new ArrayList<>();
 
 
 	private PoseAveraginator referenceToWorldAveraginator = new PoseAveraginator(200);
@@ -87,17 +98,45 @@ public class NavigationActivity extends AppCompatActivity {
 
 				GraphicsUtility.removeMyBalls(arFragment.getArSceneView().getScene(), pathBalls);
 
-				Optional<Node> sink = graph.vertexSet().stream().max((v1, v2) ->
+				/*Optional<Node> sink = graph.vertexSet().stream().max((v1, v2) ->
 						VectorOperations.v3length(v1.getPositionF()) < VectorOperations.v3length(v2.getPositionF()) ? -1 : 1
 				);
 
-				showPath(cameraPosition, sink.get());
+				showPath(cameraPosition, sink.get());*/
+
+				final TextView input = new TextView(NavigationActivity. this);
+				input.setText("Des is a bayrisches Label!");
+				input.setInputType(InputType.TYPE_CLASS_TEXT);
+				input.setTextColor(android.graphics.Color.WHITE);
+				input.setBackgroundColor(android.graphics.Color.BLACK);
+
+				CompletableFuture<ViewRenderable>
+						future = ViewRenderable
+						.builder()
+						.setView((Context) NavigationActivity.this, input)
+						.build();
+				future.thenAccept(viewRenderable -> {
+
+					viewRenderable.setHorizontalAlignment(ViewRenderable.HorizontalAlignment.CENTER);
+					viewRenderable.setVerticalAlignment(ViewRenderable.VerticalAlignment.CENTER);
+					viewRenderable.setSizer( new DpToMetersViewSizer(550) );
+
+					AnchorNode x = new AnchorNode();
+					x.setRenderable(viewRenderable);
+					arFragment.getArSceneView().getScene().addChild(x);
+
+					float[] quat = VectorOperations.createQuaternionFromAxisAngle(1, 0, 0, -(float)Math.PI / 2.0f);
+					ObjectInReference obj = new ObjectInReference(x, Pose.makeRotation(quat));
+					obj.recalculatePosition(referenceToWorld);
+					labels.add(obj);
+				});
 			}
 		});
 		search_button.setEnabled(false);
 
 		// load the selected graph
 		graph = (ARGraph) getIntent().getSerializableExtra("Graph");
+		if(graph == null) graph = new ARGraph();
 
 		arFragment = (CustomArFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
 		arFragment.getArSceneView().getScene().addOnUpdateListener(this::onUpdateFrame);
@@ -169,6 +208,10 @@ public class NavigationActivity extends AppCompatActivity {
 						for(ObjectInReference obj : pathBalls) {
 							obj.recalculatePosition(referenceToWorld);
 						}
+					}
+
+					for(ObjectInReference obj : labels) {
+						obj.recalculatePosition(referenceToWorld);
 					}
 					search_button.setEnabled(true);
 				}

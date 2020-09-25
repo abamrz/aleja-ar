@@ -263,6 +263,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 		regenerateScene = true;*/
 
 		graph = (ARGraph) Utility.loadObject(this, "schlabber");
+		if(graph == null) graph = new ARGraph();
 		regenerateScene = true;
 	}
 
