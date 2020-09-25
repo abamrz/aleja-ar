@@ -95,7 +95,7 @@ public class Node implements Serializable {
     }
 
     public static enum NodeType {
-        WAYPOINT, KITCHEN, EXIT, COFFEE, OFFICE, ELEVATOR;
+        WAYPOINT, KITCHEN, EXIT, COFFEE, OFFICE, ELEVATOR, TOILETTE, FIRE_EXTINGUISHER;
     }
 
 }

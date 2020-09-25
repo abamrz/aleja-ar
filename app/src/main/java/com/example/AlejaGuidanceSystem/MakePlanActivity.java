@@ -72,6 +72,8 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 	private PoseAveraginator referenceToWorldAveraginator = new PoseAveraginator(200);
 
+	private final String GRAPHNAME = "schlabber2";
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -203,9 +205,9 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			input.setInputType(InputType.TYPE_CLASS_TEXT);
 			layout.addView(input);
 
-			String[] typeStrings = {"Waypoint", "Kitchen", "Exit", "Coffee", "Office", "Elevator"};
+			String[] typeStrings = {"Waypoint", "Kitchen", "Exit", "Coffee", "Office", "Elevator", "Toilette", "Fire Extinguisher"};
 			Node.NodeType[] types = {Node.NodeType.WAYPOINT, Node.NodeType.KITCHEN, Node.NodeType.EXIT, Node.NodeType.COFFEE,
-					Node.NodeType.OFFICE, Node.NodeType.ELEVATOR};
+					Node.NodeType.OFFICE, Node.NodeType.ELEVATOR, Node.NodeType.TOILETTE, Node.NodeType.FIRE_EXTINGUISHER};
 
 			final ArrayAdapter<String> adp = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, typeStrings);
 
@@ -230,7 +232,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 
 		findViewById(R.id.saveButton).setOnClickListener(v -> {
-			Utility.saveObject(this, "schlabber", graph);
+			Utility.saveObject(this, GRAPHNAME, graph);
 		});
 
 		findViewById(R.id.deleteButton).setOnClickListener(v -> {
@@ -262,8 +264,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 		}
 		regenerateScene = true;*/
 
-		graph = (ARGraph) Utility.loadObject(this, "schlabber");
-		if(graph == null) graph = new ARGraph();
+		graph = (ARGraph) Utility.loadObject(this, GRAPHNAME);
 		regenerateScene = true;
 	}
 
