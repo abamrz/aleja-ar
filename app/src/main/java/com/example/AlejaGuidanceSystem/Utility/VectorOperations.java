@@ -6,6 +6,7 @@ import com.google.ar.core.Pose;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
+import com.google.ar.schemas.lull.Quat;
 
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
@@ -200,6 +201,10 @@ public class VectorOperations {
 	public static class TransformationResult {
 		public SimpleMatrix R;
 		public SimpleMatrix t;
+
+		public SimpleMatrix applyTo(SimpleMatrix v3) {
+			return R.mult(v3).plus(t);
+		}
 	}
 
 	public static TransformationResult findGoodTransformation(List<SimpleMatrix> xi, List<SimpleMatrix> pi) {
@@ -260,5 +265,27 @@ public class VectorOperations {
 		return xy.elementMult(z).elementSum() > 0 ? false : true;
 	}
 
+
+	public static Pose poseFromTransformationResult(TransformationResult tr) {
+		float[] translation = new float[] { (float)tr.t.get(0), (float)tr.t.get(1), (float)tr.t.get(2)  };
+
+		SimpleMatrix forward = vec3(0, 0, -1);
+		SimpleMatrix up = vec3(0, 1, 0);
+
+		float[] forward1 = v3matTo3f(tr.R.mult(forward));
+		float[] up1 = v3matTo3f(tr.R.mult(up));
+
+		Quaternion quat = Quaternion.lookRotation(vectorFromArray(forward1), vectorFromArray(up1));
+//		Vector3 a = Quaternion.rotateVector(quat, Vector3.up());
+//		Log.d("Trans2Test", a.toString() + " " + Arrays.toString(up1));
+//		Vector3 b = Quaternion.rotateVector(quat, Vector3.forward());
+//		Log.d("Trans2Test", a.toString() + " " + Arrays.toString(forward1));
+		float[] quatArray = new float[] { quat.x, quat.y, quat.z, quat.w };
+		return Pose.makeTranslation(translation).compose(Pose.makeRotation(quatArray));
+	}
+
+	public static float[] v3matTo3f(SimpleMatrix v3) {
+		return new float[] { (float)v3.get(0), (float)v3.get(1), (float)v3.get(2) };
+	}
 
 }

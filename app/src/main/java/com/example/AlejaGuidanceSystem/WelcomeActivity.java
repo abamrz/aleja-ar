@@ -3,6 +3,7 @@ package com.example.AlejaGuidanceSystem;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
@@ -10,9 +11,15 @@ import android.widget.Button;
 import androidx.annotation.NonNull;
 
 import com.example.AlejaGuidanceSystem.Utility.Utility;
+import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
 import com.example.AlejaGuidanceSystem.graph.ARGraph;
 import com.example.AlejaGuidanceSystem.graph.Node;
+import com.google.ar.core.Pose;
+
+import org.ejml.simple.SimpleMatrix;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class WelcomeActivity extends Activity {
 
@@ -28,6 +35,25 @@ public class WelcomeActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
+
+        /*ArrayList<SimpleMatrix> a = new ArrayList<SimpleMatrix>();
+        a.add(VectorOperations.vec3(1, 0, 0));
+        a.add(VectorOperations.vec3(0, 3, 0));
+        a.add(VectorOperations.vec3(0, 0, 2));
+
+        ArrayList<SimpleMatrix> b = new ArrayList<SimpleMatrix>();
+        b.add(VectorOperations.vec3(1, 0, 0));
+        b.add(VectorOperations.vec3(0, 4, 1));
+        b.add(VectorOperations.vec3(0, 0, 3));
+
+        VectorOperations.TransformationResult tr = VectorOperations.findGoodTransformation(a, b);
+        Pose pose = VectorOperations.poseFromTransformationResult(tr);
+
+        float[] pos1 = pose.transformPoint(new float[] { 0, 0, 3});
+        float[] pos2 = VectorOperations.v3matTo3f(tr.applyTo(VectorOperations.vec3(0, 0, 3)));
+
+        Log.d("TransTest", Arrays.toString(pos1) + " " + Arrays.toString(pos2));*/
+
 
         make_plan_button = findViewById(R.id.make_plan_button);
         use_existing_button = findViewById(R.id.use_existing_plan_button);
