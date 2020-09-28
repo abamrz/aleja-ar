@@ -109,6 +109,7 @@ public class NavigationActivity extends AppCompatActivity {
 				input.setInputType(InputType.TYPE_CLASS_TEXT);
 				input.setTextColor(android.graphics.Color.WHITE);
 				input.setBackgroundColor(android.graphics.Color.BLACK);
+				//input.setShadowLayer(10, 0, 0, android.graphics.Color.BLACK);
 
 				CompletableFuture<ViewRenderable>
 						future = ViewRenderable

@@ -7,6 +7,9 @@ import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 
+import org.ejml.simple.SimpleMatrix;
+import org.ejml.simple.SimpleSVD;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -124,5 +127,138 @@ public class VectorOperations {
 
 		return new float[]{x, y, z, w};
 	}
+
+
+	public static float[] quatFromMatrix3f(SimpleMatrix m) {
+		assert(!isReflectionMatrix(m));
+
+		return quatFromMatrix3f(
+				(float) m.get(0, 0),
+				(float) m.get(0, 1),
+				(float) m.get(0, 2),
+				(float) m.get(1, 0),
+				(float) m.get(1, 1),
+				(float) m.get(1, 2),
+				(float) m.get(2, 0),
+				(float) m.get(2, 1),
+				(float) m.get(2, 2)
+		);
+	}
+
+	private static float[] quatFromMatrix3f(float m00, float m01, float m02, float m10, float m11,
+										   float m12, float m20, float m21, float m22) {
+		// Use the Graphics Gems code, from
+		// ftp://ftp.cis.upenn.edu/pub/graphics/shoemake/quatut.ps.Z
+		// *NOT* the "Matrix and Quaternions FAQ", which has errors!
+
+		// the trace is the sum of the diagonal elements; see
+		// http://mathworld.wolfram.com/MatrixTrace.html
+		float t = m00 + m11 + m22;
+		float x,y,z,w;
+
+		// we protect the division by s by ensuring that s>=1
+		if (t >= 0) { // |w| >= .5
+			float s = (float)Math.sqrt(t + 1); // |s|>=1 ...
+			w = 0.5f * s;
+			s = 0.5f / s; // so this division isn't bad
+			x = (m21 - m12) * s;
+			y = (m02 - m20) * s;
+			z = (m10 - m01) * s;
+		} else if ((m00 > m11) && (m00 > m22)) {
+			float s = (float)Math.sqrt(1.0f + m00 - m11 - m22); // |s|>=1
+			x = s * 0.5f; // |x| >= .5
+			s = 0.5f / s;
+			y = (m10 + m01) * s;
+			z = (m02 + m20) * s;
+			w = (m21 - m12) * s;
+		} else if (m11 > m22) {
+			float s = (float)Math.sqrt(1.0f + m11 - m00 - m22); // |s|>=1
+			y = s * 0.5f; // |y| >= .5
+			s = 0.5f / s;
+			x = (m10 + m01) * s;
+			z = (m21 + m12) * s;
+			w = (m02 - m20) * s;
+		} else {
+			float s = (float)Math.sqrt(1.0f + m22 - m00 - m11); // |s|>=1
+			z = s * 0.5f; // |z| >= .5
+			s = 0.5f / s;
+			x = (m02 + m20) * s;
+			y = (m21 + m12) * s;
+			w = (m10 - m01) * s;
+		}
+		return new float[]{x,y,z,w};
+	}
+
+	public static SimpleMatrix vec3(double x, double y, double z) {
+		SimpleMatrix sm = new SimpleMatrix(3, 1);
+		sm.set(0, x);
+		sm.set(1, y);
+		sm.set(2, z);
+		return sm;
+	}
+
+	public static class TransformationResult {
+		public SimpleMatrix R;
+		public SimpleMatrix t;
+	}
+
+	public static TransformationResult findGoodTransformation(List<SimpleMatrix> xi, List<SimpleMatrix> pi) {
+		assert(xi.size() == pi.size());
+
+		SimpleMatrix ux = new SimpleMatrix(3, 1);
+		SimpleMatrix up = new SimpleMatrix(3, 1);
+
+		for(int i = 0; i < xi.size(); i++) {
+			ux = ux.plus(xi.get(i));
+			up = up.plus(pi.get(i));
+		}
+
+		ux = ux.divide((double)xi.size());
+		up = up.divide((double)xi.size());
+
+		SimpleMatrix sum = new SimpleMatrix(3, 3);
+		for(int i = 0; i < pi.size(); i++) {
+			SimpleMatrix xiv = xi.get(i).minus(ux);
+			SimpleMatrix piv = pi.get(i).minus(up);
+			sum = sum.plus(xiv.mult(piv.transpose()));
+		}
+
+		SimpleSVD<SimpleMatrix> svd = sum.svd();
+		System.out.println(Arrays.toString(svd.getSingularValues()));
+		SimpleMatrix R = svd.getU().mult(svd.getV().transpose());
+		SimpleMatrix t = ux.minus(R.mult(up));
+
+		TransformationResult tr = new TransformationResult();
+		tr.R = R;
+		tr.t = t;
+		return tr;
+	}
+
+	public static SimpleMatrix crossProduct(SimpleMatrix a, SimpleMatrix b) {
+		double ax = a.get(0);
+		double ay = a.get(1);
+		double az = a.get(2);
+
+		double bx = b.get(0);
+		double by = b.get(1);
+		double bz = b.get(2);
+
+		return vec3(
+				ay * bz - az * by,
+				az * bx - ax * bz,
+				ax * by - ay * bx
+		);
+	}
+
+	public static boolean isReflectionMatrix(SimpleMatrix m) {
+		SimpleMatrix x = m.extractVector(false, 0);
+		SimpleMatrix y = m.extractVector(false, 1);
+		SimpleMatrix z = m.extractVector(false, 2);
+
+		SimpleMatrix xy = crossProduct(x, y);
+
+		return xy.elementMult(z).elementSum() > 0 ? false : true;
+	}
+
 
 }
