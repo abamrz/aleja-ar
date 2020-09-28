@@ -104,7 +104,7 @@ public class NavigationActivity extends AppCompatActivity {
 		return_button = (ImageButton) findViewById(R.id.return_button);
 		search_button = (ImageButton) findViewById(R.id.search_button);
 
-		search_button.setEnabled(false);
+		//search_button.setEnabled(false);
 
 		return_button.setOnClickListener(new View.OnClickListener(){
 			@Override
@@ -171,6 +171,7 @@ public class NavigationActivity extends AppCompatActivity {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle(R.string.search_title);
 		AutoCompleteTextView searchView = new AutoCompleteTextView(this);
+		searchView.setThreshold(1);
 		searchView.setAdapter(searchAdapter);
 		builder.setView(searchView);
 		builder.setPositiveButton("Go", null);
@@ -206,8 +207,8 @@ public class NavigationActivity extends AppCompatActivity {
 							showPath(cameraPosition, sinks);
 							searchDialog.dismiss();
 						} else {
-							int current = searchView.getCurrentTextColor();
-							searchView.setTextColor(android.graphics.Color.rgb(255,0,0));
+							int current = searchView.getShadowColor();
+							searchView.setBackgroundColor(android.graphics.Color.argb(50, 255,0,0));
 							new Thread(new Runnable() {
 								@Override
 								public void run() {
@@ -216,7 +217,7 @@ public class NavigationActivity extends AppCompatActivity {
 									} catch (InterruptedException e) {
 										e.printStackTrace();
 									}
-									searchView.setTextColor(current);
+									searchView.setBackgroundColor(current);
 								}
 							}).start();
 						}

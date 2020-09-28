@@ -91,7 +91,7 @@ public class Node implements Serializable {
     public void setLabel(String label) {
         if (allLabels.contains(label)) {
             int count = Collections.frequency(allLabels, label);
-            label = String.format("%s (%03d)", label, count + 1);
+            label = String.format("%s (%02d)", label, count + 1);
         }
         allLabels.add(label);
         this.label = label;
