@@ -5,6 +5,9 @@ import androidx.annotation.Nullable;
 
 import java.io.Serializable;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 public class Node implements Serializable {
 
@@ -14,19 +17,27 @@ public class Node implements Serializable {
     private String label;
     private String description;
 
+    public static final Map<NodeType, String> typeStrings = new HashMap();
+
 
     public Node(double x, double y, double z, String id) {
         this.x = x;
         this.y = y;
         this.z = z;
         this.id = id;
+
+        typeStrings.put(NodeType.WAYPOINT, "Waypoint");
+        typeStrings.put(NodeType.KITCHEN, "Kitchen");
+        typeStrings.put(NodeType.EXIT, "Exit");
+        typeStrings.put(NodeType.COFFEE, "Coffee");
+        typeStrings.put(NodeType.OFFICE, "Office");
+        typeStrings.put(NodeType.ELEVATOR, "Elevator");
+        typeStrings.put(NodeType.TOILETTE, "Toilette");
+        typeStrings.put(NodeType.FIRE_EXTINGUISHER, "Fire Extinguisher");
     }
 
     public Node(float[] v, String id) {
-        this.x = v[0];
-        this.y = v[1];
-        this.z = v[2];
-        this.id = id;
+        this(v[0], v[1], v[2], id);
     }
 
 

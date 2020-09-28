@@ -83,11 +83,11 @@ public class NavigationActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_navigation);
 
 
-		Node a = new Node (0, 0, 0, "a");
-		Node b = new Node (1, 0,0, "b");
+		Node a = new Node (1, 0, 0, "a");
+		Node b = new Node (0, 0,0, "b");
 		a.setType(Node.NodeType.OFFICE);
-		b.setType(Node.NodeType.OFFICE);
-
+		b.setType(Node.NodeType.COFFEE);
+		a.setDescription("Linux Installation Instructions");
 
 
 
@@ -121,6 +121,8 @@ public class NavigationActivity extends AppCompatActivity {
 		//graph = (ARGraph) getIntent().getSerializableExtra("Graph");
 
 		if(graph == null) graph = new ARGraph();
+		graph.addVertex(a);
+		graph.addVertex(b);
 		graph.addEdge(a,b);
 
 		arFragment = (CustomArFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
@@ -166,7 +168,6 @@ public class NavigationActivity extends AppCompatActivity {
 	/**
 	 * listener-method, called every time the camera frame is updated
 	 */
-	@RequiresApi(api = Build.VERSION_CODES.N)
 	private void onUpdateFrame(FrameTime frameTime) {
 		// finding the current fragment of the scene
 		Session session = arFragment.getArSceneView().getSession();
@@ -252,9 +253,7 @@ public class NavigationActivity extends AppCompatActivity {
 	private void showLabels(ARGraph graph){
 
 		for (Node node: graph.vertexSet()){
-			if (node.getType() == Node.NodeType.OFFICE){
-				createOfficeLabel(node);
-			}
+			createTypeLabel(node);
 		}
 
 		/*
@@ -288,16 +287,16 @@ public class NavigationActivity extends AppCompatActivity {
 		linearLayout.setOrientation(LinearLayout.VERTICAL);
 
 		final TextView title = new TextView(NavigationActivity. this);
-		title.setText("Büro: "+node.getLabel());
+		title.setText(Node.typeStrings.get(node.getType()) + (node.getLabel() != null ? (": " + node.getLabel()) : ""));
 		title.setInputType(InputType.TYPE_CLASS_TEXT);
 		title.setTextColor(android.graphics.Color.WHITE);
-		title.setBackgroundColor(android.graphics.Color.BLUE);
+		title.setBackgroundColor(android.graphics.Color.argb(160,0,0,255));
 
 		final TextView description = new TextView(NavigationActivity. this);
 		description.setText(node.getDescription());
 		description.setInputType(InputType.TYPE_CLASS_TEXT);
 		description.setTextColor(android.graphics.Color.WHITE);
-		description.setBackgroundColor(android.graphics.Color.BLUE);
+		description.setBackgroundColor(android.graphics.Color.argb(160,0,0,255));
 
 		linearLayout.addView(title);
 		linearLayout.addView(description);
@@ -319,7 +318,68 @@ public class NavigationActivity extends AppCompatActivity {
 
 
 			float[] quat = VectorOperations.createQuaternionFromAxisAngle(1, 0, 0, -(float)Math.PI / 2.0f);
-			ObjectInReference obj = new ObjectInReference(anchorNode, Pose.makeRotation(quat));
+			Pose pose = Pose.makeTranslation(node.getPositionF()).compose(Pose.makeRotation(quat));
+			ObjectInReference obj = new ObjectInReference(anchorNode, pose);
+			obj.recalculatePosition(referenceToWorld);
+			labels.add(obj);
+		});
+	}
+
+	private void createTypeLabel(Node node) {
+		if(node.getType() == Node.NodeType.WAYPOINT) {
+			// TODO: green spheres
+			return;
+		}
+		else if(node.getType() == Node.NodeType.OFFICE) {
+			createOfficeLabel(node);
+			return;
+		}
+
+		final TextView popUpInfo = new TextView(NavigationActivity. this);
+		popUpInfo.setText(Node.typeStrings.get(node.getType()) + (node.getLabel() != null ? (": " + node.getLabel()) : ""));
+		popUpInfo.setInputType(InputType.TYPE_CLASS_TEXT);
+		popUpInfo.setTextColor(android.graphics.Color.WHITE);
+
+		// TODO: fitting colors
+
+		if(node.getType() == Node.NodeType.KITCHEN) {
+			popUpInfo.setBackgroundColor(android.graphics.Color.argb(128,255,0,0));
+		}
+		else if(node.getType() == Node.NodeType.EXIT) {
+			popUpInfo.setBackgroundColor(android.graphics.Color.GREEN);
+		}
+		else if(node.getType() == Node.NodeType.COFFEE) {
+			popUpInfo.setBackgroundColor(android.graphics.Color.argb(128,151,91,59));
+		}
+		else if(node.getType() == Node.NodeType.ELEVATOR) {
+			popUpInfo.setBackgroundColor(android.graphics.Color.RED);
+		}
+		else if(node.getType() == Node.NodeType.TOILETTE) {
+			popUpInfo.setBackgroundColor(android.graphics.Color.RED);
+		}
+		else if(node.getType() == Node.NodeType.FIRE_EXTINGUISHER) {
+			popUpInfo.setBackgroundColor(android.graphics.Color.RED);
+		}
+
+		CompletableFuture<ViewRenderable>
+				future = ViewRenderable
+				.builder()
+				.setView((Context) NavigationActivity.this, popUpInfo)
+				.build();
+		future.thenAccept(viewRenderable -> {
+
+			viewRenderable.setHorizontalAlignment(ViewRenderable.HorizontalAlignment.CENTER);
+			viewRenderable.setVerticalAlignment(ViewRenderable.VerticalAlignment.CENTER);
+			viewRenderable.setSizer( new DpToMetersViewSizer(550) );
+
+			AnchorNode anchorNode = new AnchorNode();
+			anchorNode.setRenderable(viewRenderable);
+			arFragment.getArSceneView().getScene().addChild(anchorNode);
+
+
+			float[] quat = VectorOperations.createQuaternionFromAxisAngle(1, 0, 0, -(float)Math.PI / 2.0f);
+			Pose pose = Pose.makeTranslation(node.getPositionF()).compose(Pose.makeRotation(quat));
+			ObjectInReference obj = new ObjectInReference(anchorNode, pose);
 			obj.recalculatePosition(referenceToWorld);
 			labels.add(obj);
 		});
