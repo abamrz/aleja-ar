@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
@@ -81,6 +82,15 @@ public class NavigationActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_navigation);
 
+
+		Node a = new Node (0, 0, 0, "a");
+		Node b = new Node (1, 0,0, "b");
+		a.setType(Node.NodeType.OFFICE);
+		b.setType(Node.NodeType.OFFICE);
+
+
+
+
 		//initialize the buttons
 		return_button = (ImageButton) findViewById(R.id.return_button);
 		search_button = (ImageButton) findViewById(R.id.search_button);
@@ -98,45 +108,20 @@ public class NavigationActivity extends AppCompatActivity {
 
 				GraphicsUtility.removeMyBalls(arFragment.getArSceneView().getScene(), pathBalls);
 
-				/*Optional<Node> sink = graph.vertexSet().stream().max((v1, v2) ->
+				Optional<Node> sink = graph.vertexSet().stream().max((v1, v2) ->
 						VectorOperations.v3length(v1.getPositionF()) < VectorOperations.v3length(v2.getPositionF()) ? -1 : 1
 				);
 
-				showPath(cameraPosition, sink.get());*/
-
-				final TextView input = new TextView(NavigationActivity. this);
-				input.setText("Des is a bayrisches Label!");
-				input.setInputType(InputType.TYPE_CLASS_TEXT);
-				input.setTextColor(android.graphics.Color.WHITE);
-				input.setBackgroundColor(android.graphics.Color.BLACK);
-
-				CompletableFuture<ViewRenderable>
-						future = ViewRenderable
-						.builder()
-						.setView((Context) NavigationActivity.this, input)
-						.build();
-				future.thenAccept(viewRenderable -> {
-
-					viewRenderable.setHorizontalAlignment(ViewRenderable.HorizontalAlignment.CENTER);
-					viewRenderable.setVerticalAlignment(ViewRenderable.VerticalAlignment.CENTER);
-					viewRenderable.setSizer( new DpToMetersViewSizer(550) );
-
-					AnchorNode x = new AnchorNode();
-					x.setRenderable(viewRenderable);
-					arFragment.getArSceneView().getScene().addChild(x);
-
-					float[] quat = VectorOperations.createQuaternionFromAxisAngle(1, 0, 0, -(float)Math.PI / 2.0f);
-					ObjectInReference obj = new ObjectInReference(x, Pose.makeRotation(quat));
-					obj.recalculatePosition(referenceToWorld);
-					labels.add(obj);
-				});
+				showPath(cameraPosition, sink.get());
 			}
 		});
 		search_button.setEnabled(false);
 
 		// load the selected graph
-		graph = (ARGraph) getIntent().getSerializableExtra("Graph");
+		//graph = (ARGraph) getIntent().getSerializableExtra("Graph");
+
 		if(graph == null) graph = new ARGraph();
+		graph.addEdge(a,b);
 
 		arFragment = (CustomArFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
 		arFragment.getArSceneView().getScene().addOnUpdateListener(this::onUpdateFrame);
@@ -245,6 +230,7 @@ public class NavigationActivity extends AppCompatActivity {
 		graphCopy.addEdge(user, edgeTarget);
 		graphCopy.removeEdge(closestEdge);
 
+		// setting edge weights
 		for(DefaultWeightedEdge e : graphCopy.edgeSet()) {
 			float[] sourcePos = graphCopy.getEdgeSource(e).getPositionF();
 			float[] targetPos = graphCopy.getEdgeTarget(e).getPositionF();
@@ -258,6 +244,85 @@ public class NavigationActivity extends AppCompatActivity {
 
 		// creating a visible path on the screen
 		createMyBalls(path, graphCopy);
+		showLabels(graphCopy);
+	}
+
+
+
+	private void showLabels(ARGraph graph){
+
+		for (Node node: graph.vertexSet()){
+			if (node.getType() == Node.NodeType.OFFICE){
+				createOfficeLabel(node);
+			}
+		}
+
+		/*
+		Pose nodePose = Pose.makeTranslation(positionInReference);
+
+		AnchorNode anchorNode = new AnchorNode();
+		anchorNode.setRenderable(renderable);
+		scene.addChild(anchorNode);
+
+		ObjectInReference obj = new ObjectInReference(anchorNode, nodePose);
+		obj.recalculatePosition(referenceToWorld);
+		myBalls.add(obj);
+
+
+		AnchorNode anchorNode = new AnchorNode();
+		anchorNode.setRenderable(renderable);
+		scene.addChild(anchorNode);
+
+		 */
+
+
+
+
+	}
+
+
+// creates office label from node
+	private void createOfficeLabel(Node node){
+
+		LinearLayout linearLayout = new LinearLayout(this);
+		linearLayout.setOrientation(LinearLayout.VERTICAL);
+
+		final TextView title = new TextView(NavigationActivity. this);
+		title.setText("Büro: "+node.getLabel());
+		title.setInputType(InputType.TYPE_CLASS_TEXT);
+		title.setTextColor(android.graphics.Color.WHITE);
+		title.setBackgroundColor(android.graphics.Color.BLUE);
+
+		final TextView description = new TextView(NavigationActivity. this);
+		description.setText(node.getDescription());
+		description.setInputType(InputType.TYPE_CLASS_TEXT);
+		description.setTextColor(android.graphics.Color.WHITE);
+		description.setBackgroundColor(android.graphics.Color.BLUE);
+
+		linearLayout.addView(title);
+		linearLayout.addView(description);
+
+		CompletableFuture<ViewRenderable>
+				future = ViewRenderable
+				.builder()
+				.setView((Context) NavigationActivity.this, linearLayout)
+				.build();
+		future.thenAccept(viewRenderable -> {
+
+			viewRenderable.setHorizontalAlignment(ViewRenderable.HorizontalAlignment.CENTER);
+			viewRenderable.setVerticalAlignment(ViewRenderable.VerticalAlignment.CENTER);
+			viewRenderable.setSizer( new DpToMetersViewSizer(550) );
+
+			AnchorNode anchorNode = new AnchorNode();
+			anchorNode.setRenderable(viewRenderable);
+			arFragment.getArSceneView().getScene().addChild(anchorNode);
+
+
+			float[] quat = VectorOperations.createQuaternionFromAxisAngle(1, 0, 0, -(float)Math.PI / 2.0f);
+			ObjectInReference obj = new ObjectInReference(anchorNode, Pose.makeRotation(quat));
+			obj.recalculatePosition(referenceToWorld);
+			labels.add(obj);
+		});
 	}
 
 	/**
@@ -270,7 +335,7 @@ public class NavigationActivity extends AppCompatActivity {
 	private void createMyBalls(List<DefaultWeightedEdge> edges, Graph<Node, DefaultWeightedEdge> graph) {
 		// large green balls for every node
 		for(Node node : extractNodes(edges, graph)) {
-			this.createBallInReference(node.getPositionF(), pathBalls, lgsr);
+			//this.createBallInReference(node.getPositionF(), pathBalls, lgsr);
 			Log.d("MyTest", String.format("%s: %.2f %.2f %.2f", node.getId(), node.getX(), node.getY(), node.getZ() ));
 			// "nice nice nice"
 			//

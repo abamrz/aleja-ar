@@ -12,6 +12,7 @@ public class Node implements Serializable {
     private String id;
     private NodeType type = NodeType.WAYPOINT;
     private String label;
+    private String description;
 
 
     public Node(double x, double y, double z, String id) {
@@ -79,6 +80,14 @@ public class Node implements Serializable {
 
     public void setLabel(String label) {
         this.label = label;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
