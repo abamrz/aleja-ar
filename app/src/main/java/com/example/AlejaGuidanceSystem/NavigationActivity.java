@@ -4,16 +4,15 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
-import android.text.InputType;
 import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.TextView;
 
 import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
 import com.example.AlejaGuidanceSystem.Utility.ObjectInReference;
@@ -30,24 +29,23 @@ import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.FrameTime;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.Color;
-import com.google.ar.sceneform.rendering.DpToMetersViewSizer;
 import com.google.ar.sceneform.rendering.MaterialFactory;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.Renderable;
 import com.google.ar.sceneform.rendering.ShapeFactory;
-import com.google.ar.sceneform.rendering.ViewRenderable;
-import com.google.ar.sceneform.rendering.ViewSizer;
 
 import org.jgrapht.Graph;
+import org.jgrapht.GraphPath;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.alg.DijkstraShortestPath;
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+
+import static java.lang.Thread.*;
 
 
 public class NavigationActivity extends AppCompatActivity {
@@ -67,7 +65,7 @@ public class NavigationActivity extends AppCompatActivity {
 	private ModelRenderable lgsr;
 
 	private Pose referenceToWorld = Pose.IDENTITY;
-	private ArrayList<ObjectInReference> pathBalls;
+	private ArrayList<ObjectInReference> pathBalls = new ArrayList<>();;
 	private float[] cameraPosition;
 
 	private ArrayList<ObjectInReference> labels = new ArrayList<>();
@@ -80,60 +78,6 @@ public class NavigationActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_navigation);
-
-		//initialize the buttons
-		return_button = (ImageButton) findViewById(R.id.return_button);
-		search_button = (ImageButton) findViewById(R.id.search_button);
-		return_button.setOnClickListener(new View.OnClickListener(){
-			@Override
-			public void onClick(View view){
-				finish();
-			}
-		});
-		search_button.setOnClickListener(new View.OnClickListener(){
-			@Override
-			public void onClick(View view){
-				//TODO: Search functionality
-				//showSearchDialog();
-
-				GraphicsUtility.removeMyBalls(arFragment.getArSceneView().getScene(), pathBalls);
-
-				/*Optional<Node> sink = graph.vertexSet().stream().max((v1, v2) ->
-						VectorOperations.v3length(v1.getPositionF()) < VectorOperations.v3length(v2.getPositionF()) ? -1 : 1
-				);
-
-				showPath(cameraPosition, sink.get());*/
-
-				final TextView input = new TextView(NavigationActivity. this);
-				input.setText("Des is a bayrisches Label!");
-				input.setInputType(InputType.TYPE_CLASS_TEXT);
-				input.setTextColor(android.graphics.Color.WHITE);
-				input.setBackgroundColor(android.graphics.Color.BLACK);
-				//input.setShadowLayer(10, 0, 0, android.graphics.Color.BLACK);
-
-				CompletableFuture<ViewRenderable>
-						future = ViewRenderable
-						.builder()
-						.setView((Context) NavigationActivity.this, input)
-						.build();
-				future.thenAccept(viewRenderable -> {
-
-					viewRenderable.setHorizontalAlignment(ViewRenderable.HorizontalAlignment.CENTER);
-					viewRenderable.setVerticalAlignment(ViewRenderable.VerticalAlignment.CENTER);
-					viewRenderable.setSizer( new DpToMetersViewSizer(550) );
-
-					AnchorNode x = new AnchorNode();
-					x.setRenderable(viewRenderable);
-					arFragment.getArSceneView().getScene().addChild(x);
-
-					float[] quat = VectorOperations.createQuaternionFromAxisAngle(1, 0, 0, -(float)Math.PI / 2.0f);
-					ObjectInReference obj = new ObjectInReference(x, Pose.makeRotation(quat));
-					obj.recalculatePosition(referenceToWorld);
-					labels.add(obj);
-				});
-			}
-		});
-		search_button.setEnabled(false);
 
 		// load the selected graph
 		graph = (ARGraph) getIntent().getSerializableExtra("Graph");
@@ -156,27 +100,131 @@ public class NavigationActivity extends AppCompatActivity {
 						material -> lgsr = ShapeFactory.makeSphere(0.02f, new Vector3(0.0f, 0.0f, 0.0f), material)
 				);
 
-		pathBalls = new ArrayList<>();
-	}
+		//initialize the buttons
+		return_button = (ImageButton) findViewById(R.id.return_button);
+		search_button = (ImageButton) findViewById(R.id.search_button);
 
-	private void showSearchDialog(){
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle(R.string.search_title);
-		builder.setPositiveButton("Go", new DialogInterface.OnClickListener() {
+		search_button.setEnabled(false);
+
+		return_button.setOnClickListener(new View.OnClickListener(){
 			@Override
-			public void onClick(DialogInterface dialogInterface, int i) {
-				//TODO: Start navigation to destination
+			public void onClick(View view){
+				finish();
 			}
 		});
+		search_button.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View view){
+				//Get allowed Search strings
+				ArrayList<String> types = new ArrayList<String>(Arrays.asList(
+						graph.vertexSet().stream()
+								.filter((node) -> !node.getType().equals(Node.NodeType.WAYPOINT))
+								.map((node) -> node.getType().toStringInContext(getApplicationContext()))
+								.distinct().toArray(String[]::new)));
+				ArrayList<String> labels = new ArrayList<String>( Arrays.asList(
+						graph.vertexSet().stream()
+							.filter((node) -> !node.getType().equals(Node.NodeType.WAYPOINT))
+							.map((node) -> node.getLabel()).toArray(String[]::new)));
+
+				showSearchDialog(types, labels);
+
+//			final TextView input = new TextView(NavigationActivity. this);
+//			input.setText("Des is a bayrisches Label!");
+//			input.setInputType(InputType.TYPE_CLASS_TEXT);
+//			input.setTextColor(android.graphics.Color.WHITE);
+//			input.setBackgroundColor(android.graphics.Color.BLACK);
+//
+//			CompletableFuture<ViewRenderable>
+//					future = ViewRenderable
+//					.builder()
+//					.setView((Context) NavigationActivity.this, input)
+//					.build();
+//			future.thenAccept(viewRenderable -> {
+//
+//				viewRenderable.setHorizontalAlignment(ViewRenderable.HorizontalAlignment.CENTER);
+//				viewRenderable.setVerticalAlignment(ViewRenderable.VerticalAlignment.CENTER);
+//				viewRenderable.setSizer( new DpToMetersViewSizer(550) );
+//
+//				AnchorNode x = new AnchorNode();
+//				x.setRenderable(viewRenderable);
+//				arFragment.getArSceneView().getScene().addChild(x);
+//
+//				float[] quat = VectorOperations.createQuaternionFromAxisAngle(1, 0, 0, -(float)Math.PI / 2.0f);
+//				ObjectInReference obj = new ObjectInReference(x, Pose.makeRotation(quat));
+//				obj.recalculatePosition(referenceToWorld);
+//				labels.add(obj);
+			}
+		});
+	}
+
+	/**
+	 * Builds a alert dialog with search functionality, to start navigation
+	 * @param types: all possible types of targets to navigate to
+	 * @param labels: all possible labels of targets to navigate to
+	 */
+	private void showSearchDialog(ArrayList<String> types, ArrayList<String> labels){
+		ArrayAdapter<String> searchAdapter = new ArrayAdapter<String>(this,
+				android.R.layout.simple_dropdown_item_1line);
+		searchAdapter.addAll(types);
+		searchAdapter.addAll(labels);
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle(R.string.search_title);
+		AutoCompleteTextView searchView = new AutoCompleteTextView(this);
+		searchView.setAdapter(searchAdapter);
+		builder.setView(searchView);
+		builder.setPositiveButton("Go", null);
 		builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int i) {
 				dialog.cancel();
 			}
 		});
+		AlertDialog searchDialog = builder.create();
 
-		AlertDialog search_dialog = builder.create();
-		search_dialog.show();
+		searchDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+			@Override
+			public void onShow(DialogInterface dialogInterface) {
+				Button button = ((AlertDialog) searchDialog).getButton(AlertDialog.BUTTON_POSITIVE);
+				button.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View view) {
+						GraphicsUtility.removeMyBalls(arFragment.getArSceneView().getScene(), pathBalls);
+
+						//Start navigation to destination
+						String target = searchView.getText().toString();
+						if (types.contains(target)) {
+							Node[] sinks = (Node[]) graph.vertexSet().stream()
+									.filter((node) -> node.getType().toStringInContext(getApplicationContext()).equals(target))
+									.toArray();
+							showPath(cameraPosition, sinks);
+							searchDialog.dismiss();
+						} else if (labels.contains(target)){
+							Node[] sinks = (Node[]) graph.vertexSet().stream()
+									.filter((node) -> node.getLabel().equals(target)).toArray();
+							showPath(cameraPosition, sinks);
+							searchDialog.dismiss();
+						} else {
+							int current = searchView.getCurrentTextColor();
+							searchView.setTextColor(android.graphics.Color.rgb(255,0,0));
+							new Thread(new Runnable() {
+								@Override
+								public void run() {
+									try {
+										sleep(1000);
+									} catch (InterruptedException e) {
+										e.printStackTrace();
+									}
+									searchView.setTextColor(current);
+								}
+							}).start();
+						}
+					}
+				});
+			}
+		});
+		searchDialog.show();
 	}
 
 	/**
@@ -198,12 +246,8 @@ public class NavigationActivity extends AppCompatActivity {
 					Log.d("Navigation", "Image 'ar_pattern' was detected.");
 
 					Pose trackableToWorld = image.getCenterPose();
-					Pose trackableToReference = Pose.makeTranslation(0, 0, 0);
-
-					Pose currentReferenceToWorld = trackableToWorld.compose(trackableToReference.inverse());
-					referenceToWorld = referenceToWorldAveraginator.add(currentReferenceToWorld);
-
-
+					Pose trackableToReference = Pose.makeTranslation(0, 0.1f, 0);
+					referenceToWorld = trackableToWorld.compose(trackableToReference.inverse());
 					if(pathBalls != null) {
 						Log.d("MyVectorTest", "updateBallPosition " + pathBalls.size());
 						for(ObjectInReference obj : pathBalls) {
@@ -226,13 +270,12 @@ public class NavigationActivity extends AppCompatActivity {
 		}
 	}
 
-
 	/**
 	 * Displays a path shortest path to a destination on the screen
 	 * @param startPos current (camera-)position of the user
-	 * @param sink the destination-node
+	 * @param sinks the destination-nodes as a array
 	 */
-	private void showPath(float[] startPos, Node sink) {
+	private void showPath(float[] startPos, Node[] sinks) {
 		// creating a copy of the graph to freely add and remove nodes and edges
 		ARGraph graphCopy = new ARGraph(graph);
 		// adding the current position of the user as a node to the copied graph
@@ -255,10 +298,21 @@ public class NavigationActivity extends AppCompatActivity {
 		}
 
 		// List of edges on the shortest path from user to destination
-		List<DefaultWeightedEdge> path = DijkstraShortestPath.findPathBetween(graphCopy, user, sink);
+		if (sinks != null && sinks.length > 0){
+			DijkstraShortestPath dijkstraShortestPath;
+			GraphPath shortestPath = null;
+			double smallestWeight = Double.POSITIVE_INFINITY;
 
-		// creating a visible path on the screen
-		createMyBalls(path, graphCopy);
+			for (Node sink : sinks){
+				dijkstraShortestPath = new DijkstraShortestPath(graphCopy, user, sink);
+				if (dijkstraShortestPath.getPathLength() < smallestWeight) {
+					smallestWeight = dijkstraShortestPath.getPathLength();
+					shortestPath = dijkstraShortestPath.getPath();
+				}
+			}
+			// creating a visible path on the screen
+			createMyBalls(shortestPath.getEdgeList(), graphCopy);
+		}
 	}
 
 	/**

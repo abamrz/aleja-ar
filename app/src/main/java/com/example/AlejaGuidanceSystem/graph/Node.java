@@ -1,9 +1,19 @@
 package com.example.AlejaGuidanceSystem.graph;
 
 
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.res.Resources;
+import android.provider.Settings;
+
 import androidx.annotation.Nullable;
 
+import com.example.AlejaGuidanceSystem.R;
+
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 
 public class Node implements Serializable {
@@ -12,6 +22,7 @@ public class Node implements Serializable {
     private String id;
     private NodeType type = NodeType.WAYPOINT;
     private String label;
+    private static ArrayList<String> allLabels = new ArrayList<>();
 
 
     public Node(double x, double y, double z, String id) {
@@ -78,6 +89,11 @@ public class Node implements Serializable {
     }
 
     public void setLabel(String label) {
+        if (allLabels.contains(label)) {
+            int count = Collections.frequency(allLabels, label);
+            label = String.format("%s (%03d)", label, count + 1);
+        }
+        allLabels.add(label);
         this.label = label;
     }
 
@@ -95,7 +111,27 @@ public class Node implements Serializable {
     }
 
     public static enum NodeType {
-        WAYPOINT, KITCHEN, EXIT, COFFEE, OFFICE, ELEVATOR, TOILETTE, FIRE_EXTINGUISHER;
-    }
+        WAYPOINT, KITCHEN, EXIT, COFFEE, OFFICE, ELEVATOR, TOILETTE,  FIRE_EXTINGUISHER;
 
+        public String toStringInContext(Context context) {
+            switch (this) {
+                case KITCHEN:
+                    return context.getString(R.string.kitchen);
+                case EXIT:
+                    return context.getString(R.string.exit);
+                case COFFEE:
+                    return context.getString(R.string.coffee);
+                case OFFICE:
+                    return context.getString(R.string.office);
+                case ELEVATOR:
+                    return context.getString(R.string.elevator);
+                case TOILETTE:
+                    return context.getString(R.string.toilette);
+                case FIRE_EXTINGUISHER:
+                    return context.getString(R.string.fire_extinguisher);
+                default:
+                    return "No matching String found";
+            }
+        }
+    }
 }

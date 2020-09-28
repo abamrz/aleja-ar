@@ -89,7 +89,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:backgroundTint="#00FFFFFF"
-        android:text="@string/exit" />
+        android:text="@string/exit_button" />
 
     <RelativeLayout
         android:layout_width="match_parent"
