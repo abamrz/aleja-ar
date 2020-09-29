@@ -43,6 +43,7 @@ import com.google.ar.sceneform.rendering.ShapeFactory;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -239,13 +240,14 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 
 		findViewById(R.id.saveButton).setOnClickListener(v -> {
-			Utility.saveObject(this, GRAPHNAME, graph);
+			Utility.saveObject(this, GRAPHNAME, new ARGraphWithGrip(graph, new ArrayList(gripMap.values())));
 		});
 
 		findViewById(R.id.deleteButton).setOnClickListener(v -> {
 			graph = new ARGraph();
 			regenerateScene = true;
-			arFragment.getArSceneView().getScene().removeChild(nearestPosNode);
+			if(nearestPosNode != null)
+				arFragment.getArSceneView().getScene().removeChild(nearestPosNode);
 			nearestPosNode = null;
 		});
 
@@ -284,11 +286,11 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 	 */
 	public void setupDatabase(Config config, Session session) {
 		// test image
-		Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ar_pattern);
+		Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ar_pattern1);
 
 		AugmentedImageDatabase aid = new AugmentedImageDatabase(session);
 		// adding Augmented Images to Database
-		aid.addImage("ar_pattern", bitmap, 0.2f);
+		aid.addImage("ar_pattern1", bitmap, 0.2f);
 
 		config.setAugmentedImageDatabase(aid);
 	}
@@ -311,7 +313,12 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 		// checking all detected images for one of the reference pictures
 		for (AugmentedImage image : images) {
 			if (image.getTrackingState() == TrackingState.TRACKING && image.getTrackingMethod() == AugmentedImage.TrackingMethod.FULL_TRACKING) {
-				gripMap.put(image.getName(), new ARGraphWithGrip.StrongGrip(image.getCenterPose().getTranslation(), image.getCenterPose().getRotationQuaternion()));
+				ARGraphWithGrip.StrongGrip grip  = new ARGraphWithGrip.StrongGrip(
+						image.getName(),
+						image.getCenterPose().getTranslation(),
+						image.getCenterPose().getRotationQuaternion()
+				);
+				gripMap.put(image.getName(), grip);
 			}
 		}
 
@@ -326,9 +333,14 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 			int sceneformChildren = arFragment.getArSceneView().getScene().getChildren().size();
 			int numAnchors = session.getAllAnchors().size();
+			int numGrips = gripMap.size();
 
+			String x = "";
+			for(ARGraphWithGrip.WeakGrip grip : gripMap.values()) {
+				x += Arrays.toString(grip.gripPosition) + ", ";
+			}
 
-			String logString = String.format(Locale.GERMAN, "Camera position %.3f %.3f %.3f %d %d", cameraPosition[0], cameraPosition[1], cameraPosition[2], sceneformChildren, numAnchors);
+			String logString = String.format(Locale.GERMAN, "Camera position %.3f %.3f %.3f\n%d\n%d\nNum Grips: %d %s", cameraPosition[0], cameraPosition[1], cameraPosition[2], sceneformChildren, numAnchors, numGrips, x);
 			Log.d("MyApp2", logString);
 
 			TextView myAwesomeTextView = (TextView) findViewById(R.id.textView);

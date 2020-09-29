@@ -5,13 +5,101 @@
         <shape android:shape="rectangle">
             <solid android:color="@android:color/transparent" />
         </shape>
+
+        <layer-list>
+
+        </layer-list>
     </item>
 
     <item android:state_enabled="true"
-        android:state_activated="false"
-        android:drawable="@android:drawable/ic_menu_search" />
+        android:state_pressed="true"
+        android:state_activated="false">
+        <layer-list>
+            xmlns:android="http://schemas.android.com/apk/res/android" >
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:endColor="@android:color/background_dark"
+                        android:gradientRadius="30dp"
+                        android:type="radial"
+                        android:startColor="@android:color/darker_gray" />
+                    <corners android:radius="3dp" />
+                    <stroke
+                        android:width="0.5dp"
+                        android:color="@android:color/black" />
+                </shape>
+            </item>
+            <item android:drawable="@android:drawable/ic_menu_search" android:right="0px">
+            </item>
+        </layer-list>
+    </item>
 
     <item android:state_enabled="true"
-        android:state_activated="true"
-        android:drawable="@android:drawable/ic_delete" />
+        android:state_pressed="false"
+        android:state_activated="false">
+        <layer-list>
+            xmlns:android="http://schemas.android.com/apk/res/android" >
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:endColor="#333333"
+                        android:gradientRadius="30dp"
+                        android:type="radial"
+                        android:startColor="@android:color/darker_gray" />
+                    <corners android:radius="3dp" />
+                    <stroke
+                        android:width="0.5dp"
+                        android:color="@android:color/black" />
+                </shape>
+            </item>
+            <item android:drawable="@android:drawable/ic_menu_search" android:right="0px">
+            </item>
+        </layer-list>
+    </item>
+
+    <item android:state_enabled="true"
+        android:state_pressed="true"
+        android:state_activated="true">
+        <layer-list>
+            xmlns:android="http://schemas.android.com/apk/res/android" >
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:endColor="@android:color/background_dark"
+                        android:gradientRadius="30dp"
+                        android:type="radial"
+                        android:startColor="@android:color/darker_gray" />
+                    <corners android:radius="3dp" />
+                    <stroke
+                        android:width="0.5dp"
+                        android:color="@android:color/black" />
+                </shape>
+            </item>
+            <item android:drawable="@android:drawable/ic_menu_close_clear_cancel" android:right="0px">
+            </item>
+        </layer-list>
+    </item>
+
+    <item android:state_enabled="true"
+        android:state_pressed="false"
+        android:state_activated="true">
+        <layer-list>
+            xmlns:android="http://schemas.android.com/apk/res/android" >
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:endColor="#333333"
+                        android:gradientRadius="30dp"
+                        android:type="radial"
+                        android:startColor="@android:color/darker_gray" />
+                    <corners android:radius="3dp" />
+                    <stroke
+                        android:width="0.5dp"
+                        android:color="@android:color/black" />
+                </shape>
+            </item>
+            <item android:drawable="@android:drawable/ic_menu_close_clear_cancel" android:right="0px">
+            </item>
+        </layer-list>
+    </item>
 </selector>
