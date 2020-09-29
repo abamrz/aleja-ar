@@ -5,17 +5,28 @@ import java.util.List;
 
 public class ARGraphWithGrip {
 
-    public static class Grip {
-        public String gripId;
+    public static class WeakGrip {
         public float[] gripPosition;
 
-        public Grip(String gripId, float[] gripPosition) {
-            this.gripId = gripId;
+        public WeakGrip(float[] gripPosition) {
             this.gripPosition = gripPosition;
         }
     }
 
-    private List<Grip> grips = new ArrayList<>();
+    /**
+     * This is an anchor which also provides direction information (up, forward, right)
+     */
+    public static class StrongGrip extends WeakGrip {
+
+        public float[] rotationQuaternion;
+
+        public StrongGrip(float[] gripPosition, float[] rotationQuaternion) {
+            super(gripPosition);
+            this.rotationQuaternion = rotationQuaternion;
+        }
+    }
+
+    private List<WeakGrip> grips = new ArrayList<>();
     private ARGraph graph = new ARGraph();
 
     private ARGraphWithGrip() {
