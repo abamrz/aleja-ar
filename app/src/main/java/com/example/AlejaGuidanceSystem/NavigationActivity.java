@@ -14,6 +14,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
+import com.example.AlejaGuidanceSystem.Utility.LabelView;
 import com.example.AlejaGuidanceSystem.Utility.ObjectInReference;
 import com.example.AlejaGuidanceSystem.Utility.PoseAveraginator;
 import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
@@ -68,6 +69,7 @@ public class NavigationActivity extends AppCompatActivity {
 	private float[] cameraPosition;
 
 	private ArrayList<ObjectInReference> labels = new ArrayList<>();
+	private ArrayList<LabelView> labelViews = new ArrayList<>();
 
 
 	private PoseAveraginator referenceToWorldAveraginator = new PoseAveraginator(200);
@@ -196,46 +198,23 @@ public class NavigationActivity extends AppCompatActivity {
 
 					for(ObjectInReference obj : labels) {
 						obj.recalculatePosition(referenceToWorld);
+
+						showLabels(graph);
+
 					}
 					search_button.setEnabled(true);
 				}
 			}
 		}
 
-		showLabels(graph);
-
 		if (referenceToWorld != null) {
 			Pose cameraToWorld = frame.getCamera().getPose();
 			Pose cameraToReference = referenceToWorld.inverse().compose(cameraToWorld);
 			cameraPosition = cameraToReference.transformPoint(new float[]{0.0f, 0.0f, 0.0f});
 
+			updateLabelOrientation();
 
-
-			//update anchorNodes! :) mit folgendem Link.. irgendwie..
-			//https://creativetech.blog/home/ui-elements-for-arcore-renderable
-
-
-			// calculate current rotation for labels
-			for (ObjectInReference label: labels){
-
-				// ist das die richtige Position?
-				float[] labelPosition = label.getPoseInReference().getTranslation();
-
-				Pose translation = label.getPoseInReference().extractTranslation();
-
-				Vector3 labelPosition3 = new Vector3(labelPosition[0], labelPosition[1], labelPosition[2]);
-				Vector3 cameraPosition3 = new Vector3(cameraPosition[0], cameraPosition[1], cameraPosition[2]);
-
-				Vector3 direction3 = labelPosition3.subtract(cameraPosition3, labelPosition3);
-				//direction3.z=0.0f;
-
-				Quaternion lookRotation = Quaternion.lookRotation(direction3,new Vector3(0,0,-1));
-				Pose rotation = Pose.makeRotation(lookRotation.x, lookRotation.y, lookRotation.z, lookRotation.w);
-
-
-				label.setPoseInReference(translation.compose(rotation));
-				label.recalculatePosition(referenceToWorld);
-			}
+			updateLabelVisibility();
 		}
 	}
 
@@ -276,120 +255,83 @@ public class NavigationActivity extends AppCompatActivity {
 	}
 
 
-
+// creates LabelView objects and adds as anchors to scene
 	private void showLabels(ARGraph graph){
 		for (Node node: graph.vertexSet()){
-			createTypeLabel(node);
+
+			LabelView labelView = new LabelView(this, node);
+
+			CompletableFuture<ViewRenderable>
+					future = ViewRenderable
+					.builder()
+					.setView((Context) NavigationActivity.this, labelView.getLayoutView())
+					.build();
+			future.thenAccept(viewRenderable -> {
+
+				viewRenderable.setHorizontalAlignment(ViewRenderable.HorizontalAlignment.CENTER);
+				viewRenderable.setVerticalAlignment(ViewRenderable.VerticalAlignment.CENTER);
+				viewRenderable.setSizer( new DpToMetersViewSizer(550) );
+
+				AnchorNode anchorNode = new AnchorNode();
+				anchorNode.setRenderable(viewRenderable);
+				arFragment.getArSceneView().getScene().addChild(anchorNode);
+
+
+				float[] quat = VectorOperations.createQuaternionFromAxisAngle(1, 0, 0, -(float)Math.PI / 2.0f);
+				Pose pose = Pose.makeTranslation(node.getPositionF()).compose(Pose.makeRotation(quat));
+				ObjectInReference objectInReference = new ObjectInReference(anchorNode, pose);
+				objectInReference.recalculatePosition(referenceToWorld);
+				labels.add(objectInReference);
+
+				labelView.setObjectInReference(objectInReference);
+				labelViews.add(labelView);
+			});
 		}
 	}
 
+	private void updateLabelOrientation(){
+		//update anchorNodes! :) mit folgendem Link
+		//https://creativetech.blog/home/ui-elements-for-arcore-renderable
 
 
-// creates office label from node
-	private void createOfficeLabel(Node node){
+		// calculate current rotation for labels
+		for (ObjectInReference label : labels) {
+			float[] labelPosition = label.getPoseInReference().getTranslation();
 
-		LinearLayout linearLayout = new LinearLayout(this);
-		linearLayout.setOrientation(LinearLayout.VERTICAL);
+			Pose translation = label.getPoseInReference().extractTranslation();
 
-		final TextView title = new TextView(NavigationActivity. this);
-		title.setText(Node.typeStrings.get(node.getType()) + (node.getLabel() != null ? (": " + node.getLabel()) : ""));
-		title.setInputType(InputType.TYPE_CLASS_TEXT);
-		title.setTextColor(android.graphics.Color.WHITE);
-		title.setBackgroundColor(android.graphics.Color.argb(160,0,0,255));
+			Vector3 labelPosition3 = new Vector3(labelPosition[0], labelPosition[1], labelPosition[2]);
+			Vector3 cameraPosition3 = new Vector3(cameraPosition[0], cameraPosition[1], cameraPosition[2]);
 
-		final TextView description = new TextView(NavigationActivity. this);
-		description.setText(node.getDescription());
-		description.setInputType(InputType.TYPE_CLASS_TEXT);
-		description.setTextColor(android.graphics.Color.WHITE);
-		description.setBackgroundColor(android.graphics.Color.argb(160,0,0,255));
+			Vector3 direction3 = labelPosition3.subtract(cameraPosition3, labelPosition3);
+			//direction3.z=0.0f;
 
-		linearLayout.addView(title);
-		linearLayout.addView(description);
+			Quaternion lookRotation = Quaternion.lookRotation(direction3, new Vector3(0, 0, -1));
+			Pose rotation = Pose.makeRotation(lookRotation.x, lookRotation.y, lookRotation.z, lookRotation.w);
 
-		CompletableFuture<ViewRenderable>
-				future = ViewRenderable
-				.builder()
-				.setView((Context) NavigationActivity.this, linearLayout)
-				.build();
-		future.thenAccept(viewRenderable -> {
+			label.setPoseInReference(translation.compose(rotation));
+			label.recalculatePosition(referenceToWorld);
+		}
 
-			viewRenderable.setHorizontalAlignment(ViewRenderable.HorizontalAlignment.CENTER);
-			viewRenderable.setVerticalAlignment(ViewRenderable.VerticalAlignment.CENTER);
-			viewRenderable.setSizer( new DpToMetersViewSizer(550) );
-
-			AnchorNode anchorNode = new AnchorNode();
-			anchorNode.setRenderable(viewRenderable);
-			arFragment.getArSceneView().getScene().addChild(anchorNode);
-
-
-			float[] quat = VectorOperations.createQuaternionFromAxisAngle(1, 0, 0, -(float)Math.PI / 2.0f);
-			Pose pose = Pose.makeTranslation(node.getPositionF()).compose(Pose.makeRotation(quat));
-			ObjectInReference obj = new ObjectInReference(anchorNode, pose);
-			obj.recalculatePosition(referenceToWorld);
-			labels.add(obj);
-		});
 	}
 
-	private void createTypeLabel(Node node) {
-		if(node.getType() == Node.NodeType.WAYPOINT) {
-			// TODO: green spheres
-			return;
+	private void updateLabelVisibility(){
+		for (LabelView label: labelViews){
+			if (inRadius(label, 2)){
+				label.setVisibiliy(1);
+			}
+			else label.setVisibiliy(0);
 		}
-		else if(node.getType() == Node.NodeType.OFFICE) {
-			createOfficeLabel(node);
-			return;
+	}
+
+	// check if label in Radius
+	private boolean inRadius(LabelView labelView, int radius){
+		Pose position = labelView.getObjectInReference().getPoseInReference().extractTranslation();
+
+		if (position.tx() <= cameraPosition[0]+radius || position.ty() <= cameraPosition[1]+radius || position.tz() <= cameraPosition[2]+radius){
+			return true;
 		}
-
-		final TextView popUpInfo = new TextView(NavigationActivity. this);
-		String labelText = node.getLabel();
-		popUpInfo.setText(Node.typeStrings.get(node.getType()) + (labelText != null && !labelText.equals("") ? (": " + labelText) : ""));
-		popUpInfo.setInputType(InputType.TYPE_CLASS_TEXT);
-		popUpInfo.setTextColor(android.graphics.Color.WHITE);
-
-		// TODO: fitting colors
-
-		if(node.getType() == Node.NodeType.KITCHEN) {
-			popUpInfo.setBackgroundColor(android.graphics.Color.argb(160,9,109,81));
-		}
-		else if(node.getType() == Node.NodeType.EXIT) {
-			popUpInfo.setBackgroundColor(android.graphics.Color.GREEN);
-		}
-		else if(node.getType() == Node.NodeType.COFFEE) {
-			popUpInfo.setBackgroundColor(android.graphics.Color.argb(160,151,91,59));
-		}
-		else if(node.getType() == Node.NodeType.ELEVATOR) {
-			popUpInfo.setBackgroundColor(android.graphics.Color.argb(160,194,197,204));
-		}
-		else if(node.getType() == Node.NodeType.TOILETTE) {
-			popUpInfo.setTextColor(android.graphics.Color.BLACK);
-			popUpInfo.setBackgroundColor(android.graphics.Color.WHITE);
-		}
-		else if(node.getType() == Node.NodeType.FIRE_EXTINGUISHER) {
-			popUpInfo.setBackgroundColor(android.graphics.Color.RED);
-		}
-
-		CompletableFuture<ViewRenderable>
-				future = ViewRenderable
-				.builder()
-				.setView((Context) NavigationActivity.this, popUpInfo)
-				.build();
-		future.thenAccept(viewRenderable -> {
-
-			viewRenderable.setHorizontalAlignment(ViewRenderable.HorizontalAlignment.CENTER);
-			viewRenderable.setVerticalAlignment(ViewRenderable.VerticalAlignment.CENTER);
-			viewRenderable.setSizer( new DpToMetersViewSizer(550) );
-
-			AnchorNode anchorNode = new AnchorNode();
-			anchorNode.setRenderable(viewRenderable);
-			arFragment.getArSceneView().getScene().addChild(anchorNode);
-
-
-			float[] quat = VectorOperations.createQuaternionFromAxisAngle(1, 0, 0, -(float)Math.PI / 2.0f);
-			Pose pose = Pose.makeTranslation(node.getPositionF()).compose(Pose.makeRotation(quat));
-			ObjectInReference obj = new ObjectInReference(anchorNode, pose);
-			obj.recalculatePosition(referenceToWorld);
-			labels.add(obj);
-		});
+		else return false;
 	}
 
 	/**
