@@ -1,17 +1,14 @@
 package com.example.AlejaGuidanceSystem;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -38,12 +35,10 @@ import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.Renderable;
 import com.google.ar.sceneform.rendering.ShapeFactory;
 import com.google.ar.sceneform.rendering.ViewRenderable;
-import com.google.ar.sceneform.rendering.ViewSizer;
 
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.alg.DijkstraShortestPath;
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -217,22 +212,25 @@ public class NavigationActivity extends AppCompatActivity {
 
 
 			// calculate current rotation for labels
-			for (ObjectInReference object: labels){
+			for (ObjectInReference label: labels){
 
 				// ist das die richtige Position?
-				float[] objectPosition = object.getPoseInReference().getTranslation();
+				float[] labelPosition = label.getPoseInReference().getTranslation();
 
-				Vector3 objectPosition3 = new Vector3(objectPosition[0], objectPosition[1], objectPosition[2]);
+				Pose translation = label.getPoseInReference().extractTranslation();
+
+				Vector3 labelPosition3 = new Vector3(labelPosition[0], labelPosition[1], labelPosition[2]);
 				Vector3 cameraPosition3 = new Vector3(cameraPosition[0], cameraPosition[1], cameraPosition[2]);
 
-				Vector3 direction3 = objectPosition3.subtract(cameraPosition3, objectPosition3);
-				direction3.y=0.0f;
+				Vector3 direction3 = labelPosition3.subtract(cameraPosition3, labelPosition3);
+				//direction3.y=0.0f;
 
-				Quaternion lookRotation = Quaternion.lookRotation(direction3, objectPosition3.up());
+				Quaternion lookRotation = Quaternion.lookRotation(direction3, labelPosition3.up());
 				Pose rotation = Pose.makeRotation(lookRotation.x, lookRotation.y, lookRotation.z, lookRotation.w);
 
 
-				object.recalculatePosition(rotation);
+				label.setPoseInReference(translation.compose(rotation));
+				label.recalculatePosition(referenceToWorld);
 			}
 		}
 	}
