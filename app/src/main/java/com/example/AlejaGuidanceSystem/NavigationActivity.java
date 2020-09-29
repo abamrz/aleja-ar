@@ -17,6 +17,7 @@ import android.widget.ImageButton;
 import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
 import com.example.AlejaGuidanceSystem.Utility.ObjectInReference;
 import com.example.AlejaGuidanceSystem.Utility.PoseAveraginator;
+import com.example.AlejaGuidanceSystem.Utility.Utility;
 import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
 import com.example.AlejaGuidanceSystem.Graph.ARGraph;
 import com.example.AlejaGuidanceSystem.Graph.Node;
@@ -66,6 +67,7 @@ public class NavigationActivity extends AppCompatActivity {
 	private Pose referenceToWorld = Pose.IDENTITY;
 	private ArrayList<ObjectInReference> pathBalls = new ArrayList<>();;
 	private float[] cameraPosition;
+	private float[] sinkPos = new float[]{0.0f, 0.0f, 0.0f};
 
 	private ArrayList<ObjectInReference> labels = new ArrayList<>();
 
@@ -275,6 +277,11 @@ public class NavigationActivity extends AppCompatActivity {
 			Pose cameraToReference = referenceToWorld.inverse().compose(cameraToWorld);
 			cameraPosition = cameraToReference.transformPoint(new float[]{0.0f, 0.0f, 0.0f});
 		}
+
+		//end navigation when goal is reached
+		if (search_button.isActivated() && VectorOperations.v3dist(cameraPosition, sinkPos) < 0.5f) {
+			endNavigation();
+		}
 	}
 
 	/**
@@ -315,6 +322,7 @@ public class NavigationActivity extends AppCompatActivity {
 				if (dijkstraShortestPath.getPathLength() < smallestWeight) {
 					smallestWeight = dijkstraShortestPath.getPathLength();
 					shortestPath = dijkstraShortestPath.getPath();
+					sinkPos = sink.getPositionF();
 				}
 			}
 			// creating a visible path on the screen
