@@ -29,6 +29,7 @@ import com.google.ar.core.Session;
 import com.google.ar.core.TrackingState;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.FrameTime;
+import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.Color;
 import com.google.ar.sceneform.rendering.DpToMetersViewSizer;
@@ -208,6 +209,31 @@ public class NavigationActivity extends AppCompatActivity {
 			Pose cameraToWorld = frame.getCamera().getPose();
 			Pose cameraToReference = referenceToWorld.inverse().compose(cameraToWorld);
 			cameraPosition = cameraToReference.transformPoint(new float[]{0.0f, 0.0f, 0.0f});
+
+
+
+			//update anchorNodes! :) mit folgendem Link.. irgendwie..
+			//https://creativetech.blog/home/ui-elements-for-arcore-renderable
+
+
+			// calculate current rotation for labels
+			for (ObjectInReference object: labels){
+
+				// ist das die richtige Position?
+				float[] objectPosition = object.getPoseInReference().getTranslation();
+
+				Vector3 objectPosition3 = new Vector3(objectPosition[0], objectPosition[1], objectPosition[2]);
+				Vector3 cameraPosition3 = new Vector3(cameraPosition[0], cameraPosition[1], cameraPosition[2]);
+
+				Vector3 direction3 = objectPosition3.subtract(cameraPosition3, objectPosition3);
+				direction3.y=0.0f;
+
+				Quaternion lookRotation = Quaternion.lookRotation(direction3, objectPosition3.up());
+				Pose rotation = Pose.makeRotation(lookRotation.x, lookRotation.y, lookRotation.z, lookRotation.w);
+
+
+				object.recalculatePosition(rotation);
+			}
 		}
 	}
 
@@ -278,6 +304,8 @@ public class NavigationActivity extends AppCompatActivity {
 
 
 	}
+
+	private
 
 
 // creates office label from node
