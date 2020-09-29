@@ -115,8 +115,10 @@ public class NavigationActivity extends AppCompatActivity {
 
 		// load the selected graph
 		//graph = (ARGraph) getIntent().getSerializableExtra("Graph");
-
 		if(graph == null) graph = new ARGraph();
+
+		Log.d("NaviTest", "Graph nodes: " + graph.vertexSet().size());
+
 		graph.addVertex(a);
 		graph.addVertex(b);
 		graph.addEdge(a,b);
@@ -200,6 +202,8 @@ public class NavigationActivity extends AppCompatActivity {
 			}
 		}
 
+		showLabels(graph);
+
 		if (referenceToWorld != null) {
 			Pose cameraToWorld = frame.getCamera().getPose();
 			Pose cameraToReference = referenceToWorld.inverse().compose(cameraToWorld);
@@ -223,9 +227,9 @@ public class NavigationActivity extends AppCompatActivity {
 				Vector3 cameraPosition3 = new Vector3(cameraPosition[0], cameraPosition[1], cameraPosition[2]);
 
 				Vector3 direction3 = labelPosition3.subtract(cameraPosition3, labelPosition3);
-				//direction3.y=0.0f;
+				//direction3.z=0.0f;
 
-				Quaternion lookRotation = Quaternion.lookRotation(direction3, labelPosition3.up());
+				Quaternion lookRotation = Quaternion.lookRotation(direction3,new Vector3(0,0,-1));
 				Pose rotation = Pose.makeRotation(lookRotation.x, lookRotation.y, lookRotation.z, lookRotation.w);
 
 
@@ -269,41 +273,16 @@ public class NavigationActivity extends AppCompatActivity {
 
 		// creating a visible path on the screen
 		createMyBalls(path, graphCopy);
-		showLabels(graphCopy);
 	}
 
 
 
 	private void showLabels(ARGraph graph){
-
 		for (Node node: graph.vertexSet()){
 			createTypeLabel(node);
 		}
-
-		/*
-		Pose nodePose = Pose.makeTranslation(positionInReference);
-
-		AnchorNode anchorNode = new AnchorNode();
-		anchorNode.setRenderable(renderable);
-		scene.addChild(anchorNode);
-
-		ObjectInReference obj = new ObjectInReference(anchorNode, nodePose);
-		obj.recalculatePosition(referenceToWorld);
-		myBalls.add(obj);
-
-
-		AnchorNode anchorNode = new AnchorNode();
-		anchorNode.setRenderable(renderable);
-		scene.addChild(anchorNode);
-
-		 */
-
-
-
-
 	}
 
-	private
 
 
 // creates office label from node
@@ -362,26 +341,28 @@ public class NavigationActivity extends AppCompatActivity {
 		}
 
 		final TextView popUpInfo = new TextView(NavigationActivity. this);
-		popUpInfo.setText(Node.typeStrings.get(node.getType()) + (node.getLabel() != null ? (": " + node.getLabel()) : ""));
+		String labelText = node.getLabel();
+		popUpInfo.setText(Node.typeStrings.get(node.getType()) + (labelText != null && !labelText.equals("") ? (": " + labelText) : ""));
 		popUpInfo.setInputType(InputType.TYPE_CLASS_TEXT);
 		popUpInfo.setTextColor(android.graphics.Color.WHITE);
 
 		// TODO: fitting colors
 
 		if(node.getType() == Node.NodeType.KITCHEN) {
-			popUpInfo.setBackgroundColor(android.graphics.Color.argb(128,255,0,0));
+			popUpInfo.setBackgroundColor(android.graphics.Color.argb(160,9,109,81));
 		}
 		else if(node.getType() == Node.NodeType.EXIT) {
 			popUpInfo.setBackgroundColor(android.graphics.Color.GREEN);
 		}
 		else if(node.getType() == Node.NodeType.COFFEE) {
-			popUpInfo.setBackgroundColor(android.graphics.Color.argb(128,151,91,59));
+			popUpInfo.setBackgroundColor(android.graphics.Color.argb(160,151,91,59));
 		}
 		else if(node.getType() == Node.NodeType.ELEVATOR) {
-			popUpInfo.setBackgroundColor(android.graphics.Color.RED);
+			popUpInfo.setBackgroundColor(android.graphics.Color.argb(160,194,197,204));
 		}
 		else if(node.getType() == Node.NodeType.TOILETTE) {
-			popUpInfo.setBackgroundColor(android.graphics.Color.RED);
+			popUpInfo.setTextColor(android.graphics.Color.BLACK);
+			popUpInfo.setBackgroundColor(android.graphics.Color.WHITE);
 		}
 		else if(node.getType() == Node.NodeType.FIRE_EXTINGUISHER) {
 			popUpInfo.setBackgroundColor(android.graphics.Color.RED);
@@ -421,7 +402,9 @@ public class NavigationActivity extends AppCompatActivity {
 	private void createMyBalls(List<DefaultWeightedEdge> edges, Graph<Node, DefaultWeightedEdge> graph) {
 		// large green balls for every node
 		for(Node node : extractNodes(edges, graph)) {
-			//this.createBallInReference(node.getPositionF(), pathBalls, lgsr);
+			if(node.getType() == Node.NodeType.WAYPOINT) {
+				createBallInReference(node.getPositionF(), pathBalls, lgsr);
+			}
 			Log.d("MyTest", String.format("%s: %.2f %.2f %.2f", node.getId(), node.getX(), node.getY(), node.getZ() ));
 			// "nice nice nice"
 			//

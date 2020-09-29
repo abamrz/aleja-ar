@@ -1,6 +1,7 @@
 package com.example.AlejaGuidanceSystem;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.TypedArrayUtils;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -46,6 +47,7 @@ import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;
 
 import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -72,7 +74,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 	private PoseAveraginator referenceToWorldAveraginator = new PoseAveraginator(200);
 
-	private final String GRAPHNAME = "schlabber2";
+	private static final String GRAPHNAME = "schlabber";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -205,15 +207,20 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			input.setInputType(InputType.TYPE_CLASS_TEXT);
 			layout.addView(input);
 
-			String[] typeStrings = {"Waypoint", "Kitchen", "Exit", "Coffee", "Office", "Elevator", "Toilette", "Fire Extinguisher"};
+			/*String[] typeStrings = {"Waypoint", "Kitchen", "Exit", "Coffee", "Office", "Elevator", "Toilette", "Fire Extinguisher"};
 			Node.NodeType[] types = {Node.NodeType.WAYPOINT, Node.NodeType.KITCHEN, Node.NodeType.EXIT, Node.NodeType.COFFEE,
-					Node.NodeType.OFFICE, Node.NodeType.ELEVATOR, Node.NodeType.TOILETTE, Node.NodeType.FIRE_EXTINGUISHER};
+					Node.NodeType.OFFICE, Node.NodeType.ELEVATOR, Node.NodeType.TOILETTE, Node.NodeType.FIRE_EXTINGUISHER};*/
+			Node.NodeType[] types = Node.typeStrings.keySet().toArray(new Node.NodeType[0]);
+			String[] typeStrings = Node.typeStrings.values().toArray(new String[0]);
 
 			final ArrayAdapter<String> adp = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, typeStrings);
 
 			final Spinner derSpinner = new Spinner(context);
 			derSpinner.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 			derSpinner.setAdapter(adp);
+			int typeIndex = Utility.indexOf(types, closest.getType());
+			if(typeIndex != -1)
+				derSpinner.setSelection(typeIndex);
 			layout.addView(derSpinner);
 
 			builder.setView(layout);
@@ -238,8 +245,10 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 		findViewById(R.id.deleteButton).setOnClickListener(v -> {
 			graph = new ARGraph();
 			regenerateScene = true;
-			arFragment.getArSceneView().getScene().removeChild(nearestPosNode);
-			nearestPosNode = null;
+			if(nearestPosNode != null) {
+				arFragment.getArSceneView().getScene().removeChild(nearestPosNode);
+				nearestPosNode = null;
+			}
 		});
 
 		pathBalls = new ArrayList<>();
@@ -258,14 +267,13 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 						material -> lbsr = ShapeFactory.makeSphere(0.02f, new Vector3(0.0f, 0.0f, 0.0f), material)
 				);
 
-		/*graph =  (ARGraph) Utility.loadObject(this, "schlabber");
-		if(graph == null) {
-			graph = new ARGraph();
-		}
-		regenerateScene = true;*/
-
 		graph = (ARGraph) Utility.loadObject(this, GRAPHNAME);
+		if(graph == null) graph = new ARGraph();
 		regenerateScene = true;
+	}
+
+	public static String getGraphName() {
+		return GRAPHNAME;
 	}
 
 
@@ -366,7 +374,8 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			int numAnchors = session.getAllAnchors().size();
 
 
-			String logString = String.format(Locale.GERMAN, "Camera position %.3f %.3f %.3f %d %d", cameraPosition[0], cameraPosition[1], cameraPosition[2], sceneformChildren, numAnchors);
+			// String logString = String.format(Locale.GERMAN, "Camera position %.3f %.3f %.3f %d %d", cameraPosition[0], cameraPosition[1], cameraPosition[2], sceneformChildren, numAnchors);
+			String logString = String.format(Locale.GERMAN, "Camera position %.3f %.3f %.3f", cameraPosition[0], cameraPosition[1], cameraPosition[2]);
 			Log.d("MyApp2", logString);
 
 			TextView myAwesomeTextView = (TextView) findViewById(R.id.textView);

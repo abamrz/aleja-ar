@@ -30,7 +30,7 @@ public class CustomArFragment extends ArFragment {
 	private void setupDatabase(Config config, Session session) {
 		// test image
 		Bitmap bitmap1 = BitmapFactory.decodeResource(getResources(), R.drawable.ar_pattern);
-		Bitmap bitmap2 = BitmapFactory.decodeResource(getResources(), R.drawable.dr_christian_rehn);
+		// Bitmap bitmap2 = BitmapFactory.decodeResource(getResources(), R.drawable.dr_christian_rehn);
 
 		AugmentedImageDatabase aid = new AugmentedImageDatabase(session);
 		// adding Augmented Images to Database

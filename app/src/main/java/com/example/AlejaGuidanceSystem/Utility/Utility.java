@@ -46,7 +46,6 @@ public class Utility {
      *
      * @param context: Context of the current Activity
      * @param id: The key to load the desired object
-     * @param obj: The object reference to load the saved content
      */
     public static Object loadObject(Context context, String id){
         ObjectInput ois;
@@ -64,4 +63,12 @@ public class Utility {
         return obj;
     }
 
+
+    public  static int indexOf(Object[] arr, Object elem) {
+        for(int i=0; i<arr.length; i++) {
+            if(elem.equals(arr[i]))
+                return i;
+        }
+        return -1;
+    }
 }
