@@ -6,9 +6,10 @@ import java.util.List;
 public class ARGraphWithGrip {
 
     public static class WeakGrip {
+        public String gripId;
         public float[] gripPosition;
 
-        public WeakGrip(float[] gripPosition) {
+        public WeakGrip(String gripId, float[] gripPosition) {
             this.gripPosition = gripPosition;
         }
     }
@@ -20,8 +21,8 @@ public class ARGraphWithGrip {
 
         public float[] rotationQuaternion;
 
-        public StrongGrip(float[] gripPosition, float[] rotationQuaternion) {
-            super(gripPosition);
+        public StrongGrip(String gripId, float[] gripPosition, float[] rotationQuaternion) {
+            super(gripId, gripPosition);
             this.rotationQuaternion = rotationQuaternion;
         }
     }
@@ -29,6 +30,16 @@ public class ARGraphWithGrip {
     private List<WeakGrip> grips = new ArrayList<>();
     private ARGraph graph = new ARGraph();
 
-    private ARGraphWithGrip() {
+    public ARGraphWithGrip(ARGraph graph, List<WeakGrip> grips) {
+        this.graph = graph;
+        this.grips = grips;
+    }
+
+    public List<WeakGrip> getGrips() {
+        return this.grips;
+    }
+
+    public ARGraph getGraph() {
+        return this.graph;
     }
 }

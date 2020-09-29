@@ -4,13 +4,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -19,8 +17,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
-import com.example.AlejaGuidanceSystem.Utility.ObjectInReference;
-import com.example.AlejaGuidanceSystem.Utility.PoseAveraginator;
 import com.example.AlejaGuidanceSystem.Utility.Utility;
 import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
 import com.example.AlejaGuidanceSystem.graph.ARGraph;
@@ -44,16 +40,12 @@ import com.google.ar.sceneform.rendering.ShapeFactory;
 
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
-import org.jgrapht.graph.SimpleWeightedGraph;
 
-import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 
 public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdateListener {
@@ -237,7 +229,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 
 		findViewById(R.id.saveButton).setOnClickListener(v -> {
-			Utility.saveObject(this, GRAPHNAME, graph);
+			Utility.saveObject(this, GRAPHNAME, new ARGraphWithGrip(graph, new ArrayList(gripMap.values())));
 		});
 
 		findViewById(R.id.deleteButton).setOnClickListener(v -> {
@@ -282,11 +274,11 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 	 */
 	public void setupDatabase(Config config, Session session) {
 		// test image
-		Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ar_pattern);
+		Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ar_pattern1);
 
 		AugmentedImageDatabase aid = new AugmentedImageDatabase(session);
 		// adding Augmented Images to Database
-		aid.addImage("ar_pattern", bitmap, 0.2f);
+		aid.addImage("ar_pattern1", bitmap, 0.2f);
 
 		config.setAugmentedImageDatabase(aid);
 	}
@@ -309,7 +301,12 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 		// checking all detected images for one of the reference pictures
 		for (AugmentedImage image : images) {
 			if (image.getTrackingState() == TrackingState.TRACKING && image.getTrackingMethod() == AugmentedImage.TrackingMethod.FULL_TRACKING) {
-				gripMap.put(image.getName(), new ARGraphWithGrip.StrongGrip(image.getCenterPose().getTranslation(), image.getCenterPose().getRotationQuaternion()));
+				ARGraphWithGrip.StrongGrip grip  = new ARGraphWithGrip.StrongGrip(
+						image.getName(),
+						image.getCenterPose().getTranslation(),
+						image.getCenterPose().getRotationQuaternion()
+				);
+				gripMap.put(image.getName(), grip);
 			}
 		}
 
@@ -324,9 +321,14 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 			int sceneformChildren = arFragment.getArSceneView().getScene().getChildren().size();
 			int numAnchors = session.getAllAnchors().size();
+			int numGrips = gripMap.size();
 
+			String x = "";
+			for(ARGraphWithGrip.WeakGrip grip : gripMap.values()) {
+				x += Arrays.toString(grip.gripPosition) + ", ";
+			}
 
-			String logString = String.format(Locale.GERMAN, "Camera position %.3f %.3f %.3f %d %d", cameraPosition[0], cameraPosition[1], cameraPosition[2], sceneformChildren, numAnchors);
+			String logString = String.format(Locale.GERMAN, "Camera position %.3f %.3f %.3f\n%d\n%d\nNum Grips: %d %s", cameraPosition[0], cameraPosition[1], cameraPosition[2], sceneformChildren, numAnchors, numGrips, x);
 			Log.d("MyApp2", logString);
 
 			TextView myAwesomeTextView = (TextView) findViewById(R.id.textView);
