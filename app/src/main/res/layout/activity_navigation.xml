@@ -16,6 +16,8 @@
         android:id="@+id/search_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:minWidth="40dp"
+        android:minHeight="40dp"
         android:layout_margin="2dp"
         android:background="#00FFFFFF"
         android:src="@android:drawable/ic_menu_search"

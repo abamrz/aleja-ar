@@ -38,7 +38,6 @@ import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.alg.DijkstraShortestPath;
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -115,18 +114,23 @@ public class NavigationActivity extends AppCompatActivity {
 		search_button.setOnClickListener(new View.OnClickListener(){
 			@Override
 			public void onClick(View view){
-				//Get allowed Search strings
-				ArrayList<String> types = new ArrayList<String>(Arrays.asList(
-						graph.vertexSet().stream()
-								.filter((node) -> !node.getType().equals(Node.NodeType.WAYPOINT))
-								.map((node) -> node.getType().toStringInContext(getApplicationContext()))
-								.distinct().toArray(String[]::new)));
-				ArrayList<String> labels = new ArrayList<String>( Arrays.asList(
-						graph.vertexSet().stream()
-							.filter((node) -> !node.getType().equals(Node.NodeType.WAYPOINT))
-							.map((node) -> node.getLabel()).toArray(String[]::new)));
+				//Use Activation of button to toggle between navigation_cancel and search
+				if (search_button.isActivated()){
+					endNavigation();
+				}else {
+					//Get allowed Search strings
+					ArrayList<String> types = new ArrayList<String>(Arrays.asList(
+							graph.vertexSet().stream()
+									.filter((node) -> !node.getType().equals(Node.NodeType.WAYPOINT))
+									.map((node) -> node.getType().toStringInContext(getApplicationContext()))
+									.distinct().toArray(String[]::new)));
+					ArrayList<String> labels = new ArrayList<String>(Arrays.asList(
+							graph.vertexSet().stream()
+									.filter((node) -> !node.getType().equals(Node.NodeType.WAYPOINT))
+									.map((node) -> node.getLabel()).toArray(String[]::new)));
 
-				showSearchDialog(types, labels);
+					showSearchDialog(types, labels);
+				}
 
 //			final TextView input = new TextView(NavigationActivity. this);
 //			input.setText("Des is a bayrisches Label!");
@@ -198,13 +202,15 @@ public class NavigationActivity extends AppCompatActivity {
 						if (types.contains(target)) {
 							Node[] sinks = (Node[]) graph.vertexSet().stream()
 									.filter((node) -> node.getType().toStringInContext(getApplicationContext()).equals(target))
-									.toArray();
+									.toArray(Node[]::new);
 							showPath(cameraPosition, sinks);
+							search_button.setActivated(true);
 							searchDialog.dismiss();
 						} else if (labels.contains(target)){
 							Node[] sinks = (Node[]) graph.vertexSet().stream()
-									.filter((node) -> node.getLabel().equals(target)).toArray();
+									.filter((node) -> node.getLabel().equals(target)).toArray(Node[]::new);
 							showPath(cameraPosition, sinks);
+							search_button.setActivated(true);
 							searchDialog.dismiss();
 						} else {
 							int current = searchView.getShadowColor();
@@ -376,5 +382,13 @@ public class NavigationActivity extends AppCompatActivity {
 		}
 
 		return nodes;
+	}
+
+	/**
+	 * Used to end a navigation and delete all shown paths
+	 */
+	private void endNavigation(){
+		GraphicsUtility.removeMyBalls(arFragment.getArSceneView().getScene(), pathBalls);
+		search_button.setActivated(false);
 	}
 }
