@@ -7,10 +7,10 @@
             <item>
                 <shape android:shape="rectangle">
                     <gradient
-                        android:endColor="@android:color/background_dark"
+                        android:endColor="#28384A"
                         android:gradientRadius="30dp"
                         android:type="radial"
-                        android:startColor="@android:color/darker_gray" />
+                        android:startColor="#0D92DF" />
                     <corners android:radius="3dp" />
                     <stroke
                         android:width="0.5dp"
@@ -28,10 +28,10 @@
             <item>
                 <shape android:shape="rectangle">
                     <gradient
-                        android:endColor="#333333"
+                        android:endColor="#28384A"
                         android:gradientRadius="30dp"
                         android:type="radial"
-                        android:startColor="@android:color/darker_gray" />
+                        android:startColor="#4D92DF" />
                     <corners android:radius="3dp" />
                     <stroke
                         android:width="0.5dp"
