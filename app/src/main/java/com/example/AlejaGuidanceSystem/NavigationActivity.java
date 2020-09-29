@@ -18,8 +18,8 @@ import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
 import com.example.AlejaGuidanceSystem.Utility.ObjectInReference;
 import com.example.AlejaGuidanceSystem.Utility.PoseAveraginator;
 import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
-import com.example.AlejaGuidanceSystem.graph.ARGraph;
-import com.example.AlejaGuidanceSystem.graph.Node;
+import com.example.AlejaGuidanceSystem.Graph.ARGraph;
+import com.example.AlejaGuidanceSystem.Graph.Node;
 import com.google.ar.core.AugmentedImage;
 import com.google.ar.core.Frame;
 import com.google.ar.core.Pose;
@@ -103,7 +103,7 @@ public class NavigationActivity extends AppCompatActivity {
 		return_button = (ImageButton) findViewById(R.id.return_button);
 		search_button = (ImageButton) findViewById(R.id.search_button);
 
-		//search_button.setEnabled(false);
+		search_button.setEnabled(false);
 
 		return_button.setOnClickListener(new View.OnClickListener(){
 			@Override

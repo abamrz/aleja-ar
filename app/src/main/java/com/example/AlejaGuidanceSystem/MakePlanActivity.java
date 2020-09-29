@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -14,18 +13,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
-import com.example.AlejaGuidanceSystem.Utility.ObjectInReference;
-import com.example.AlejaGuidanceSystem.Utility.PoseAveraginator;
 import com.example.AlejaGuidanceSystem.Utility.Utility;
 import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
-import com.example.AlejaGuidanceSystem.graph.ARGraph;
-import com.example.AlejaGuidanceSystem.graph.ARGraphWithGrip;
-import com.example.AlejaGuidanceSystem.graph.Node;
+import com.example.AlejaGuidanceSystem.Graph.ARGraph;
+import com.example.AlejaGuidanceSystem.Graph.ARGraphWithGrip;
+import com.example.AlejaGuidanceSystem.Graph.Node;
 import com.google.ar.core.AugmentedImage;
 import com.google.ar.core.AugmentedImageDatabase;
 import com.google.ar.core.Config;
@@ -44,16 +42,11 @@ import com.google.ar.sceneform.rendering.ShapeFactory;
 
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
-import org.jgrapht.graph.SimpleWeightedGraph;
 
-import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 
 public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdateListener {
@@ -83,6 +76,15 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_make_plan);
+
+		//initialization of return button
+		ImageButton return_button = (ImageButton) findViewById(R.id.return_button_make_plan);
+		return_button.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View view){
+				finish();
+			}
+		});
 
 		arFragment = (CustomArFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
 		// adding a listener so that this activity can react to updates in the fragment

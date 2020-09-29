@@ -1,10 +1,7 @@
-package com.example.AlejaGuidanceSystem.graph;
+package com.example.AlejaGuidanceSystem.Graph;
 
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.res.Resources;
-import android.provider.Settings;
 
 import androidx.annotation.Nullable;
 
@@ -12,7 +9,6 @@ import com.example.AlejaGuidanceSystem.R;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 
 

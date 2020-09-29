@@ -1,4 +1,4 @@
-package com.example.AlejaGuidanceSystem.graph;
+package com.example.AlejaGuidanceSystem.Graph;
 
 import java.util.ArrayList;
 import java.util.List;
