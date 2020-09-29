@@ -115,6 +115,11 @@ public class VectorOperations {
 
 	public static float[] createQuaternionFromAxisAngle(float xx, float yy, float zz, float a)
 	{
+		float length = (float)Math.sqrt(xx * xx + yy * yy + zz * zz);
+		xx /= length;
+		yy /= length;
+		zz /= length;
+
 		// Here we calculate the sin( theta / 2) once for optimization
 		float factor = (float) Math.sin( a / 2.0 );
 
@@ -198,16 +203,39 @@ public class VectorOperations {
 		return sm;
 	}
 
+	public static SimpleMatrix vec3(double[] d) {
+		SimpleMatrix sm = new SimpleMatrix(3, 1);
+		sm.set(0, d[0]);
+		sm.set(1, d[1]);
+		sm.set(2, d[2]);
+		return sm;
+	}
+
+	public static SimpleMatrix vec3(float[] f) {
+		SimpleMatrix sm = new SimpleMatrix(3, 1);
+		sm.set(0, f[0]);
+		sm.set(1, f[1]);
+		sm.set(2, f[2]);
+		return sm;
+	}
+
 	public static class TransformationResult {
 		public SimpleMatrix R;
 		public SimpleMatrix t;
+
+		public TransformationResult() { }
+
+		public TransformationResult(SimpleMatrix R, SimpleMatrix t) {
+			this.R = R;
+			this.t = t;
+		}
 
 		public SimpleMatrix applyTo(SimpleMatrix v3) {
 			return R.mult(v3).plus(t);
 		}
 	}
 
-	public static TransformationResult findGoodTransformation(List<SimpleMatrix> xi, List<SimpleMatrix> pi) {
+	public static TransformationResult findGoodTransformation(List<SimpleMatrix> xi, List<SimpleMatrix> pi, SimpleMatrix stabilizers) {
 		assert(xi.size() == pi.size());
 
 		SimpleMatrix ux = new SimpleMatrix(3, 1);
@@ -227,6 +255,8 @@ public class VectorOperations {
 			SimpleMatrix piv = pi.get(i).minus(up);
 			sum = sum.plus(xiv.mult(piv.transpose()));
 		}
+
+		sum = sum.plus(stabilizers);
 
 		SimpleSVD<SimpleMatrix> svd = sum.svd();
 		System.out.println(Arrays.toString(svd.getSingularValues()));
@@ -288,4 +318,31 @@ public class VectorOperations {
 		return new float[] { (float)v3.get(0), (float)v3.get(1), (float)v3.get(2) };
 	}
 
+	public static SimpleMatrix simpleMatrixFromRotationPose(Pose pose) {
+		float[] matrix = new float[16];
+
+	    pose.toMatrix(matrix, 0);
+
+		SimpleMatrix sm = new SimpleMatrix(3, 3);
+		sm.set(0, 0, matrix[0]);
+		sm.set(1, 0, matrix[1]);
+		sm.set(2, 0, matrix[2]);
+
+		sm.set(0, 1, matrix[4]);
+		sm.set(1, 1, matrix[5]);
+		sm.set(2, 1, matrix[6]);
+
+		sm.set(0, 2, matrix[8]);
+		sm.set(1, 2, matrix[9]);
+		sm.set(2, 2, matrix[10]);
+
+		return sm;
+	}
+
+
+	public static void scaleMatrix(SimpleMatrix sm, double d) {
+		for(int i = 0; i < sm.getNumElements(); i++) {
+			sm.set(i, sm.get(i) * d);
+		}
+	}
 }

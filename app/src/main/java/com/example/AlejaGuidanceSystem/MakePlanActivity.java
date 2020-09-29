@@ -68,7 +68,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 	private int nodeIdCounter = 0;
 
-	private final String GRAPHNAME = "schlabber2";
+	private final String GRAPHNAME = "schlabber";
 
 	private float[] cameraPosition = null;
 	private Node lastFocusedNode = null;
@@ -273,8 +273,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 		}
 		regenerateScene = true;*/
 
-		graph = (ARGraph) Utility.loadObject(this, GRAPHNAME);
-		if(graph == null) graph = new ARGraph();
+		graph = new ARGraph();
 
 		regenerateScene = true;
 		gripMap = new HashMap<>();

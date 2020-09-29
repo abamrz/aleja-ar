@@ -26,6 +26,7 @@ public class Node implements Serializable {
         this.y = y;
         this.z = z;
         this.id = id;
+        this.setLabel(id);
     }
 
     public Node(float[] v, String id) {
@@ -33,6 +34,7 @@ public class Node implements Serializable {
         this.y = v[1];
         this.z = v[2];
         this.id = id;
+        this.setLabel(id);
     }
 
 

@@ -1,15 +1,17 @@
 package com.example.AlejaGuidanceSystem.Graph;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ARGraphWithGrip {
+public class ARGraphWithGrip implements Serializable {
 
-    public static class WeakGrip {
+    public static class WeakGrip implements Serializable {
         public String gripId;
         public float[] gripPosition;
 
         public WeakGrip(String gripId, float[] gripPosition) {
+            this.gripId = gripId;
             this.gripPosition = gripPosition;
         }
     }
@@ -17,7 +19,7 @@ public class ARGraphWithGrip {
     /**
      * This is an anchor which also provides direction information (up, forward, right)
      */
-    public static class StrongGrip extends WeakGrip {
+    public static class StrongGrip extends WeakGrip implements Serializable {
 
         public float[] rotationQuaternion;
 
