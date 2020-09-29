@@ -17,9 +17,10 @@ import android.widget.ImageButton;
 import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
 import com.example.AlejaGuidanceSystem.Utility.ObjectInReference;
 import com.example.AlejaGuidanceSystem.Utility.PoseAveraginator;
+import com.example.AlejaGuidanceSystem.Utility.Utility;
 import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
-import com.example.AlejaGuidanceSystem.graph.ARGraph;
-import com.example.AlejaGuidanceSystem.graph.Node;
+import com.example.AlejaGuidanceSystem.Graph.ARGraph;
+import com.example.AlejaGuidanceSystem.Graph.Node;
 import com.google.ar.core.AugmentedImage;
 import com.google.ar.core.Frame;
 import com.google.ar.core.Pose;
@@ -66,6 +67,7 @@ public class NavigationActivity extends AppCompatActivity {
 	private Pose referenceToWorld = Pose.IDENTITY;
 	private ArrayList<ObjectInReference> pathBalls = new ArrayList<>();;
 	private float[] cameraPosition;
+	private float[] sinkPos = new float[]{0.0f, 0.0f, 0.0f};
 
 	private ArrayList<ObjectInReference> labels = new ArrayList<>();
 
@@ -103,7 +105,7 @@ public class NavigationActivity extends AppCompatActivity {
 		return_button = (ImageButton) findViewById(R.id.return_button);
 		search_button = (ImageButton) findViewById(R.id.search_button);
 
-		//search_button.setEnabled(false);
+		search_button.setEnabled(false);
 
 		return_button.setOnClickListener(new View.OnClickListener(){
 			@Override
@@ -275,6 +277,11 @@ public class NavigationActivity extends AppCompatActivity {
 			Pose cameraToReference = referenceToWorld.inverse().compose(cameraToWorld);
 			cameraPosition = cameraToReference.transformPoint(new float[]{0.0f, 0.0f, 0.0f});
 		}
+
+		//end navigation when goal is reached
+		if (search_button.isActivated() && VectorOperations.v3dist(cameraPosition, sinkPos) < 0.5f) {
+			endNavigation();
+		}
 	}
 
 	/**
@@ -315,6 +322,7 @@ public class NavigationActivity extends AppCompatActivity {
 				if (dijkstraShortestPath.getPathLength() < smallestWeight) {
 					smallestWeight = dijkstraShortestPath.getPathLength();
 					shortestPath = dijkstraShortestPath.getPath();
+					sinkPos = sink.getPositionF();
 				}
 			}
 			// creating a visible path on the screen
