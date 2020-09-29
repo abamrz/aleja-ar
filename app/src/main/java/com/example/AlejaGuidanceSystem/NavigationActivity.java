@@ -241,6 +241,14 @@ public class NavigationActivity extends AppCompatActivity {
 				});
 			}
 		});
+		searchView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+			@Override
+			public void onFocusChange(View view, boolean b) {
+				if (b){
+					searchView.showDropDown();
+				}
+			}
+		});
 		searchDialog.show();
 	}
 

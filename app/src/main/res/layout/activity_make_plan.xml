@@ -11,6 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:background="#28384A"
         app:layout_constraintBottom_toBottomOf="parent"
         android:gravity="center">
 
@@ -22,7 +23,9 @@
             android:autoSizeTextType="uniform"
             android:maxLines="2"
             android:ellipsize="end"
-            android:text="Add to Branch" />
+            android:text="Add to Branch"
+            android:backgroundTint="#4D92DF"
+            android:textColor="#FFFFFF" />
 
         <Button
             android:id="@+id/newBranchButton"
@@ -32,7 +35,9 @@
             android:autoSizeTextType="uniform"
             android:maxLines="2"
             android:ellipsize="end"
-            android:text="New Branch" />
+            android:text="New Branch"
+            android:backgroundTint="#4D92DF"
+            android:textColor="#FFFFFF" />
 
         <Button
             android:id="@+id/closeCircleButton"
@@ -42,7 +47,9 @@
             android:autoSizeTextType="uniform"
             android:maxLines="2"
             android:ellipsize="end"
-            android:text="Close Circle" />
+            android:text="Close Circle"
+            android:backgroundTint="#4D92DF"
+            android:textColor="#FFFFFF" />
 
         <Button
             android:id="@+id/setAttributeButton"
@@ -52,7 +59,9 @@
             app:autoSizeTextType="uniform"
             android:maxLines="2"
             android:ellipsize="end"
-            android:text="Set Attributes" />
+            android:text="Set Attributes"
+            android:backgroundTint="#4D92DF"
+            android:textColor="#FFFFFF" />
 
 
         <Button
@@ -63,7 +72,9 @@
             android:autoSizeTextType="uniform"
             android:maxLines="2"
             android:ellipsize="end"
-            android:text="Save Graph" />
+            android:text="Save Graph"
+            android:backgroundTint="#4D92DF"
+            android:textColor="#FFFFFF" />
 
 
 
@@ -75,7 +86,9 @@
             android:autoSizeTextType="uniform"
             android:maxLines="2"
             android:ellipsize="end"
-            android:text="Anti Schlabber" />
+            android:text="Anti Schlabber"
+            android:backgroundTint="#4D92DF"
+            android:textColor="#FFFFFF" />
     </LinearLayout>
 
     <fragment
