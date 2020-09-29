@@ -101,7 +101,7 @@
         app:layout_constraintBottom_toTopOf="@id/linearLayout2" />
 
     <ImageButton
-        android:id="@+id/return_button"
+        android:id="@+id/return_button_make_plan"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minWidth="40dp"
