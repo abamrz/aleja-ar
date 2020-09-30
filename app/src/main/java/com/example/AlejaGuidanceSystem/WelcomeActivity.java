@@ -24,6 +24,7 @@ import org.ejml.simple.SimpleSVD;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class WelcomeActivity extends Activity {
 
@@ -128,8 +129,10 @@ public class WelcomeActivity extends Activity {
         menu.setHeaderTitle(getResources().getString(R.string.graph_select));
 
         ArrayList<String> mapNames = new ArrayList<>(); //TODO: Load the names of all Graphs in the database and save them in mapNames
-        mapNames.add("Dummy1"); //TODO: delete when names loaded from database
-        mapNames.add("Dummy2"); //Todo: delete when names loaded from database
+        /*mapNames.add("Dummy1"); //TODO: delete when names loaded from database
+        mapNames.add("Dummy2");*/ //Todo: delete when names loaded from database
+
+        mapNames.addAll(databaseConnector.getAllGraphs().stream().map(g -> g.getName()).collect(Collectors.toList()));
 
         for (String map : mapNames){
             menu.add(map);
