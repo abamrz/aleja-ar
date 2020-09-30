@@ -14,5 +14,6 @@
     <string name="elevator">elevator</string>
     <string name="toilette">toilette</string>
     <string name="fire_extinguisher">fire extinguisher</string>
+    <string name="reached_goal">You reached your goal</string>
 
 </resources>

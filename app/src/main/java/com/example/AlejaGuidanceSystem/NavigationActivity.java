@@ -75,7 +75,7 @@ public class NavigationActivity extends AppCompatActivity {
 	private Pose graphToWorld = Pose.IDENTITY;
 	private ArrayList<ObjectInReference> pathBalls = new ArrayList<>();;
 	private float[] cameraPositionInGraph;
-	private float[] sinkPos = new float[]{0.0f, 0.0f, 0.0f};
+	private Node sink = null;
 
 	private ArrayList<ObjectInReference> labels = new ArrayList<>();
 	private ArrayList<LabelView> labelViews = new ArrayList<>();
@@ -88,28 +88,9 @@ public class NavigationActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_navigation);
 
-// Example Graph
-		/*
-		Node a = new Node (1, 0, 0, "a");
-		Node b = new Node (0, 0,0, "b");
-		a.setType(Node.NodeType.OFFICE);
-		b.setType(Node.NodeType.COFFEE);
-		a.setDescription("Linux Installation Instructions");
-		 */
-
 		// load the selected graph
 		graphWithGrip = (ARGraphWithGrip) getIntent().getSerializableExtra("Graph");
 		if(graphWithGrip == null) throw new IllegalStateException("No graph was supplied!");
-
-		Log.d("NaviTest", "Graph nodes: " + graphWithGrip.getGraph().vertexSet().size());
-
-
-		//Example Graph
-		/*
-		graph.addVertex(a);
-		graph.addVertex(b);
-		graph.addEdge(a,b);
-		 */
 
 		arFragment = (CustomArFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
 		arFragment.getArSceneView().getScene().addOnUpdateListener(this::onUpdateFrame);
@@ -145,9 +126,9 @@ public class NavigationActivity extends AppCompatActivity {
 		search_button.setOnClickListener(new View.OnClickListener(){
 			@Override
 			public void onClick(View view){
-				showFullGraph();
+				//showFullGraph();
 
-	    			if(false) {
+	    		//	if(false) {
 
 				//Use Activation of button to toggle between navigation_cancel and search
 				if (search_button.isActivated()){
@@ -166,7 +147,7 @@ public class NavigationActivity extends AppCompatActivity {
 
 					showSearchDialog(types, labels);
 				}
-					}
+				//	}
 
 //			final TextView input = new TextView(NavigationActivity. this);
 //			input.setText("Des is a bayrisches Label!");
@@ -320,9 +301,42 @@ public class NavigationActivity extends AppCompatActivity {
 		//TODO: Wo soll diese Methode hin? :)
 		showLabels(graphWithGrip.getGraph());
 
-		//end navigation when goal is reached
-		if (search_button.isActivated() && VectorOperations.v3dist(cameraPositionInGraph, sinkPos) < 0.5f) {
-			endNavigation();
+		//during navigation
+		if (search_button.isActivated()) {
+			Log.d("Size", Integer.toString(pathBalls.size()));
+			float[] closestBallPos = pathBalls.get(0).getPoseInReference().transformPoint(new float[]{0.0f, 0.0f, 0.0f});
+
+			//collect balls
+			if (pathBalls.size() > 1 &&
+					VectorOperations.v3dist(cameraPositionInGraph, closestBallPos) >
+					VectorOperations.v3dist(cameraPositionInGraph, pathBalls.get(1).getPoseInReference().transformPoint(new float[]{0.0f, 0.0f, 0.0f}))) {
+				GraphicsUtility.removeMyBalls(arFragment.getArSceneView().getScene(), new ArrayList<ObjectInReference>(){{add(pathBalls.get(0));}});
+				pathBalls.remove(0);
+
+				Log.d("Collect", Integer.toString(pathBalls.size()));
+			}
+
+			//re-calc route
+			if (VectorOperations.v3dist(cameraPositionInGraph, closestBallPos) > 2f){
+				GraphicsUtility.removeMyBalls(arFragment.getArSceneView().getScene(), pathBalls);
+				showPath(cameraPositionInGraph, new Node[] {this.sink});
+
+				Log.d("recalc", Integer.toString(pathBalls.size()));
+			}
+
+			//end navigation when goal is reached
+			if (VectorOperations.v3dist(cameraPositionInGraph, this.sink.getPositionF()) < 0.2f) {
+				AlertDialog goalReachedDialog = new AlertDialog.Builder(this).create();
+				goalReachedDialog.setMessage(getString(R.string.reached_goal));
+				goalReachedDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.dismiss();
+							}
+						});
+				goalReachedDialog.show();
+				endNavigation();
+			}
 		}
 	}
 
@@ -430,11 +444,11 @@ public class NavigationActivity extends AppCompatActivity {
 				if (dijkstraShortestPath.getPathLength() < smallestWeight) {
 					smallestWeight = dijkstraShortestPath.getPathLength();
 					shortestPath = dijkstraShortestPath.getPath();
-					sinkPos = sink.getPositionF();
+					this.sink = sink;
 				}
 			}
 			// creating a visible path on the screen
-			createMyBalls(shortestPath.getEdgeList(), graphCopy);
+			createMyBalls(shortestPath.getVertexList(), graphCopy);
 		}
 	}
 
@@ -525,22 +539,14 @@ public class NavigationActivity extends AppCompatActivity {
 	 * @param edges the path that will be displayed.
 	 * @param graph the graph containing the path.
 	 */
-	private void createMyBalls(List<DefaultWeightedEdge> edges, Graph<Node, DefaultWeightedEdge> graph) {
-		// large green balls for every node
-		for(Node node : extractNodes(edges, graph)) {
-			if(node.getType() == Node.NodeType.WAYPOINT) {
-				createBallInReference(node.getPositionF(), pathBalls, lgsr);
-			}
-			Log.d("MyTest", String.format("%s: %.2f %.2f %.2f", node.getId(), node.getX(), node.getY(), node.getZ() ));
-			// "nice nice nice"
-			//
-			//       - Lukas, 2020
-		}
+	private void createMyBalls(List<Node> nodes, Graph<Node, DefaultWeightedEdge> graph) {
 
-		// blue balls on every edge
-		for(DefaultWeightedEdge e : edges) {
-			Node source = graph.getEdgeSource(e);
-			Node target = graph.getEdgeTarget(e);
+		Node source = nodes.get(0);
+		for (int index = 1; index < nodes.size(); index++){
+			Node target = nodes.get(index);
+			Log.d("createPath",  String.format("%s to %s", source.getId(), target.getId()));
+			// large green balls for every node
+			this.createBallInReference(source.getPositionF(), pathBalls, lgsr);
 
 			float dist = VectorOperations.v3dist(source.getPositionF(), target.getPositionF());
 			float sepDist = 0.025f;
@@ -551,10 +557,14 @@ public class NavigationActivity extends AppCompatActivity {
 			float[] targetPos = target.getPositionF();
 			float[] dir = VectorOperations.v3normalize(VectorOperations.v3diff(targetPos, sourcePos));
 			for(int i = 1; i < numSep; i++) {
+				// blue balls on every edge
 				float[] pos = VectorOperations.v3add(sourcePos, VectorOperations.v3mulf(dir, stepDist * i));
 				this.createBallInReference(pos, pathBalls, bsr);
 			}
+
+			source = target;
 		}
+		this.createBallInReference(source.getPositionF(), pathBalls, lgsr);
 	}
 
 	private AnchorNode createBallInReference(float[] positionInReference, List<ObjectInReference> myBalls, Renderable renderable) {
