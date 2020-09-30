@@ -16,6 +16,7 @@ import com.example.AlejaGuidanceSystem.Graph.ARGraphWithGrip;
 import com.example.AlejaGuidanceSystem.Utility.Utility;
 import com.example.AlejaGuidanceSystem.Graph.ARGraph;
 import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
+import com.example.Database.DatabaseConnector;
 import com.google.ar.core.Pose;
 
 import org.ejml.simple.SimpleMatrix;
@@ -29,6 +30,8 @@ public class WelcomeActivity extends Activity {
     private Button make_plan_button;
     private Button use_existing_button;
     private Button exit_button;
+
+    private DatabaseConnector databaseConnector;
 
     public WelcomeActivity() {
         super();
