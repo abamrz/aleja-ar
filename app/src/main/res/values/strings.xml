@@ -4,8 +4,15 @@
     <string name="__use_existing_plan">Use Existing Plan</string>
     <string name="__make_plan">Make Plan</string>
     <string name="__welcome_to_aleja">Welcome to the Aleja Guidance System!</string>
-    <string name="exit">Exit</string>
+    <string name="exit_button">Exit</string>
     <string name="graph_select">Choose the map</string>
     <string name="search_title">Search for destination</string>
+    <string name="kitchen">kitchen</string>
+    <string name="exit">exit</string>
+    <string name="coffee">coffee</string>
+    <string name="office">office</string>
+    <string name="elevator">elevator</string>
+    <string name="toilette">toilette</string>
+    <string name="fire_extinguisher">fire extinguisher</string>
 
 </resources>

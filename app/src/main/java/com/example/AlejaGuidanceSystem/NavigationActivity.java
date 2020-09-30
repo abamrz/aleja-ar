@@ -8,15 +8,20 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageButton;
 
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.TextView;
+
+import com.example.AlejaGuidanceSystem.Graph.ARGraphWithGrip;
 import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
 import com.example.AlejaGuidanceSystem.Utility.LabelView;
 import com.example.AlejaGuidanceSystem.Utility.ObjectInReference;
-import com.example.AlejaGuidanceSystem.Utility.PoseAveraginator;
 import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
-import com.example.AlejaGuidanceSystem.graph.ARGraph;
-import com.example.AlejaGuidanceSystem.graph.Node;
+import com.example.AlejaGuidanceSystem.Graph.ARGraph;
+import com.example.AlejaGuidanceSystem.Graph.Node;
 import com.google.ar.core.AugmentedImage;
 import com.google.ar.core.Frame;
 import com.google.ar.core.Pose;
@@ -34,15 +39,21 @@ import com.google.ar.sceneform.rendering.Renderable;
 import com.google.ar.sceneform.rendering.ShapeFactory;
 import com.google.ar.sceneform.rendering.ViewRenderable;
 
+
+import org.ejml.simple.SimpleMatrix;
 import org.jgrapht.Graph;
+import org.jgrapht.GraphPath;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.alg.DijkstraShortestPath;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+
+import static java.lang.Thread.*;
 
 
 public class NavigationActivity extends AppCompatActivity {
@@ -54,22 +65,22 @@ public class NavigationActivity extends AppCompatActivity {
 	private ModelRenderable renderable;
 
 	// plan for the area
-	private ARGraph graph;
+	private ARGraphWithGrip graphWithGrip;
 
 	// red-, blue- and largeGreen-sphere
 	private ModelRenderable rsr;
 	private ModelRenderable bsr;
 	private ModelRenderable lgsr;
 
-	private Pose referenceToWorld = Pose.IDENTITY;
-	private ArrayList<ObjectInReference> pathBalls;
-	private float[] cameraPosition;
+	private Pose graphToWorld = Pose.IDENTITY;
+	private ArrayList<ObjectInReference> pathBalls = new ArrayList<>();;
+	private float[] cameraPositionInGraph;
+	private float[] sinkPos = new float[]{0.0f, 0.0f, 0.0f};
 
 	private ArrayList<ObjectInReference> labels = new ArrayList<>();
 	private ArrayList<LabelView> labelViews = new ArrayList<>();
 
-
-	private PoseAveraginator referenceToWorldAveraginator = new PoseAveraginator(200);
+	private HashMap<String, ARGraphWithGrip.WeakGrip> gripMap;
 
 	@Override
 	@SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
@@ -77,53 +88,33 @@ public class NavigationActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_navigation);
 
-
+// Example Graph
+		/*
 		Node a = new Node (1, 0, 0, "a");
 		Node b = new Node (0, 0,0, "b");
 		a.setType(Node.NodeType.OFFICE);
 		b.setType(Node.NodeType.COFFEE);
 		a.setDescription("Linux Installation Instructions");
-
-
-
-		//initialize the buttons
-		return_button = (ImageButton) findViewById(R.id.return_button);
-		search_button = (ImageButton) findViewById(R.id.search_button);
-		return_button.setOnClickListener(new View.OnClickListener(){
-			@Override
-			public void onClick(View view){
-				finish();
-			}
-		});
-		search_button.setOnClickListener(new View.OnClickListener(){
-			@Override
-			public void onClick(View view){
-				//TODO: Search functionality
-				//showSearchDialog();
-
-				GraphicsUtility.removeMyBalls(arFragment.getArSceneView().getScene(), pathBalls);
-
-				Optional<Node> sink = graph.vertexSet().stream().max((v1, v2) ->
-						VectorOperations.v3length(v1.getPositionF()) < VectorOperations.v3length(v2.getPositionF()) ? -1 : 1
-				);
-
-				showPath(cameraPosition, sink.get());
-			}
-		});
-		search_button.setEnabled(false);
+		 */
 
 		// load the selected graph
-		//graph = (ARGraph) getIntent().getSerializableExtra("Graph");
-		if(graph == null) graph = new ARGraph();
+		graphWithGrip = (ARGraphWithGrip) getIntent().getSerializableExtra("Graph");
+		if(graphWithGrip == null) throw new IllegalStateException("No graph was supplied!");
 
-		Log.d("NaviTest", "Graph nodes: " + graph.vertexSet().size());
+		Log.d("NaviTest", "Graph nodes: " + graphWithGrip.getGraph().vertexSet().size());
 
+
+		//Example Graph
+		/*
 		graph.addVertex(a);
 		graph.addVertex(b);
 		graph.addEdge(a,b);
+		 */
 
 		arFragment = (CustomArFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
 		arFragment.getArSceneView().getScene().addOnUpdateListener(this::onUpdateFrame);
+
+		gripMap = new HashMap<>();
 
 		// creating the spheres
 		MaterialFactory.makeOpaqueWithColor(this, new Color(android.graphics.Color.RED))
@@ -139,27 +130,152 @@ public class NavigationActivity extends AppCompatActivity {
 						material -> lgsr = ShapeFactory.makeSphere(0.02f, new Vector3(0.0f, 0.0f, 0.0f), material)
 				);
 
-		pathBalls = new ArrayList<>();
-	}
+		//initialize the buttons
+		return_button = (ImageButton) findViewById(R.id.return_button);
+		search_button = (ImageButton) findViewById(R.id.search_button);
 
-	private void showSearchDialog(){
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle(R.string.search_title);
-		builder.setPositiveButton("Go", new DialogInterface.OnClickListener() {
+		search_button.setEnabled(false);
+
+		return_button.setOnClickListener(new View.OnClickListener(){
 			@Override
-			public void onClick(DialogInterface dialogInterface, int i) {
-				//TODO: Start navigation to destination
+			public void onClick(View view){
+				finish();
 			}
 		});
+		search_button.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View view){
+				showFullGraph();
+
+	    			if(false) {
+
+				//Use Activation of button to toggle between navigation_cancel and search
+				if (search_button.isActivated()){
+					endNavigation();
+				}else {
+					//Get allowed Search strings
+					ArrayList<String> types = new ArrayList<String>(Arrays.asList(
+							graphWithGrip.getGraph().vertexSet().stream()
+									.filter((node) -> !node.getType().equals(Node.NodeType.WAYPOINT))
+									.map((node) -> node.getType().toStringInContext(getApplicationContext()))
+									.distinct().toArray(String[]::new)));
+					ArrayList<String> labels = new ArrayList<String>(Arrays.asList(
+							graphWithGrip.getGraph().vertexSet().stream()
+									.filter((node) -> !node.getType().equals(Node.NodeType.WAYPOINT))
+									.map((node) -> node.getLabel()).toArray(String[]::new)));
+
+					showSearchDialog(types, labels);
+				}
+					}
+
+//			final TextView input = new TextView(NavigationActivity. this);
+//			input.setText("Des is a bayrisches Label!");
+//			input.setInputType(InputType.TYPE_CLASS_TEXT);
+//			input.setTextColor(android.graphics.Color.WHITE);
+//			input.setBackgroundColor(android.graphics.Color.BLACK);
+//
+//			CompletableFuture<ViewRenderable>
+//					future = ViewRenderable
+//					.builder()
+//					.setView((Context) NavigationActivity.this, input)
+//					.build();
+//			future.thenAccept(viewRenderable -> {
+//
+//				viewRenderable.setHorizontalAlignment(ViewRenderable.HorizontalAlignment.CENTER);
+//				viewRenderable.setVerticalAlignment(ViewRenderable.VerticalAlignment.CENTER);
+//				viewRenderable.setSizer( new DpToMetersViewSizer(550) );
+//
+//				AnchorNode x = new AnchorNode();
+//				x.setRenderable(viewRenderable);
+//				arFragment.getArSceneView().getScene().addChild(x);
+//
+//				float[] quat = VectorOperations.createQuaternionFromAxisAngle(1, 0, 0, -(float)Math.PI / 2.0f);
+//				ObjectInReference obj = new ObjectInReference(x, Pose.makeRotation(quat));
+//				obj.recalculatePosition(referenceToWorld);
+//				labels.add(obj);
+			}
+		});
+	}
+
+	/**
+	 * Builds a alert dialog with search functionality, to start navigation
+	 * @param types: all possible types of targets to navigate to
+	 * @param labels: all possible labels of targets to navigate to
+	 */
+	private void showSearchDialog(ArrayList<String> types, ArrayList<String> labels){
+		ArrayAdapter<String> searchAdapter = new ArrayAdapter<String>(this,
+				android.R.layout.simple_dropdown_item_1line);
+		searchAdapter.addAll(types);
+		searchAdapter.addAll(labels);
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle(R.string.search_title);
+		AutoCompleteTextView searchView = new AutoCompleteTextView(this);
+		searchView.setThreshold(1);
+		searchView.setAdapter(searchAdapter);
+		builder.setView(searchView);
+		builder.setPositiveButton("Go", null);
 		builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int i) {
 				dialog.cancel();
 			}
 		});
+		AlertDialog searchDialog = builder.create();
 
-		AlertDialog search_dialog = builder.create();
-		search_dialog.show();
+		searchDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+			@Override
+			public void onShow(DialogInterface dialogInterface) {
+				Button button = ((AlertDialog) searchDialog).getButton(AlertDialog.BUTTON_POSITIVE);
+				button.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View view) {
+						GraphicsUtility.removeMyBalls(arFragment.getArSceneView().getScene(), pathBalls);
+
+						//Start navigation to destination
+						String target = searchView.getText().toString();
+						if (types.contains(target)) {
+							Node[] sinks = (Node[]) graphWithGrip.getGraph().vertexSet().stream()
+									.filter((node) -> node.getType().toStringInContext(getApplicationContext()).equals(target))
+									.toArray(Node[]::new);
+							showPath(cameraPositionInGraph, sinks);
+							search_button.setActivated(true);
+							searchDialog.dismiss();
+						} else if (labels.contains(target)){
+							Node[] sinks = (Node[]) graphWithGrip.getGraph().vertexSet().stream()
+									.filter((node) -> node.getLabel().equals(target)).toArray(Node[]::new);
+							showPath(cameraPositionInGraph, sinks);
+							search_button.setActivated(true);
+							searchDialog.dismiss();
+						} else {
+							int current = searchView.getShadowColor();
+							searchView.setBackgroundColor(android.graphics.Color.argb(50, 255,0,0));
+							new Thread(new Runnable() {
+								@Override
+								public void run() {
+									try {
+										sleep(1000);
+									} catch (InterruptedException e) {
+										e.printStackTrace();
+									}
+									searchView.setBackgroundColor(current);
+								}
+							}).start();
+						}
+					}
+				});
+			}
+		});
+		searchView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+			@Override
+			public void onFocusChange(View view, boolean b) {
+				if (b){
+					searchView.showDropDown();
+				}
+			}
+		});
+		searchDialog.show();
 	}
 
 	/**
@@ -174,56 +290,115 @@ public class NavigationActivity extends AppCompatActivity {
 
 		for(AugmentedImage image : images) {
 			if(image.getTrackingState() == TrackingState.TRACKING && image.getTrackingMethod() == AugmentedImage.TrackingMethod.FULL_TRACKING) {
-				// checking if correct image was detected
-				if(image.getName().equals("ar_pattern")) {
-				// if(image.getName().equals("dr_christian_rehn")) {
-					Log.d("Navigation", "Image 'ar_pattern' was detected.");
 
-					Pose trackableToWorld = image.getCenterPose();
-					Pose trackableToReference = Pose.makeTranslation(0, 0, 0);
+				ARGraphWithGrip.StrongGrip grip  = new ARGraphWithGrip.StrongGrip(
+						image.getName(),
+						image.getCenterPose().getTranslation(),
+						image.getCenterPose().getRotationQuaternion()
+				);
+				gripMap.put(image.getName(), grip);
 
-					Pose currentReferenceToWorld = trackableToWorld.compose(trackableToReference.inverse());
-					referenceToWorld = referenceToWorldAveraginator.add(currentReferenceToWorld);
+				this.updateGraphToWorldByGrip();
 
+			}
+		}
 
-					if(pathBalls != null) {
-						Log.d("MyVectorTest", "updateBallPosition " + pathBalls.size());
-						for(ObjectInReference obj : pathBalls) {
-							obj.recalculatePosition(referenceToWorld);
-						}
-					}
-					showLabels(graph);
-					for(ObjectInReference obj : labels) {
-						obj.recalculatePosition(referenceToWorld);
+		String x = "";
+		for(ARGraphWithGrip.WeakGrip grip : gripMap.values()) {
+			x += Arrays.toString(grip.gripPosition) + ", ";
+		}
 
+		TextView myAwesomeTextView = (TextView) findViewById(R.id.textView2);
+		myAwesomeTextView.setText(String.format("NumGrips: %d %s", gripMap.size(), x));
 
+		if (graphToWorld != null) {
+			Pose cameraToWorld = frame.getCamera().getPose();
+			Pose cameraToReference = graphToWorld.inverse().compose(cameraToWorld);
+			cameraPositionInGraph = cameraToReference.transformPoint(new float[]{0.0f, 0.0f, 0.0f});
+		}
 
-					}
-					search_button.setEnabled(true);
+		//TODO: Wo soll diese Methode hin? :)
+		showLabels(graphWithGrip.getGraph());
+
+		//end navigation when goal is reached
+		if (search_button.isActivated() && VectorOperations.v3dist(cameraPositionInGraph, sinkPos) < 0.5f) {
+			endNavigation();
+		}
+	}
+
+	private void updateGraphToWorldByGrip() {
+
+		// checking if correct image was detected
+        ArrayList<ARGraphWithGrip.WeakGrip> foundGrips = new ArrayList<>();
+		ArrayList<ARGraphWithGrip.WeakGrip> graphGrips = new ArrayList<>();
+
+		for(ARGraphWithGrip.WeakGrip foundGrip : this.gripMap.values()) {
+			for(ARGraphWithGrip.WeakGrip gripInGraph : graphWithGrip.getGrips()) {
+			    if(foundGrip.gripId.equals(gripInGraph.gripId)) {
+			    	foundGrips.add(foundGrip);
+			    	graphGrips.add(gripInGraph);
+			    	break;
 				}
 			}
 		}
 
-		if (referenceToWorld != null) {
-			Pose cameraToWorld = frame.getCamera().getPose();
-			Pose cameraToReference = referenceToWorld.inverse().compose(cameraToWorld);
-			cameraPosition = cameraToReference.transformPoint(new float[]{0.0f, 0.0f, 0.0f});
+		ArrayList<SimpleMatrix> referencePoints = new ArrayList<>();
+		ArrayList<SimpleMatrix> pointsToTransform = new ArrayList<>();
 
+		SimpleMatrix numericalStabilityMatrix = new SimpleMatrix(3, 3);
+
+		for(int i = 0; i < foundGrips.size(); i++) {
+			ARGraphWithGrip.WeakGrip foundGrip = foundGrips.get(i);
+			ARGraphWithGrip.WeakGrip graphGrip = graphGrips.get(i);
+
+			if(foundGrip instanceof ARGraphWithGrip.StrongGrip && graphGrip instanceof ARGraphWithGrip.StrongGrip) {
+				float[] foundQuat = ((ARGraphWithGrip.StrongGrip) foundGrip).rotationQuaternion;
+				float[] graphQuat = ((ARGraphWithGrip.StrongGrip) graphGrip).rotationQuaternion;
+
+				Pose foundPose = Pose.makeRotation(foundQuat);
+				Pose graphPose = Pose.makeRotation(graphQuat);
+
+				Pose transformation = foundPose.compose(graphPose.inverse());
+
+				SimpleMatrix transSM = VectorOperations.simpleMatrixFromRotationPose(transformation);
+				numericalStabilityMatrix = numericalStabilityMatrix.plus(transSM);
+			}
+
+			referencePoints.add(VectorOperations.vec3(foundGrip.gripPosition));
+			pointsToTransform.add(VectorOperations.vec3(graphGrip.gripPosition));
+
+		//TODO: Wo sollen diese Methoden hin?
 			updateLabelOrientation();
 
 			updateLabelVisibility();
 		}
-	}
 
+		VectorOperations.scaleMatrix(numericalStabilityMatrix, 0.2);
+
+		VectorOperations.TransformationResult tr = VectorOperations.findGoodTransformation(referencePoints, pointsToTransform, numericalStabilityMatrix);
+		graphToWorld = VectorOperations.poseFromTransformationResult(tr);
+
+		if(pathBalls != null) {
+			Log.d("MyVectorTest", "updateBallPosition " + pathBalls.size());
+			for(ObjectInReference obj : pathBalls) {
+				obj.recalculatePosition(graphToWorld);
+			}
+		}
+
+		for(ObjectInReference obj : labels) {
+			obj.recalculatePosition(graphToWorld);
+		}
+		search_button.setEnabled(true);
+	}
 
 	/**
 	 * Displays a path shortest path to a destination on the screen
 	 * @param startPos current (camera-)position of the user
-	 * @param sink the destination-node
+	 * @param sinks the destination-nodes as a array
 	 */
-	private void showPath(float[] startPos, Node sink) {
+	private void showPath(float[] startPos, Node[] sinks) {
 		// creating a copy of the graph to freely add and remove nodes and edges
-		ARGraph graphCopy = new ARGraph(graph);
+		ARGraph graphCopy = new ARGraph(graphWithGrip.getGraph());
 		// adding the current position of the user as a node to the copied graph
 		Node user = new Node(startPos, "StartOfUser");
 		graphCopy.addVertex(user);
@@ -245,10 +420,22 @@ public class NavigationActivity extends AppCompatActivity {
 		}
 
 		// List of edges on the shortest path from user to destination
-		List<DefaultWeightedEdge> path = DijkstraShortestPath.findPathBetween(graphCopy, user, sink);
+		if (sinks != null && sinks.length > 0){
+			DijkstraShortestPath dijkstraShortestPath;
+			GraphPath shortestPath = null;
+			double smallestWeight = Double.POSITIVE_INFINITY;
 
-		// creating a visible path on the screen
-		createMyBalls(path, graphCopy);
+			for (Node sink : sinks){
+				dijkstraShortestPath = new DijkstraShortestPath(graphCopy, user, sink);
+				if (dijkstraShortestPath.getPathLength() < smallestWeight) {
+					smallestWeight = dijkstraShortestPath.getPathLength();
+					shortestPath = dijkstraShortestPath.getPath();
+					sinkPos = sink.getPositionF();
+				}
+			}
+			// creating a visible path on the screen
+			createMyBalls(shortestPath.getEdgeList(), graphCopy);
+		}
 	}
 
 
@@ -277,7 +464,9 @@ public class NavigationActivity extends AppCompatActivity {
 				float[] quat = VectorOperations.createQuaternionFromAxisAngle(1, 0, 0, -(float)Math.PI / 2.0f);
 				Pose pose = Pose.makeTranslation(node.getPositionF()).compose(Pose.makeRotation(quat));
 				ObjectInReference objectInReference = new ObjectInReference(anchorNode, pose);
-				objectInReference.recalculatePosition(referenceToWorld);
+
+				//TODO: ist graphTOWorld gleich referenceToWOrld??
+				objectInReference.recalculatePosition(graphToWorld);
 				labels.add(objectInReference);
 
 				labelView.setObjectInReference(objectInReference);
@@ -298,7 +487,7 @@ public class NavigationActivity extends AppCompatActivity {
 			Pose translation = label.getPoseInReference().extractTranslation();
 
 			Vector3 labelPosition3 = new Vector3(labelPosition[0], labelPosition[1], labelPosition[2]);
-			Vector3 cameraPosition3 = new Vector3(cameraPosition[0], cameraPosition[1], cameraPosition[2]);
+			Vector3 cameraPosition3 = new Vector3(cameraPositionInGraph[0], cameraPositionInGraph[1], cameraPositionInGraph[2]);
 
 			Vector3 direction3 = labelPosition3.subtract(cameraPosition3, labelPosition3);
 			//direction3.z=0.0f;
@@ -307,7 +496,7 @@ public class NavigationActivity extends AppCompatActivity {
 			Pose rotation = Pose.makeRotation(lookRotation.x, lookRotation.y, lookRotation.z, lookRotation.w);
 
 			label.setPoseInReference(translation.compose(rotation));
-			label.recalculatePosition(referenceToWorld);
+			label.recalculatePosition(graphToWorld);
 		}
 
 	}
@@ -324,7 +513,7 @@ public class NavigationActivity extends AppCompatActivity {
 	// check if label in Radius
 	private boolean inRadius(LabelView labelView, double radius){
 		float[] position = labelView.getObjectInReference().getPoseInReference().getTranslation();
-		double distanceFromCamera = VectorOperations.v3dist(position, cameraPosition);
+		double distanceFromCamera = VectorOperations.v3dist(position, cameraPositionInGraph);
 
 		return distanceFromCamera<=radius;
 	}
@@ -369,7 +558,7 @@ public class NavigationActivity extends AppCompatActivity {
 	}
 
 	private AnchorNode createBallInReference(float[] positionInReference, List<ObjectInReference> myBalls, Renderable renderable) {
-		return GraphicsUtility.createBallInReference(positionInReference, myBalls, renderable, arFragment.getArSceneView().getScene(), referenceToWorld);
+		return GraphicsUtility.createBallInReference(positionInReference, myBalls, renderable, arFragment.getArSceneView().getScene(), graphToWorld);
 	}
 
 
@@ -391,5 +580,43 @@ public class NavigationActivity extends AppCompatActivity {
 		}
 
 		return nodes;
+	}
+
+	/**
+	 * Used to end a navigation and delete all shown paths
+	 */
+	private void endNavigation(){
+		GraphicsUtility.removeMyBalls(arFragment.getArSceneView().getScene(), pathBalls);
+		search_button.setActivated(false);
+	}
+
+	private void showFullGraph() {
+		GraphicsUtility.removeMyBalls(arFragment.getArSceneView().getScene(), pathBalls);
+
+		ARGraph graph = graphWithGrip.getGraph();
+
+		for (Node node : graph.vertexSet()) {
+			GraphicsUtility.createBallInReference(node.getPositionF(), pathBalls, lgsr, arFragment.getArSceneView().getScene(), graphToWorld);
+		}
+
+
+		for (DefaultWeightedEdge e : graph.edgeSet()) {
+			Node source = graph.getEdgeSource(e);
+			Node target = graph.getEdgeTarget(e);
+
+			float dist = VectorOperations.v3dist(source.getPositionF(), target.getPositionF());
+			float sepDist = 0.025f;
+			int numSep = (int) Math.ceil(dist / sepDist);
+
+			float stepDist = dist / (numSep);
+			float[] sourcePos = source.getPositionF();
+			float[] targetPos = target.getPositionF();
+			float[] dir = VectorOperations.v3normalize(VectorOperations.v3diff(targetPos, sourcePos));
+			for (int i = 1; i < numSep; i++) {
+				float[] pos = VectorOperations.v3add(sourcePos, VectorOperations.v3mulf(dir, stepDist * i));
+				GraphicsUtility.createBallInReference(pos, pathBalls, bsr, arFragment.getArSceneView().getScene(), graphToWorld);
+			}
+		}
+
 	}
 }

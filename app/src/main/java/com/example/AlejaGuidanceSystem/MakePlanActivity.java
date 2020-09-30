@@ -5,7 +5,6 @@ import androidx.core.content.res.TypedArrayUtils;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -15,17 +14,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
-import com.example.AlejaGuidanceSystem.Utility.ObjectInReference;
-import com.example.AlejaGuidanceSystem.Utility.PoseAveraginator;
 import com.example.AlejaGuidanceSystem.Utility.Utility;
 import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
-import com.example.AlejaGuidanceSystem.graph.ARGraph;
-import com.example.AlejaGuidanceSystem.graph.Node;
+import com.example.AlejaGuidanceSystem.Graph.ARGraph;
+import com.example.AlejaGuidanceSystem.Graph.ARGraphWithGrip;
+import com.example.AlejaGuidanceSystem.Graph.Node;
 import com.google.ar.core.AugmentedImage;
 import com.google.ar.core.AugmentedImageDatabase;
 import com.google.ar.core.Config;
@@ -44,16 +43,16 @@ import com.google.ar.sceneform.rendering.ShapeFactory;
 
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
-import org.jgrapht.graph.SimpleWeightedGraph;
 
 import java.lang.reflect.Array;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Optional;
+
 
 public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdateListener {
 
@@ -65,21 +64,32 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 	private ModelRenderable lbsr;
 
 	// list of spheres representing camera positions.
-	private ArrayList<ObjectInReference> pathBalls;
+	private ArrayList<AnchorNode> pathBalls;
 
 	private ARGraph graph;
+	private HashMap<String, ARGraphWithGrip.WeakGrip> gripMap;
 	private boolean regenerateScene = false;
 
 	private int nodeIdCounter = 0;
 
-	private PoseAveraginator referenceToWorldAveraginator = new PoseAveraginator(200);
+	// private final String GRAPHNAME = "schlabber";
 
-	private static final String GRAPHNAME = "schlabber";
+	private float[] cameraPosition = null;
+	private Node lastFocusedNode = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_make_plan);
+
+		//initialization of return button
+		ImageButton return_button = (ImageButton) findViewById(R.id.return_button_make_plan);
+		return_button.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View view){
+				finish();
+			}
+		});
 
 		arFragment = (CustomArFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
 		// adding a listener so that this activity can react to updates in the fragment
@@ -239,16 +249,29 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 
 		findViewById(R.id.saveButton).setOnClickListener(v -> {
-			Utility.saveObject(this, GRAPHNAME, graph);
+			AlertDialog.Builder builder = new AlertDialog.Builder(this); //AlertDialog.THEME_DEVICE_DEFAULT_DARK
+			builder.setTitle("Name your Plan");
+
+			final EditText input = new EditText(this);
+			input.setInputType(InputType.TYPE_CLASS_TEXT);
+			builder.setView(input);
+
+			builder.setPositiveButton("OK", (dialog, which) -> {
+				graph.setName(input.getText().toString());
+				Utility.saveObject(this, graph.getName(), new ARGraphWithGrip(graph, new ArrayList(gripMap.values())));
+
+			});
+			builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+			builder.show();
 		});
 
 		findViewById(R.id.deleteButton).setOnClickListener(v -> {
 			graph = new ARGraph();
 			regenerateScene = true;
-			if(nearestPosNode != null) {
+
+			if(nearestPosNode != null)
 				arFragment.getArSceneView().getScene().removeChild(nearestPosNode);
 				nearestPosNode = null;
-			}
 		});
 
 		pathBalls = new ArrayList<>();
@@ -267,14 +290,22 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 						material -> lbsr = ShapeFactory.makeSphere(0.02f, new Vector3(0.0f, 0.0f, 0.0f), material)
 				);
 
-		graph = (ARGraph) Utility.loadObject(this, GRAPHNAME);
-		if(graph == null) graph = new ARGraph();
+		/*graph =  (ARGraph) Utility.loadObject(this, "schlabber");
+		if(graph == null) {
+			graph = new ARGraph();
+		}
+		regenerateScene = true;*/
+
+		graph = new ARGraph();
+
 		regenerateScene = true;
+		gripMap = new HashMap<>();
 	}
 
+	/*
 	public static String getGraphName() {
 		return GRAPHNAME;
-	}
+	}*/
 
 
 	/**
@@ -282,23 +313,15 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 	 */
 	public void setupDatabase(Config config, Session session) {
 		// test image
-		Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ar_pattern);
+		Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ar_pattern1);
 
 		AugmentedImageDatabase aid = new AugmentedImageDatabase(session);
 		// adding Augmented Images to Database
-		aid.addImage("ar_pattern", bitmap, 0.2f);
+		aid.addImage("ar_pattern1", bitmap, 0.2f);
 
 		config.setAugmentedImageDatabase(aid);
 	}
 
-	private float[] lastPosition = null;
-	private float[] cameraPosition = null;
-	private Node lastFocusedNode = null;
-
-	private Session trackable = null;
-	private Pose trackableToWorld = null;
-	private Pose trackableToReference = null;
-	private Pose referenceToWorld = null;
 
 
 	/**
@@ -306,88 +329,57 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 	 */
 	@Override
 	public void onUpdate(FrameTime frameTime) {
+
 		// finding the current fragment of the scene
 		Session session = arFragment.getArSceneView().getSession();
 		Frame frame = arFragment.getArSceneView().getArFrame();
+
 		// all the items ARCore has tracked
 		Collection<AugmentedImage> images = frame.getUpdatedTrackables(AugmentedImage.class);
-
-		// Log.d("MyApp", "onUpdate");
-
 
 		// checking all detected images for one of the reference pictures
 		for (AugmentedImage image : images) {
 			if (image.getTrackingState() == TrackingState.TRACKING && image.getTrackingMethod() == AugmentedImage.TrackingMethod.FULL_TRACKING) {
-				if (image.getName().equals("ar_pattern")) {
-
-					//Trackable bla =  (Trackable)session;
-					Log.d("MyApp", "tracked " + image.getName());
-					Log.d("MyApp", "Pose: " + image.getCenterPose().toString());
-
-				/*trackable = image;
-				trackableToWorld = image.getCenterPose();
-				trackableToReference = Pose.makeTranslation(0, 100, 0);*/
-
-					trackable = session;
-					trackableToWorld = image.getCenterPose();
-					trackableToReference = Pose.makeTranslation(0, 0, 0);
-
-					Pose currentReferenceToWorld = trackableToWorld.compose(trackableToReference.inverse());
-					referenceToWorld = referenceToWorldAveraginator.add(currentReferenceToWorld);
-
-					for (ObjectInReference obj : pathBalls) {
-						obj.recalculatePosition(referenceToWorld);
-					}
-
-					// displaying a straight line of spheres
-				/*for (int i = 0; i < 40; i++) {
-					Pose upPose = Pose.makeTranslation(0, i * 0.2f, 0);
-					//Pose combinedPose = upPose.compose(anchorToWorld); // Pose.makeTranslation(0, i * 0.1f, 0);
-					//Anchor anchor = session.createAnchor(combinedPose);
-					Anchor anchor = trackable.createAnchor(trackableToWorld.compose(upPose));
-					createBall(anchor, balls, rsr);
-				}*/
-				}
+				ARGraphWithGrip.StrongGrip grip  = new ARGraphWithGrip.StrongGrip(
+						image.getName(),
+						image.getCenterPose().getTranslation(),
+						image.getCenterPose().getRotationQuaternion()
+				);
+				gripMap.put(image.getName(), grip);
 			}
 		}
 
-		if (trackable != null && regenerateScene && frame.getCamera().getTrackingState() == TrackingState.TRACKING) {
-			regeneratePathBalls();
-			regenerateScene = false;
-		}
-
-		if (trackable != null) {
+		if(frame.getCamera().getTrackingState() == TrackingState.TRACKING) {
 			Pose cameraToWorld = frame.getCamera().getPose();
-			Pose cameraToReference = referenceToWorld.inverse().compose(cameraToWorld);
-			cameraPosition = cameraToReference.transformPoint(new float[]{0.0f, 0.0f, 0.0f});
+			cameraPosition = cameraToWorld.transformPoint(new float[] { 0, 0, 0 });
 
-			/*if (lastPosition == null || v3dist(cameraPosition, lastPosition) > 0.2) {
-				lastPosition = new float[]{cameraPosition[0], cameraPosition[1], cameraPosition[2]};
-
-				createBall(trackable.createAnchor(referenceToWorld.compose(Pose.makeTranslation(lastPosition))), pathBalls, bsr);
-			}*/
-
-			// printing the camera position to console and to screen of device running the app
-
+			if (regenerateScene) {
+				regeneratePathBalls();
+				regenerateScene = false;
+			}
 
 			int sceneformChildren = arFragment.getArSceneView().getScene().getChildren().size();
 			int numAnchors = session.getAllAnchors().size();
+			int numGrips = gripMap.size();
 
+			String x = "";
+			for(ARGraphWithGrip.WeakGrip grip : gripMap.values()) {
+				x += Arrays.toString(grip.gripPosition) + ", ";
+			}
 
-			// String logString = String.format(Locale.GERMAN, "Camera position %.3f %.3f %.3f %d %d", cameraPosition[0], cameraPosition[1], cameraPosition[2], sceneformChildren, numAnchors);
-			String logString = String.format(Locale.GERMAN, "Camera position %.3f %.3f %.3f", cameraPosition[0], cameraPosition[1], cameraPosition[2]);
+			String logString = String.format(Locale.GERMAN, "Camera position %.3f %.3f %.3f\n%d\n%d\nNum Grips: %d %s", cameraPosition[0], cameraPosition[1], cameraPosition[2], sceneformChildren, numAnchors, numGrips, x);
+
 			Log.d("MyApp2", logString);
 
 			TextView myAwesomeTextView = (TextView) findViewById(R.id.textView);
 			myAwesomeTextView.setText(logString);
-		}
 
 
-		if (cameraPosition != null) {
+			// update nearest graph point to camera
 			NearestPointInfo nearestPointInfo = nearestPointInGraph(graph, cameraPosition);
 
 			if (nearestPointInfo != null && frame.getCamera().getTrackingState() == TrackingState.TRACKING) {
-				Pose nodePose = referenceToWorld.compose(Pose.makeTranslation(nearestPointInfo.nearestPosition));
+				Pose nodePose = Pose.makeTranslation(nearestPointInfo.nearestPosition);
 
 				if (nearestPosNode == null) {
 					nearestPosNode = new AnchorNode();
@@ -399,7 +391,6 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 				}
 			}
 		}
-
 	}
 
 	private static class NearestPointInfo {
@@ -452,10 +443,10 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 
 	private void regeneratePathBalls() {
-		GraphicsUtility.removeMyBalls(arFragment.getArSceneView().getScene(), pathBalls);
+		GraphicsUtility.removeMyBallsInWorld(arFragment.getArSceneView().getScene(), pathBalls);
 
 		for (Node node : graph.vertexSet()) {
-			GraphicsUtility.createBallInReference(node.getPositionF(), pathBalls, lbsr, arFragment.getArSceneView().getScene(), referenceToWorld);
+			GraphicsUtility.createBallInWorld(node.getPositionF(), pathBalls, lbsr, arFragment.getArSceneView().getScene());
 		}
 
 
@@ -473,7 +464,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			float[] dir = VectorOperations.v3normalize(VectorOperations.v3diff(targetPos, sourcePos));
 			for (int i = 1; i < numSep; i++) {
 				float[] pos = VectorOperations.v3add(sourcePos, VectorOperations.v3mulf(dir, stepDist * i));
-				GraphicsUtility.createBallInReference(pos, pathBalls, bsr, arFragment.getArSceneView().getScene(), referenceToWorld);
+				GraphicsUtility.createBallInWorld(pos, pathBalls, bsr, arFragment.getArSceneView().getScene());
 			}
 		}
 
