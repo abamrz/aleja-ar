@@ -12,6 +12,7 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -211,11 +212,22 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle("Node Attributes");
-			// Set up the input
+			// Set up the label input
 			final EditText input = new EditText(context);
 			input.setHint("Label");
 			input.setInputType(InputType.TYPE_CLASS_TEXT);
+			if (!closest.getLabel().trim().isEmpty()) input.setText(closest.getLabel());
 			layout.addView(input);
+
+			// Set up office description
+			final EditText officeDescription = new EditText(context);
+			officeDescription.setHint("Description");
+			officeDescription.setInputType(InputType.TYPE_CLASS_TEXT);
+			if (!closest.getDescription().trim().isEmpty()) officeDescription.setText(closest.getDescription());
+			officeDescription.setVisibility(View.GONE);
+			layout.addView(officeDescription);
+
+			//Decription wird in label gespeichert, wie wenn das letzte was man eingegeben hat gespeichert wird; und es wird dauern (02) hinzugefügt.
 
 			/*String[] typeStrings = {"Waypoint", "Kitchen", "Exit", "Coffee", "Office", "Elevator", "Toilette", "Fire Extinguisher"};
 			Node.NodeType[] types = {Node.NodeType.WAYPOINT, Node.NodeType.KITCHEN, Node.NodeType.EXIT, Node.NodeType.COFFEE,
@@ -233,12 +245,29 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 				derSpinner.setSelection(typeIndex);
 			layout.addView(derSpinner);
 
+			derSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+				@Override
+				public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+					if (types[derSpinner.getSelectedItemPosition()] == Node.NodeType.OFFICE){
+						officeDescription.setVisibility(View.VISIBLE);
+					}
+					else officeDescription.setVisibility(View.GONE);
+				}
+
+				@Override
+				public void onNothingSelected(AdapterView<?> parent) {
+
+				}
+			});
+
+
 			builder.setView(layout);
 
 			// Set up the buttons
 			builder.setPositiveButton("OK", (dialog, which) -> {
 				closest.setLabel(input.getText().toString());
 				closest.setType(types[derSpinner.getSelectedItemPosition()]);
+				closest.setDescription(officeDescription.getText().toString());
 
 				Log.d("AttributesTest", closest.getId() + ": label: " + closest.getLabel() + ", type: " + closest.getType().toString());
 			});

@@ -369,7 +369,6 @@ public class NavigationActivity extends AppCompatActivity {
 
 		//TODO: Wo sollen diese Methoden hin?
 			updateLabelOrientation();
-
 			updateLabelVisibility();
 		}
 

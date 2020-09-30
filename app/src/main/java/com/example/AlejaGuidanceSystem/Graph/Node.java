@@ -43,6 +43,9 @@ public class Node implements Serializable {
         typeStrings.put(NodeType.ELEVATOR, "Elevator");
         typeStrings.put(NodeType.TOILETTE, "Toilette");
         typeStrings.put(NodeType.FIRE_EXTINGUISHER, "Fire Extinguisher");
+
+        this.description = "";
+        this.label = "";
     }
 
     public Node(float[] v, String id) {
