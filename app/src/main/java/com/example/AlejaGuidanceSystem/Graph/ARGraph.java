@@ -10,6 +10,7 @@ import java.io.Serializable;
 
 
 public class ARGraph extends SimpleWeightedGraph<Node, DefaultWeightedEdge> implements Serializable {
+	private String name = "schlabber";
 
 	public ARGraph() {
 		super(DefaultWeightedEdge.class);
@@ -18,6 +19,14 @@ public class ARGraph extends SimpleWeightedGraph<Node, DefaultWeightedEdge> impl
 	public ARGraph(ARGraph src) {
 		this();
 		Graphs.addGraph(this, src);
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	/**

@@ -139,7 +139,7 @@ public class WelcomeActivity extends Activity {
         String graphName = item.getTitle().toString();
 
         //TODO: load graph by name from database
-        ARGraphWithGrip graph = (ARGraphWithGrip) Utility.loadObject(this, "schlabber");
+        ARGraphWithGrip graph = (ARGraphWithGrip) Utility.loadObject(this, graphName);
         if(graph != null) {
             openUseExistingPlanActivity(graph);
         } else {

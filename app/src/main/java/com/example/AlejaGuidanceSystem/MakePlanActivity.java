@@ -72,7 +72,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 	private int nodeIdCounter = 0;
 
-	private static final String GRAPHNAME = "schlabber";
+	// private final String GRAPHNAME = "schlabber";
 
 	private float[] cameraPosition = null;
 	private Node lastFocusedNode = null;
@@ -249,7 +249,20 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 
 		findViewById(R.id.saveButton).setOnClickListener(v -> {
-			Utility.saveObject(this, GRAPHNAME, new ARGraphWithGrip(graph, new ArrayList(gripMap.values())));
+			AlertDialog.Builder builder = new AlertDialog.Builder(this); //AlertDialog.THEME_DEVICE_DEFAULT_DARK
+			builder.setTitle("Name your Plan");
+
+			final EditText input = new EditText(this);
+			input.setInputType(InputType.TYPE_CLASS_TEXT);
+			builder.setView(input);
+
+			builder.setPositiveButton("OK", (dialog, which) -> {
+				graph.setName(input.getText().toString());
+				Utility.saveObject(this, graph.getName(), new ARGraphWithGrip(graph, new ArrayList(gripMap.values())));
+
+			});
+			builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+			builder.show();
 		});
 
 		findViewById(R.id.deleteButton).setOnClickListener(v -> {
@@ -289,9 +302,10 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 		gripMap = new HashMap<>();
 	}
 
+	/*
 	public static String getGraphName() {
 		return GRAPHNAME;
-	}
+	}*/
 
 
 	/**
