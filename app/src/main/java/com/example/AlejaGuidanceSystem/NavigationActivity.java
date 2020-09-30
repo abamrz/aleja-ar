@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import com.example.AlejaGuidanceSystem.Graph.ARGraphWithGrip;
 import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
+import com.example.AlejaGuidanceSystem.Utility.GripVisualisator;
 import com.example.AlejaGuidanceSystem.Utility.LabelView;
 import com.example.AlejaGuidanceSystem.Utility.ObjectInReference;
 import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
@@ -82,11 +83,15 @@ public class NavigationActivity extends AppCompatActivity {
 
 	private HashMap<String, ARGraphWithGrip.WeakGrip> gripMap;
 
+	private GripVisualisator gripVisualisator;
+
 	@Override
 	@SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_navigation);
+
+		gripVisualisator = new GripVisualisator(this, arFragment.getArSceneView().getScene());
 
 // Example Graph
 		/*
@@ -195,6 +200,8 @@ public class NavigationActivity extends AppCompatActivity {
 //				labels.add(obj);
 			}
 		});
+
+
 	}
 
 	/**
@@ -290,16 +297,14 @@ public class NavigationActivity extends AppCompatActivity {
 
 		for(AugmentedImage image : images) {
 			if(image.getTrackingState() == TrackingState.TRACKING && image.getTrackingMethod() == AugmentedImage.TrackingMethod.FULL_TRACKING) {
-
 				ARGraphWithGrip.StrongGrip grip  = new ARGraphWithGrip.StrongGrip(
 						image.getName(),
 						image.getCenterPose().getTranslation(),
 						image.getCenterPose().getRotationQuaternion()
 				);
 				gripMap.put(image.getName(), grip);
-
+				this.gripVisualisator.updateGrip(image.getName(), image.getCenterPose());
 				this.updateGraphToWorldByGrip();
-
 			}
 		}
 
