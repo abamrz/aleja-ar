@@ -124,10 +124,9 @@ public class WelcomeActivity extends Activity {
         super.onCreateContextMenu(menu, v, menuInfo);
         menu.setHeaderTitle(getResources().getString(R.string.graph_select));
 
-        //TODO: load graph names from database
-        ArrayList<String> mapNames = new ArrayList<>();
-        mapNames.add("Dummy1");
-        mapNames.add("Dummy2");
+        ArrayList<String> mapNames = new ArrayList<>(); //TODO: Load the names of all Graphs in the database and save them in mapNames
+        mapNames.add("Dummy1"); //TODO: delete when names loaded from database
+        mapNames.add("Dummy2"); //Todo: delete when names loaded from database
 
         for (String map : mapNames){
             menu.add(map);
@@ -138,8 +137,8 @@ public class WelcomeActivity extends Activity {
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         String graphName = item.getTitle().toString();
 
-        //TODO: load graph by name from database
-        ARGraphWithGrip graph = (ARGraphWithGrip) Utility.loadObject(this, graphName);
+        //TODO: load graph by name (graphName) from database and save as ARGraphWithGrip graph
+        ARGraphWithGrip graph = (ARGraphWithGrip) Utility.loadObject(this, graphName); //TODO: delete, when load from database is done
         if(graph != null) {
             openUseExistingPlanActivity(graph);
         } else {
