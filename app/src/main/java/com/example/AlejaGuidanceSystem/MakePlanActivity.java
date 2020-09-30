@@ -5,6 +5,7 @@ import androidx.core.content.res.TypedArrayUtils;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -13,11 +14,13 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
 import com.example.AlejaGuidanceSystem.Utility.Utility;
@@ -259,14 +262,34 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			input.setInputType(InputType.TYPE_CLASS_TEXT);
 			builder.setView(input);
 
-			builder.setPositiveButton("OK", (dialog, which) -> {
-				graph.setName(input.getText().toString());
-				graph.getName();
-				Utility.saveObject(this, graph.getName(), new ARGraphWithGrip(graph, new ArrayList(gripMap.values())));
-
-			});
+			builder.setPositiveButton("OK", null);
 			builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-			builder.show();
+
+			// giving positive Button an onClickListener, to stop dialog from automatically disappearing
+			MakePlanActivity context = this;
+			AlertDialog nameDialog = builder.create();
+			nameDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+				@Override
+				public void onShow(DialogInterface dialogInterface) {
+					Button button = nameDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+					button.setOnClickListener(new View.OnClickListener() {
+						@Override
+						public void onClick(View view) {
+							String graphName = input.getText().toString();
+							if(graphName != null && !graphName.equals("")) {
+								graph.setName(graphName);
+								Utility.saveObject(context, graph.getName(), new ARGraphWithGrip(graph, new ArrayList(gripMap.values())));
+								nameDialog.dismiss();
+							}
+							else {
+								Toast.makeText(context, "Invalid Graph name!", Toast.LENGTH_LONG).show();
+							}
+						}
+					});
+				}
+			});
+			nameDialog.show();
+			//builder.show();
 		});
 
 		findViewById(R.id.deleteButton).setOnClickListener(v -> {
@@ -305,12 +328,6 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 		regenerateScene = true;
 		gripMap = new HashMap<>();
 	}
-
-	/*
-	public static String getGraphName() {
-		return GRAPHNAME;
-	}*/
-
 
 	/**
 	 * setting up the Augmented Images Database by adding images that should be detected.
