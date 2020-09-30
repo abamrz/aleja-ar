@@ -74,7 +74,8 @@ public class DatabaseConnector extends SQLiteOpenHelper {
             return graphsModelArrayList;
         }
 
-        public int updateTeachers(@NonNull String name) {
+        // update by name, if needed
+        public int updateGraph(@NonNull String name) {
             SQLiteDatabase db = this.getWritableDatabase();
             ContentValues values = new ContentValues();
             values.put(KEY_NAME, name);
