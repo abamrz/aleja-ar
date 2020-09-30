@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_pressed="true">
+        <layer-list>
+            xmlns:android="http://schemas.android.com/apk/res/android" >
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:endColor="#28384A"
+                        android:gradientRadius="30dp"
+                        android:type="radial"
+                        android:startColor="#0D92DF" />
+                    <corners android:radius="3dp" />
+                    <stroke
+                        android:width="0.5dp"
+                        android:color="@android:color/black" />
+                </shape>
+            </item>
+            <item android:drawable="@android:drawable/ic_menu_revert" android:right="0px">
+            </item>
+        </layer-list>
+    </item>
+
+    <item android:state_pressed="false">
+        <layer-list>
+            xmlns:android="http://schemas.android.com/apk/res/android" >
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:endColor="#28384A"
+                        android:gradientRadius="30dp"
+                        android:type="radial"
+                        android:startColor="#4D92DF" />
+                    <corners android:radius="3dp" />
+                    <stroke
+                        android:width="0.5dp"
+                        android:color="@android:color/black" />
+                </shape>
+            </item>
+            <item android:drawable="@android:drawable/ic_menu_revert" android:right="0px">
+            </item>
+        </layer-list>
+    </item>
+</selector>

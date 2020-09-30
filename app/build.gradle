@@ -51,6 +51,8 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
     implementation 'org.jgrapht:jgrapht-core:1.0.0'
     implementation "android.arch.persistence.room:runtime:1.0.0"
+    implementation "org.ejml:ejml-all:0.39"
+
     annotationProcessor "android.arch.persistence.room:compiler:1.0.0"
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'

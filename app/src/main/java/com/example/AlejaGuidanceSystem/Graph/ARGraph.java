@@ -1,4 +1,4 @@
-package com.example.AlejaGuidanceSystem.graph;
+package com.example.AlejaGuidanceSystem.Graph;
 
 import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
 
