@@ -14,9 +14,11 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.AlejaGuidanceSystem.Graph.ARGraphWithGrip;
 import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
+import com.example.AlejaGuidanceSystem.Utility.GripVisualisator;
 import com.example.AlejaGuidanceSystem.Utility.LabelView;
 import com.example.AlejaGuidanceSystem.Utility.ObjectInReference;
 import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
@@ -82,11 +84,24 @@ public class NavigationActivity extends AppCompatActivity {
 
 	private HashMap<String, ARGraphWithGrip.WeakGrip> gripMap;
 
+	private GripVisualisator gripVisualisator;
+
 	@Override
 	@SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_navigation);
+
+		gripVisualisator = new GripVisualisator(this, arFragment.getArSceneView().getScene());
+
+// Example Graph
+		/*
+		Node a = new Node (1, 0, 0, "a");
+		Node b = new Node (0, 0,0, "b");
+		a.setType(Node.NodeType.OFFICE);
+		b.setType(Node.NodeType.COFFEE);
+		a.setDescription("Linux Installation Instructions");
+		 */
 
 		// load the selected graph
 		graphWithGrip = (ARGraphWithGrip) getIntent().getSerializableExtra("Graph");
@@ -147,35 +162,10 @@ public class NavigationActivity extends AppCompatActivity {
 
 					showSearchDialog(types, labels);
 				}
-				//	}
-
-//			final TextView input = new TextView(NavigationActivity. this);
-//			input.setText("Des is a bayrisches Label!");
-//			input.setInputType(InputType.TYPE_CLASS_TEXT);
-//			input.setTextColor(android.graphics.Color.WHITE);
-//			input.setBackgroundColor(android.graphics.Color.BLACK);
-//
-//			CompletableFuture<ViewRenderable>
-//					future = ViewRenderable
-//					.builder()
-//					.setView((Context) NavigationActivity.this, input)
-//					.build();
-//			future.thenAccept(viewRenderable -> {
-//
-//				viewRenderable.setHorizontalAlignment(ViewRenderable.HorizontalAlignment.CENTER);
-//				viewRenderable.setVerticalAlignment(ViewRenderable.VerticalAlignment.CENTER);
-//				viewRenderable.setSizer( new DpToMetersViewSizer(550) );
-//
-//				AnchorNode x = new AnchorNode();
-//				x.setRenderable(viewRenderable);
-//				arFragment.getArSceneView().getScene().addChild(x);
-//
-//				float[] quat = VectorOperations.createQuaternionFromAxisAngle(1, 0, 0, -(float)Math.PI / 2.0f);
-//				ObjectInReference obj = new ObjectInReference(x, Pose.makeRotation(quat));
-//				obj.recalculatePosition(referenceToWorld);
-//				labels.add(obj);
 			}
 		});
+
+		Toast.makeText(this, "Scan a marker to start navigation", Toast.LENGTH_LONG);
 	}
 
 	/**
@@ -278,7 +268,7 @@ public class NavigationActivity extends AppCompatActivity {
 						image.getCenterPose().getRotationQuaternion()
 				);
 				gripMap.put(image.getName(), grip);
-
+				this.gripVisualisator.updateGrip(image.getName(), image.getCenterPose());
 				this.updateGraphToWorldByGrip();
 
 			}
