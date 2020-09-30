@@ -6,12 +6,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
 import com.example.AlejaGuidanceSystem.Utility.LabelView;
@@ -195,11 +192,11 @@ public class NavigationActivity extends AppCompatActivity {
 							obj.recalculatePosition(referenceToWorld);
 						}
 					}
-
+					showLabels(graph);
 					for(ObjectInReference obj : labels) {
 						obj.recalculatePosition(referenceToWorld);
 
-						showLabels(graph);
+
 
 					}
 					search_button.setEnabled(true);
@@ -317,21 +314,19 @@ public class NavigationActivity extends AppCompatActivity {
 
 	private void updateLabelVisibility(){
 		for (LabelView label: labelViews){
-			if (inRadius(label, 2)){
-				label.setVisibiliy(1);
+			if (inRadius(label, 1.5)){
+				label.setVisible(true);
 			}
-			else label.setVisibiliy(0);
+			else label.setVisible(false);
 		}
 	}
 
 	// check if label in Radius
-	private boolean inRadius(LabelView labelView, int radius){
-		Pose position = labelView.getObjectInReference().getPoseInReference().extractTranslation();
+	private boolean inRadius(LabelView labelView, double radius){
+		float[] position = labelView.getObjectInReference().getPoseInReference().getTranslation();
+		double distanceFromCamera = VectorOperations.v3dist(position, cameraPosition);
 
-		if (position.tx() <= cameraPosition[0]+radius || position.ty() <= cameraPosition[1]+radius || position.tz() <= cameraPosition[2]+radius){
-			return true;
-		}
-		else return false;
+		return distanceFromCamera<=radius;
 	}
 
 	/**

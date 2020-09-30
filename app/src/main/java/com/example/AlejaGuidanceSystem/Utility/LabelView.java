@@ -6,7 +6,6 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.example.AlejaGuidanceSystem.NavigationActivity;
 import com.example.AlejaGuidanceSystem.graph.Node;
 
 
@@ -20,15 +19,16 @@ public class LabelView {
     private Node node;
     private ObjectInReference objectInReference;
     private LinearLayout layoutView;
-    private double visibiliy;
+    private boolean visible;
 
     public LabelView(Context context, Node node) {
         this.node = node;
 
         layoutView = new LinearLayout(context);
         layoutView.setOrientation(LinearLayout.VERTICAL);
+        layoutView.setVisibility(View.GONE);
 
-        visibiliy = 0;
+        visible = false;
 
         if (node.getType() == Node.NodeType.OFFICE) {
             final TextView title = new TextView(context);
@@ -88,14 +88,14 @@ public class LabelView {
         return this.node;
     }
 
-    public double getVisibiliy() {
-        return this.visibiliy;
+    public boolean getVisible() {
+        return this.visible;
     }
 
-    public void setVisibiliy(double visibility) {
-        this.visibiliy = visibiliy;
-        if (visibility == 0) layoutView.setVisibility(View.INVISIBLE);
-        else layoutView.setVisibility(View.VISIBLE);
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+        if (visible) layoutView.setVisibility(View.VISIBLE);
+        else layoutView.setVisibility(View.GONE);
     }
 
     public ObjectInReference getObjectInReference() {
