@@ -14,6 +14,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.AlejaGuidanceSystem.Graph.ARGraphWithGrip;
 import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
@@ -161,37 +162,10 @@ public class NavigationActivity extends AppCompatActivity {
 
 					showSearchDialog(types, labels);
 				}
-				//	}
-
-//			final TextView input = new TextView(NavigationActivity. this);
-//			input.setText("Des is a bayrisches Label!");
-//			input.setInputType(InputType.TYPE_CLASS_TEXT);
-//			input.setTextColor(android.graphics.Color.WHITE);
-//			input.setBackgroundColor(android.graphics.Color.BLACK);
-//
-//			CompletableFuture<ViewRenderable>
-//					future = ViewRenderable
-//					.builder()
-//					.setView((Context) NavigationActivity.this, input)
-//					.build();
-//			future.thenAccept(viewRenderable -> {
-//
-//				viewRenderable.setHorizontalAlignment(ViewRenderable.HorizontalAlignment.CENTER);
-//				viewRenderable.setVerticalAlignment(ViewRenderable.VerticalAlignment.CENTER);
-//				viewRenderable.setSizer( new DpToMetersViewSizer(550) );
-//
-//				AnchorNode x = new AnchorNode();
-//				x.setRenderable(viewRenderable);
-//				arFragment.getArSceneView().getScene().addChild(x);
-//
-//				float[] quat = VectorOperations.createQuaternionFromAxisAngle(1, 0, 0, -(float)Math.PI / 2.0f);
-//				ObjectInReference obj = new ObjectInReference(x, Pose.makeRotation(quat));
-//				obj.recalculatePosition(referenceToWorld);
-//				labels.add(obj);
 			}
 		});
 
-
+		Toast.makeText(this, "Scan a marker to start navigation", Toast.LENGTH_LONG);
 	}
 
 	/**
@@ -287,6 +261,7 @@ public class NavigationActivity extends AppCompatActivity {
 
 		for(AugmentedImage image : images) {
 			if(image.getTrackingState() == TrackingState.TRACKING && image.getTrackingMethod() == AugmentedImage.TrackingMethod.FULL_TRACKING) {
+
 				ARGraphWithGrip.StrongGrip grip  = new ARGraphWithGrip.StrongGrip(
 						image.getName(),
 						image.getCenterPose().getTranslation(),
@@ -295,6 +270,7 @@ public class NavigationActivity extends AppCompatActivity {
 				gripMap.put(image.getName(), grip);
 				this.gripVisualisator.updateGrip(image.getName(), image.getCenterPose());
 				this.updateGraphToWorldByGrip();
+
 			}
 		}
 
