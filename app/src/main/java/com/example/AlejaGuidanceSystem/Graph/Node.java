@@ -9,10 +9,12 @@ import com.example.AlejaGuidanceSystem.R;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 
 public class Node implements Serializable {
@@ -102,11 +104,18 @@ public class Node implements Serializable {
         return label;
     }
 
-    public void setLabel(String label) {
-        if (allLabels.contains(label)) {
-            int count = Collections.frequency(allLabels, label);
-            label = String.format("%s (%02d)", label, count + 1);
+    public void setLabel(String newLabel) {
+        int count = 0;
+        Pattern p = Pattern.compile(newLabel + " (..)");
+        for (String label : allLabels){
+            if (p.matcher(label).matches()){
+                count++;
+            }
         }
+        if (count > 0){
+            newLabel = String.format("%s (%02d)", label, count + 1);
+        }
+
         allLabels.add(label);
         this.label = label;
     }
