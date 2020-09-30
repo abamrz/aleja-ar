@@ -21,7 +21,7 @@
     <ImageView
         android:layout_width="200dp"
         android:layout_height="100dp"
-        android:src="@drawable/itestra_logo_small" />
+        android:src="@drawable/aleja_logo" />
 
     <RelativeLayout
         android:layout_width="match_parent"
