@@ -282,7 +282,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 		// creating the spheres
 		MaterialFactory.makeOpaqueWithColor(this, new Color(android.graphics.Color.RED))
 				.thenAccept(
-						material -> rsr = ShapeFactory.makeSphere(0.02f, new Vector3(0.0f, 0.0f, 0.0f), material)
+						material -> rsr = ShapeFactory.makeSphere(0.0201f, new Vector3(0.0f, 0.0f, 0.0f), material)
 				);
 		MaterialFactory.makeOpaqueWithColor(this, new Color(android.graphics.Color.BLUE))
 				.thenAccept(
@@ -363,8 +363,6 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 				regenerateScene = false;
 			}
 
-			int sceneformChildren = arFragment.getArSceneView().getScene().getChildren().size();
-			int numAnchors = session.getAllAnchors().size();
 			int numGrips = gripMap.size();
 
 			String x = "";
@@ -372,9 +370,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 				x += Arrays.toString(grip.gripPosition) + ", ";
 			}
 
-			String logString = String.format(Locale.GERMAN, "Camera position %.3f %.3f %.3f\n%d\n%d\nNum Grips: %d %s", cameraPosition[0], cameraPosition[1], cameraPosition[2], sceneformChildren, numAnchors, numGrips, x);
-
-			Log.d("MyApp2", logString);
+			String logString = String.format(Locale.GERMAN, "Camera position %.3f %.3f %.3f\nNum Grips: %d %s", cameraPosition[0], cameraPosition[1], cameraPosition[2], numGrips, x);
 
 			TextView myAwesomeTextView = (TextView) findViewById(R.id.textView);
 			myAwesomeTextView.setText(logString);
