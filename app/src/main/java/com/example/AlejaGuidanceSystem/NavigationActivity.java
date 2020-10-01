@@ -130,7 +130,7 @@ public class NavigationActivity extends AppCompatActivity {
 				);
 		MaterialFactory.makeOpaqueWithColor(this, new Color(android.graphics.Color.BLUE))
 				.thenAccept(
-						material -> bsr = ShapeFactory.makeSphere(0.005f, new Vector3(0.0f, 0.0f, 0.0f), material)
+						material -> bsr = ShapeFactory.makeSphere(0.01f, new Vector3(0.0f, 0.0f, 0.0f), material)
 				);
 		MaterialFactory.makeOpaqueWithColor(this, new Color(android.graphics.Color.GREEN))
 				.thenAccept(
@@ -621,7 +621,7 @@ public class NavigationActivity extends AppCompatActivity {
 			this.createBallInReference(source.getPositionF(), pathBalls, lgsr);
 
 			float dist = VectorOperations.v3dist(source.getPositionF(), target.getPositionF());
-			float sepDist = 0.025f;
+			float sepDist = 0.1f;
 			int numSep = (int)Math.ceil(dist / sepDist);
 
 			float stepDist = dist / (numSep);
