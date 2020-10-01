@@ -62,11 +62,14 @@ Launch AlejaAR and you will be landed on the following page with some options:
 
 ### Step 2: Make a new plan
 
-Create a new plan of the floor (to be updated)
+* Go to **Make Plan** page (to be updated)
+
 
 ### Step 3: Use an existing plan
 
-To be added
+* After you are landed at **Use Existing Plan** page, you have to choose desired plan saved before
+* Choose the plan (map) from the list
+* Let the AlejaAR to navigate!
 
 **Note**: the steps 1-3 should be followed in strict order during the first launching the app, i.e. should you do not have any plan (graph) in the database, you first create a new plan (step 2).
 
