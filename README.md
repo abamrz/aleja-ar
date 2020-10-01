@@ -14,6 +14,9 @@ ARCore (https://developers.google.com/ar)                                   |
 JGraphT (https://jgrapht.org/)                                              |
 SQLite (https://www.sqlite.org/index.html)                                  |
 
+## Start the app
+TODO: WelcomeScreen image
+
 
 ## Installation
 There are two options to install an app
