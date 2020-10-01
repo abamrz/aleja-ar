@@ -2,8 +2,8 @@
 
 ## Overview 
 
-### What's a AlejaAR?
-AlejaAR is an Android application available on API levels 21 (Lollipop)+. It provides navigation service inside the office buildings using Augmented Reality in mobile camera.
+### What's AlejaAR?
+AlejaAR is an Android application, that provides navigation service inside a building using Augmented Reality.
 
 Please consider and follow the guidelines below to get to know an application better.
 
@@ -16,7 +16,7 @@ SQLite (https://www.sqlite.org/index.html)                                  |
 
 
 ## Installation
-There are two options to install an app
+There are following options to install an app.
 
 #### Option 1: Install the release version on the smartphone
 The app is developed for Android 7.0 (API Level 24, Nougat) or higher. To use the app you need a smartphone 
@@ -43,11 +43,11 @@ ext.store_password='...'
 Then place both keystores under `app/keystores/` directory.
 
 
-## Build variants
+### Build variants
 Use the Android Studio *Build Variants* button.
 
 
-## Generating signed APK
+### Generating signed APK
 From Android Studio:
 1. ***Build*** menu
 2. ***Generate Signed APK...***
@@ -62,11 +62,14 @@ Launch AlejaAR and you will be landed on the following page with some options:
 
 ### Step 2: Make a new plan
 
-Create a new plan of the floor (to be updated)
+* Go to **Make Plan** page (to be updated)
+
 
 ### Step 3: Use an existing plan
 
-To be added
+* After you are landed at **Use Existing Plan** page, you have to choose desired plan saved before
+* Choose the plan (map) from the list
+* Let the AlejaAR to navigate!
 
 **Note**: the steps 1-3 should be followed in strict order during the first launching the app, i.e. should you do not have any plan (graph) in the database, you first create a new plan (step 2).
 

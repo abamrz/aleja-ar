@@ -144,6 +144,7 @@ public class WelcomeActivity extends Activity {
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         String graphName = item.getTitle().toString();
         ARGraphWithGrip graph = databaseConnector.getAllGraphs().stream().filter(g -> (g.getGraph().getName().equals(graphName))).findAny().get();
+        //graph = (ARGraphWithGrip) Utility.loadObject(this, graphName);
         if(graph != null) {
             openUseExistingPlanActivity(graph);
         } else {
