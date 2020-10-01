@@ -99,8 +99,6 @@ public class NavigationActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_navigation);
 
-		gripVisualisator = new GripVisualisator(this, arFragment.getArSceneView().getScene());
-
 // Example Graph
 		/*
 		Node a = new Node (1, 0, 0, "a");
@@ -118,6 +116,8 @@ public class NavigationActivity extends AppCompatActivity {
 		arFragment.getArSceneView().getScene().addOnUpdateListener(this::onUpdateFrame);
 
 		showLabels(graphWithGrip.getGraph());
+
+		gripVisualisator = new GripVisualisator(this, arFragment.getArSceneView().getScene());
 
 		gripMap = new HashMap<>();
 
@@ -306,8 +306,7 @@ public class NavigationActivity extends AppCompatActivity {
 			cameraPositionInGraph = cameraToReference.transformPoint(new float[]{0.0f, 0.0f, 0.0f});
 
 			updateLabelOrientation();
-			//TODO: remove child is called before something actually happens
-			// updateLabelVisibility();
+			updateLabelVisibility();
 		}
 
 		//during navigation
@@ -534,7 +533,7 @@ public class NavigationActivity extends AppCompatActivity {
 	}
 
 	private void updateLabelOrientation(){
-		//update anchorNodes! :) mit folgendem Link
+		//based on following link
 		//https://creativetech.blog/home/ui-elements-for-arcore-renderable
 		// calculate current rotation for labels
 		for (Label label : labels) {
