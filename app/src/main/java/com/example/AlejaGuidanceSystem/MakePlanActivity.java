@@ -230,14 +230,14 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			final EditText input = new EditText(context);
 			input.setHint("Label");
 			input.setInputType(InputType.TYPE_CLASS_TEXT);
-			if (!closest.getLabel().trim().isEmpty()) input.setText(closest.getLabel());
+			if (closest.getLabel() != null &&!closest.getLabel().trim().isEmpty()) input.setText(closest.getLabel());
 			layout.addView(input);
 
 			// Set up office description
 			final EditText officeDescription = new EditText(context);
 			officeDescription.setHint("Description");
 			officeDescription.setInputType(InputType.TYPE_CLASS_TEXT);
-			if (!closest.getDescription().trim().isEmpty()) officeDescription.setText(closest.getDescription());
+			if (closest.getDescription() != null && !closest.getDescription().trim().isEmpty()) officeDescription.setText(closest.getDescription());
 			officeDescription.setVisibility(View.GONE);
 			layout.addView(officeDescription);
 

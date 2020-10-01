@@ -60,7 +60,7 @@ public class Node implements Serializable {
 
     public Node(float[] v, String id) {
         this(v[0], v[1], v[2], id);
-        this.setLabel(id);
+        // this.setLabel(id);
     }
 
 
