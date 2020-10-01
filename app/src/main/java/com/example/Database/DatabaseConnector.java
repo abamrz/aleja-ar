@@ -11,7 +11,13 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.example.AlejaGuidanceSystem.Graph.ARGraph;
+import com.example.AlejaGuidanceSystem.Graph.ARGraphWithGrip;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 
@@ -103,5 +109,37 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         }
 
         return instance;
+    }
+
+    public byte[] makebyte(ARGraphWithGrip modeldata) {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(modeldata);
+            byte[] employeeAsBytes = baos.toByteArray();
+            ByteArrayInputStream bais = new ByteArrayInputStream(employeeAsBytes);
+
+            return employeeAsBytes;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public ARGraphWithGrip readGraphFromByte(byte[] data) {
+        try {
+            ByteArrayInputStream baip = new ByteArrayInputStream(data);
+            ObjectInputStream ois = new ObjectInputStream(baip);
+            ARGraphWithGrip dataobj = (ARGraphWithGrip) ois.readObject();
+
+            return dataobj ;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
