@@ -54,19 +54,21 @@ From Android Studio:
 3. Fill in the keystore information *(you only need to do this once manually and then let Android Studio remember it)*
 
 ## How to use the app? 
-### Start the app  
+### Step 1: Start the app  
 
 Launch AlejaAR and you will be landed on the following page with some options:
 
 ![WelcomeScreen Image](./welcome_screen.png)
 
-### Make a new plan
+### Step 2: Make a new plan
 
 Create a new plan of the floor (to be updated)
 
-### Use an existing plan
+### Step 3: Use an existing plan
 
 To be added
+
+**Note**: the steps 1-3 should be followed in strict order during the first launching the app, i.e. should you do not have any plan (graph) in the database, you first create a new plan (step 2).
 
 ## Developers
 This project has been implemented during itestra Coding Camp 2020 by:
