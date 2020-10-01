@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdateListener {
@@ -87,6 +88,8 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_make_plan);
+
+		databaseConnector = DatabaseConnector.getInstance(this);
 
 		//initialization of return button
 		ImageButton return_button = (ImageButton) findViewById(R.id.return_button_make_plan);
@@ -278,7 +281,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 							String graphName = input.getText().toString();
 							if(graphName != null && !graphName.equals("")) {
 								graph.setName(graphName);
-								long connector = databaseConnector.addGraph(graphName);
+								long connector = databaseConnector.addGraph(graphName, new ARGraphWithGrip(graph, gripMap.values().stream().collect(Collectors.toList())));
 								nameDialog.dismiss();
 							}
 							else {

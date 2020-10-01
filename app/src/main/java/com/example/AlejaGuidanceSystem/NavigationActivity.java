@@ -97,8 +97,6 @@ public class NavigationActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_navigation);
 
-		gripVisualisator = new GripVisualisator(this, arFragment.getArSceneView().getScene());
-
 // Example Graph
 		/*
 		Node a = new Node (1, 0, 0, "a");
@@ -114,6 +112,8 @@ public class NavigationActivity extends AppCompatActivity {
 
 		arFragment = (CustomArFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
 		arFragment.getArSceneView().getScene().addOnUpdateListener(this::onUpdateFrame);
+
+		gripVisualisator = new GripVisualisator(this, arFragment.getArSceneView().getScene());
 
 		gripMap = new HashMap<>();
 

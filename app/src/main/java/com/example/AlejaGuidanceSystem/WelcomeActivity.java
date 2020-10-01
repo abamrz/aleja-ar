@@ -32,7 +32,7 @@ public class WelcomeActivity extends Activity {
     private Button use_existing_button;
     private Button exit_button;
 
-    private DatabaseConnector databaseConnector;
+    private DatabaseConnector databaseConnector = new DatabaseConnector(this);
 
     public WelcomeActivity() {
         super();
@@ -128,11 +128,8 @@ public class WelcomeActivity extends Activity {
         super.onCreateContextMenu(menu, v, menuInfo);
         menu.setHeaderTitle(getResources().getString(R.string.graph_select));
 
-        ArrayList<String> mapNames = new ArrayList<>(); //TODO: Load the names of all Graphs in the database and save them in mapNames
-        /*mapNames.add("Dummy1"); //TODO: delete when names loaded from database
-        mapNames.add("Dummy2");*/ //Todo: delete when names loaded from database
-
-        mapNames.addAll(databaseConnector.getAllGraphs().stream().map(g -> g.getName()).collect(Collectors.toList()));
+        ArrayList<String> mapNames = new ArrayList<>();
+        mapNames.addAll(databaseConnector.getAllGraphs().stream().map(g -> g.getGraph().getName()).collect(Collectors.toList()));
 
         for (String map : mapNames){
             menu.add(map);
@@ -144,7 +141,8 @@ public class WelcomeActivity extends Activity {
         String graphName = item.getTitle().toString();
 
         //TODO: load graph by name (graphName) from database and save as ARGraphWithGrip graph
-        ARGraphWithGrip graph = (ARGraphWithGrip) Utility.loadObject(this, graphName); //TODO: delete, when load from database is done
+        //ARGraphWithGrip graph = (ARGraphWithGrip) Utility.loadObject(this, graphName); //TODO: delete, when load from database is done
+        ARGraphWithGrip graph = databaseConnector.getAllGraphs().stream().filter(g -> (g.getGraph().getName().equals(graphName))).findAny().get();
         if(graph != null) {
             openUseExistingPlanActivity(graph);
         } else {

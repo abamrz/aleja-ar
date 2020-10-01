@@ -42,6 +42,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
 
     public DatabaseConnector(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        instance = this;
         Log.d("table", CREATE_TABLE_GRAPHS);
     }
 
