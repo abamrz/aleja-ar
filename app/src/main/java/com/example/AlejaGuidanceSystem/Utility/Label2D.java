@@ -14,15 +14,13 @@ Object binding Node and layoutView, the object being displayed in AR, for all no
 Still missing Waypoints
  */
 
-public class LabelView {
+public class Label2D extends Label{
 
-    private Node node;
-    private ObjectInReference objectInReference;
     private LinearLayout layoutView;
     private boolean visible;
 
-    public LabelView(Context context, Node node) {
-        this.node = node;
+    public Label2D(Context context, Node node) {
+        super(node);
 
         layoutView = new LinearLayout(context);
         layoutView.setOrientation(LinearLayout.VERTICAL);
@@ -49,7 +47,7 @@ public class LabelView {
         }
 
         else if(node.getType() == Node.NodeType.WAYPOINT) {
-            return;
+            throw new IllegalArgumentException("Not a valid label type.");
         }
 
         else {
@@ -61,7 +59,6 @@ public class LabelView {
             popUpInfo.setInputType(InputType.TYPE_CLASS_TEXT);
             popUpInfo.setTextColor(android.graphics.Color.WHITE);
             layoutView.addView(popUpInfo);
-
 
             if (node.getType() == Node.NodeType.KITCHEN) {
                 popUpInfo.setBackgroundColor(android.graphics.Color.argb(160, 9, 109, 81));
@@ -84,25 +81,4 @@ public class LabelView {
         return this.layoutView;
     }
 
-    public Node getNode() {
-        return this.node;
-    }
-
-    public boolean getVisible() {
-        return this.visible;
-    }
-
-    public void setVisible(boolean visible) {
-        this.visible = visible;
-        if (visible) layoutView.setVisibility(View.VISIBLE);
-        else layoutView.setVisibility(View.GONE);
-    }
-
-    public ObjectInReference getObjectInReference() {
-        return this.objectInReference;
-    }
-
-    public void setObjectInReference(final ObjectInReference objectInReference) {
-        this.objectInReference = objectInReference;
-    }
 }
