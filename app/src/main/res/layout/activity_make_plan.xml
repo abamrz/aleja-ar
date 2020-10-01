@@ -9,7 +9,7 @@
     <LinearLayout
         android:id="@+id/linearLayout2"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:orientation="horizontal"
         android:background="#28384A"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -18,7 +18,7 @@
         <Button
             android:id="@+id/addToBranchButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:autoSizeTextType="uniform"
             android:maxLines="2"
@@ -30,7 +30,7 @@
         <Button
             android:id="@+id/newBranchButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:autoSizeTextType="uniform"
             android:maxLines="2"
@@ -42,7 +42,7 @@
         <Button
             android:id="@+id/closeCircleButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:autoSizeTextType="uniform"
             android:maxLines="2"
@@ -54,7 +54,7 @@
         <Button
             android:id="@+id/setAttributeButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             app:autoSizeTextType="uniform"
             android:maxLines="2"
@@ -67,7 +67,7 @@
         <Button
             android:id="@+id/saveButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:autoSizeTextType="uniform"
             android:maxLines="2"
@@ -81,7 +81,7 @@
         <Button
             android:id="@+id/deleteButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:autoSizeTextType="uniform"
             android:maxLines="2"
