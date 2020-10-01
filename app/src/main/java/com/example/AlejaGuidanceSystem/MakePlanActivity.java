@@ -81,7 +81,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 	private float[] cameraPosition = null;
 	private Node lastFocusedNode = null;
 
-	private DatabaseConnector databaseConnector;
+	DatabaseConnector databaseConnector;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -278,7 +278,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 							String graphName = input.getText().toString();
 							if(graphName != null && !graphName.equals("")) {
 								graph.setName(graphName);
-								Utility.saveObject(context, graph.getName(), new ARGraphWithGrip(graph, new ArrayList(gripMap.values())));
+								long connector = databaseConnector.addGraph(graphName);
 								nameDialog.dismiss();
 							}
 							else {
