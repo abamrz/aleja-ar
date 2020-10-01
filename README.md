@@ -3,7 +3,7 @@
 ## Overview 
 
 ### What's a AlejaAR?
-AlejaAR is an Android application available on API levels 24 (Nougat) and higher. It provides navigation service inside the office buildings using Augmented Reality in mobile camera.
+AlejaAR is an Android application available on API level 24 (Nougat) and higher. It provides navigation service inside the office buildings using Augmented Reality in mobile camera.
 
 Please consider and follow the guidelines below to get to know an application better.
 
@@ -16,7 +16,7 @@ SQLite (https://www.sqlite.org/index.html)                                  |
 
 
 ## Installation
-There are two options to install an app
+There are following options to install an app.
 
 #### Option 1: Install the release version on the smartphone
 The app is developed for Android 7.0 (API Level 24, Nougat) or higher. To use the app you need a smartphone 
