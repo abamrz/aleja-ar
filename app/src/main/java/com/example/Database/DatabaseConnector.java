@@ -18,6 +18,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 
@@ -30,11 +31,13 @@ public class DatabaseConnector extends SQLiteOpenHelper {
     private static final String TABLE_GRAPH = "graphs";
     private static final String KEY_ID = "id";
     private static final String KEY_NAME = "name";
+    private static final String GRAPH_DATA = "graph_data";
 
     private static final String CREATE_TABLE_GRAPHS = "CREATE TABLE "
                 + TABLE_GRAPH + "(" + KEY_ID
                 + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                KEY_NAME + " VARCHAR NOT NULL "+
+                KEY_NAME + " VARCHAR NOT NULL, "+
+                GRAPH_DATA + " BLOB NOT NULL" +
                 "); ";
 
     public DatabaseConnector(Context context) {
@@ -54,18 +57,19 @@ public class DatabaseConnector extends SQLiteOpenHelper {
     }
 
     // create -> make a new plan
-    public long addGraph(@NonNull String name) {
+    public long addGraph(@NonNull String name, ARGraphWithGrip graph_data) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(KEY_NAME, name);
+        values.put(GRAPH_DATA, makebyte(graph_data));
         long insert = db.insert(TABLE_GRAPH, null, values);
         return insert;
     }
 
     // read -> choose existing plan
     @NonNull
-    public ArrayList<ARGraph> getAllGraphs() {
-        ArrayList<ARGraph> graphsModelArrayList = new ArrayList<ARGraph>();
+    public ArrayList<ARGraphWithGrip> getAllGraphs() {
+        ArrayList<ARGraphWithGrip> graphsModelArrayList = new ArrayList<>();
 
         String selectQuery = "SELECT  * FROM " + TABLE_GRAPH;
         SQLiteDatabase db = this.getReadableDatabase();
@@ -73,8 +77,9 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         // looping through all rows and adding to list
         if (c.moveToFirst()) {
             do {
-                ARGraph graphModel = new ARGraph();
-                graphModel.setName(c.getString(c.getColumnIndex(KEY_NAME)));
+                //ARGraph graphModel = new ARGraph();
+                //graphModel.setName(c.getString(c.getColumnIndex(KEY_NAME)));
+                ARGraphWithGrip graphModel = readGraphFromByte(c.getBlob(c.getColumnIndex(GRAPH_DATA)));
                 graphsModelArrayList.add(graphModel);
             } while (c.moveToNext());
         }
@@ -111,7 +116,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return instance;
     }
 
-    public byte[] makebyte(ARGraphWithGrip modeldata) {
+    private byte[] makebyte(ARGraphWithGrip modeldata) {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(baos);
@@ -127,7 +132,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return null;
     }
 
-    public ARGraphWithGrip readGraphFromByte(byte[] data) {
+    private ARGraphWithGrip readGraphFromByte(byte[] data) {
         try {
             ByteArrayInputStream baip = new ByteArrayInputStream(data);
             ObjectInputStream ois = new ObjectInputStream(baip);
