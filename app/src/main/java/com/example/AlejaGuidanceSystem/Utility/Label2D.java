@@ -2,6 +2,7 @@ package com.example.AlejaGuidanceSystem.Utility;
 
 import android.content.Context;
 import android.text.InputType;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -24,14 +25,17 @@ public class Label2D extends Label{
 
         layoutView = new LinearLayout(context);
         layoutView.setOrientation(LinearLayout.VERTICAL);
-        layoutView.setVisibility(View.GONE);
 
         visible = false;
 
+        Log.d("CreateLabel2DType", node.getType().toString());
+
         if (node.getType() == Node.NodeType.OFFICE) {
             final TextView title = new TextView(context);
+            String text = node.getType().toStringInContext(context) + (node.getLabel() != null ? (": " + node.getLabel()) : "");
+            Log.d("CreateLabel2D", text);
             // title.setText(Node.typeStrings.get(node.getType()) + (node.getLabel() != null ? (": " + node.getLabel()) : ""));
-            title.setText(node.getType().toStringInContext(context) + (node.getLabel() != null ? (": " + node.getLabel()) : ""));
+            title.setText(text);
             title.setInputType(InputType.TYPE_CLASS_TEXT);
             title.setTextColor(android.graphics.Color.WHITE);
             title.setBackgroundColor(android.graphics.Color.argb(160, 0, 0, 255));

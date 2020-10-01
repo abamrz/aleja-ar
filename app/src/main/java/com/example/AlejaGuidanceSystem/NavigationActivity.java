@@ -92,6 +92,7 @@ public class NavigationActivity extends AppCompatActivity {
 	private HashMap<String, ARGraphWithGrip.WeakGrip> gripMap;
 
 	private GripVisualisator gripVisualisator;
+	private long startTime = System.currentTimeMillis();
 
 	@Override
 	@SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
@@ -286,9 +287,9 @@ public class NavigationActivity extends AppCompatActivity {
 						image.getCenterPose().getRotationQuaternion()
 				);
 				gripMap.put(image.getName(), grip);
-				this.gripVisualisator.updateGrip(image.getName(), image.getCenterPose());
-				this.updateGraphToWorldByGrip();
+				//this.gripVisualisator.updateGrip(image.getName(), image.getCenterPose());
 
+				this.updateGraphToWorldByGrip();
 			}
 		}
 
@@ -402,9 +403,6 @@ public class NavigationActivity extends AppCompatActivity {
 			}
 		}
 
-		for(Label obj : labels) {
-			obj.getObjectInReference().recalculatePosition(graphToWorld);
-		}
 		search_button.setEnabled(true);
 	}
 
@@ -492,7 +490,12 @@ public class NavigationActivity extends AppCompatActivity {
 
 // creates LabelView objects and adds as anchors to scene
 	private void showLabels(ARGraph graph){
+
+
+		Log.d("ShowLabels", "" + graph.vertexSet().size());
 		for (Node node: graph.vertexSet()) {
+
+			Log.d("NodeType", "xyz " + node.getType());
 
 			if (node.getType() == Node.NodeType.OFFICE) {
 
@@ -539,20 +542,24 @@ public class NavigationActivity extends AppCompatActivity {
 		// calculate current rotation for labels
 		for (Label label : labels) {
 			if (label instanceof Label2D) {
-				float[] labelPosition = label.getObjectInReference().getPoseInReference().getTranslation();
+				float[] labelPositionInWorld = graphToWorld.transformPoint(label.getObjectInReference().getPoseInReference().getTranslation());
+				float[] cameraPositionInWorld = graphToWorld.transformPoint(cameraPositionInGraph);
 
 				Pose translation = label.getObjectInReference().getPoseInReference().extractTranslation();
 
-				Vector3 labelPosition3 = new Vector3(labelPosition[0], labelPosition[1], labelPosition[2]);
-				Vector3 cameraPosition3 = new Vector3(cameraPositionInGraph[0], cameraPositionInGraph[1], cameraPositionInGraph[2]);
+				Vector3 labelPosition3 = new Vector3(labelPositionInWorld[0], labelPositionInWorld[1], labelPositionInWorld[2]);
+				Vector3 cameraPosition3 = new Vector3(cameraPositionInWorld[0], cameraPositionInWorld[1], cameraPositionInWorld[2]);
 
 				Vector3 direction3 = labelPosition3.subtract(cameraPosition3, labelPosition3);
-				//direction3.z=0.0f;
+				direction3.y=0.0f;
 
-				Quaternion lookRotation = Quaternion.lookRotation(direction3, new Vector3(0, 0, -1));
+				Quaternion lookRotation = Quaternion.lookRotation(direction3, new Vector3(0, 1, 0));
+				float x = (float) (System.currentTimeMillis() - startTime) / 1000.0f;
+				Log.d("Time", " " + (float) x);
 				Pose rotation = Pose.makeRotation(lookRotation.x, lookRotation.y, lookRotation.z, lookRotation.w);
+				// Pose.makeRotation(VectorOperations.createQuaternionFromAxisAngle(0, 1, 0, x)); //
 
-				label.getObjectInReference().setPoseInReference(translation.compose(rotation));
+				label.getObjectInReference().setPoseInReference(translation.compose(graphToWorld.extractRotation().inverse()).compose(rotation));
 				label.getObjectInReference().recalculatePosition(graphToWorld);
 			}
 		}
@@ -560,12 +567,12 @@ public class NavigationActivity extends AppCompatActivity {
 	}
 
 	private void updateLabelVisibility(){
-		for (Label label: labels){
+		/*for (Label label: labels){
 			if (inRadius(label, 1.5)){
 				label.setEnabled(true);
 			}
 			else label.setEnabled(false);
-		}
+		}*/
 	}
 
 	// check if label in Radius
@@ -580,7 +587,6 @@ public class NavigationActivity extends AppCompatActivity {
 	 * Creates a visible Path.
 	 * A large green sphere is displayed at the position of every node on the path.
 	 * Nodes are connected by blue spheres.
-	 * @param edges the path that will be displayed.
 	 * @param graph the graph containing the path.
 	 */
 	private void createMyBalls(List<Node> nodes, Graph<Node, DefaultWeightedEdge> graph) {

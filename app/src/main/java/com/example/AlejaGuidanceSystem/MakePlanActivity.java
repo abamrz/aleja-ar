@@ -24,6 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
+import com.example.AlejaGuidanceSystem.Utility.GripVisualisator;
 import com.example.AlejaGuidanceSystem.Utility.Utility;
 import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
 import com.example.AlejaGuidanceSystem.Graph.ARGraph;
@@ -85,6 +86,8 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 	DatabaseConnector databaseConnector;
 
+	private GripVisualisator gripVisualisator;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -104,6 +107,8 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 		arFragment = (CustomArFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
 		// adding a listener so that this activity can react to updates in the fragment
 		arFragment.getArSceneView().getScene().addOnUpdateListener(this);
+
+		gripVisualisator = new GripVisualisator(this, arFragment.getArSceneView().getScene());
 
 
 		findViewById(R.id.addToBranchButton).setOnClickListener(v -> {
@@ -399,6 +404,8 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 						image.getCenterPose().getRotationQuaternion()
 				);
 				gripMap.put(image.getName(), grip);
+
+				this.gripVisualisator.updateGrip(image.getName(), image.getCenterPose());
 			}
 		}
 
@@ -411,8 +418,6 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 				regenerateScene = false;
 			}
 
-			int sceneformChildren = arFragment.getArSceneView().getScene().getChildren().size();
-			int numAnchors = session.getAllAnchors().size();
 			int numGrips = gripMap.size();
 
 			String x = "";
@@ -420,7 +425,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 				x += Arrays.toString(grip.gripPosition) + ", ";
 			}
 
-			String logString = String.format(Locale.GERMAN, "Camera position %.3f %.3f %.3f\n%d\n%d\nNum Grips: %d %s", cameraPosition[0], cameraPosition[1], cameraPosition[2], sceneformChildren, numAnchors, numGrips, x);
+			String logString = String.format(Locale.GERMAN, "Camera position %.3f %.3f %.3f\nNum Grips: %d %s", cameraPosition[0], cameraPosition[1], cameraPosition[2], numGrips, x);
 
 			Log.d("MyApp2", logString);
 
