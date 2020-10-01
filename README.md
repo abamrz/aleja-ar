@@ -59,3 +59,11 @@ This project has been implemented during itestra Coding Camp 2020 by:
 3. Commit your changes (git commit -m 'Add some feature')
 4. Push your branch (git push origin my-new-feature)
 5. Create a new Pull Request
+
+## Install the release version on the smartphone
+The app is developed for Android 7.0 (API Level 24, Nougat) or higher. To use the app you need a smartphone 
+that is supported by ARCore (https://developers.google.com/ar/discover/supported-devices#android_play).
+
+To install the app simply download the app/release/app-release.apk file. Since this is not a trusted source, you have to allow the installation for unknown apps and sources.
+* On devices running Android 8.0 (API level 26) and higher, users must navigate to the Install unknown apps system settings screen to enable app installations from a particular source.
+* On devices running Android 7.1.1 (API level 25) and lower, users must either enable the Unknown sources system setting or allow a single installation of an unknown app.
