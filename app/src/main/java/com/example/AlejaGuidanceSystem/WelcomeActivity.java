@@ -1,5 +1,6 @@
 package com.example.AlejaGuidanceSystem;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -136,21 +137,16 @@ public class WelcomeActivity extends Activity {
         }
     }
 
+    @SuppressLint("ShowToast")
     @Override
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         String graphName = item.getTitle().toString();
-
-        //TODO: load graph by name (graphName) from database and save as ARGraphWithGrip graph
-        //ARGraphWithGrip graph = (ARGraphWithGrip) Utility.loadObject(this, graphName); //TODO: delete, when load from database is done
         ARGraphWithGrip graph = databaseConnector.getAllGraphs().stream().filter(g -> (g.getGraph().getName().equals(graphName))).findAny().get();
         if(graph != null) {
             openUseExistingPlanActivity(graph);
         } else {
-            Toast.makeText(this, "No graph saved!", Toast.LENGTH_LONG);
+            Toast.makeText(this, "No graph saved! Make a new plan!", Toast.LENGTH_LONG);
         }
-
-
-
         return super.onContextItemSelected(item);
     }
 
