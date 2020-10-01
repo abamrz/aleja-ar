@@ -19,7 +19,9 @@ import android.widget.Toast;
 import com.example.AlejaGuidanceSystem.Graph.ARGraphWithGrip;
 import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
 import com.example.AlejaGuidanceSystem.Utility.GripVisualisator;
-import com.example.AlejaGuidanceSystem.Utility.LabelView;
+import com.example.AlejaGuidanceSystem.Utility.Label;
+import com.example.AlejaGuidanceSystem.Utility.Label2D;
+import com.example.AlejaGuidanceSystem.Utility.Label3D;
 import com.example.AlejaGuidanceSystem.Utility.ObjectInReference;
 import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
 import com.example.AlejaGuidanceSystem.Graph.ARGraph;
@@ -40,6 +42,7 @@ import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.Renderable;
 import com.google.ar.sceneform.rendering.ShapeFactory;
 import com.google.ar.sceneform.rendering.ViewRenderable;
+import com.google.ar.sceneform.ux.ArFragment;
 
 
 import org.ejml.simple.SimpleMatrix;
@@ -69,7 +72,7 @@ public class NavigationActivity extends AppCompatActivity {
 
 	// AR
 	private CustomArFragment arFragment;
-	private ModelRenderable renderable;
+	private ModelRenderable duckRenderable;
 
 	// plan for the area
 	private ARGraphWithGrip graphWithGrip;
@@ -84,8 +87,7 @@ public class NavigationActivity extends AppCompatActivity {
 	private float[] cameraPositionInGraph;
 	private Node sink = null;
 
-	private ArrayList<ObjectInReference> labels = new ArrayList<>();
-	private ArrayList<LabelView> labelViews = new ArrayList<>();
+	private ArrayList<Label> labels = new ArrayList<>();
 
 	private HashMap<String, ARGraphWithGrip.WeakGrip> gripMap;
 
@@ -112,10 +114,10 @@ public class NavigationActivity extends AppCompatActivity {
 		graphWithGrip = (ARGraphWithGrip) getIntent().getSerializableExtra("Graph");
 		if(graphWithGrip == null) throw new IllegalStateException("No graph was supplied!");
 
-		showLabels(graphWithGrip.getGraph());
-
 		arFragment = (CustomArFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
 		arFragment.getArSceneView().getScene().addOnUpdateListener(this::onUpdateFrame);
+
+		showLabels(graphWithGrip.getGraph());
 
 		gripMap = new HashMap<>();
 
@@ -173,6 +175,7 @@ public class NavigationActivity extends AppCompatActivity {
 		});
 
 		Toast.makeText(this, "Scan a marker to start navigation", Toast.LENGTH_LONG);
+
 	}
 
 	/**
@@ -303,7 +306,8 @@ public class NavigationActivity extends AppCompatActivity {
 			cameraPositionInGraph = cameraToReference.transformPoint(new float[]{0.0f, 0.0f, 0.0f});
 
 			updateLabelOrientation();
-			updateLabelVisibility();
+			//TODO: remove child is called before something actually happens
+			// updateLabelVisibility();
 		}
 
 		//during navigation
@@ -399,8 +403,8 @@ public class NavigationActivity extends AppCompatActivity {
 			}
 		}
 
-		for(ObjectInReference obj : labels) {
-			obj.recalculatePosition(graphToWorld);
+		for(Label obj : labels) {
+			obj.getObjectInReference().recalculatePosition(graphToWorld);
 		}
 		search_button.setEnabled(true);
 	}
@@ -489,77 +493,84 @@ public class NavigationActivity extends AppCompatActivity {
 
 // creates LabelView objects and adds as anchors to scene
 	private void showLabels(ARGraph graph){
-		for (Node node: graph.vertexSet()){
+		for (Node node: graph.vertexSet()) {
 
-			LabelView labelView = new LabelView(this, node);
+			if (node.getType() == Node.NodeType.OFFICE) {
 
-			CompletableFuture<ViewRenderable>
-					future = ViewRenderable
-					.builder()
-					.setView((Context) NavigationActivity.this, labelView.getLayoutView())
-					.build();
-			future.thenAccept(viewRenderable -> {
+				Label2D label2D = new Label2D(this, node);
 
-				viewRenderable.setHorizontalAlignment(ViewRenderable.HorizontalAlignment.CENTER);
-				viewRenderable.setVerticalAlignment(ViewRenderable.VerticalAlignment.CENTER);
-				viewRenderable.setSizer( new DpToMetersViewSizer(550) );
+				CompletableFuture<ViewRenderable>
+						future = ViewRenderable
+						.builder()
+						.setView((Context) NavigationActivity.this, label2D.getLayoutView())
+						.build();
+				future.thenAccept(viewRenderable -> {
 
-				AnchorNode anchorNode = new AnchorNode();
-				anchorNode.setRenderable(viewRenderable);
-				arFragment.getArSceneView().getScene().addChild(anchorNode);
+					viewRenderable.setHorizontalAlignment(ViewRenderable.HorizontalAlignment.CENTER);
+					viewRenderable.setVerticalAlignment(ViewRenderable.VerticalAlignment.CENTER);
+					viewRenderable.setSizer(new DpToMetersViewSizer(550));
 
+					AnchorNode anchorNode = new AnchorNode();
+					anchorNode.setRenderable(viewRenderable);
+					arFragment.getArSceneView().getScene().addChild(anchorNode);
 
-				float[] quat = VectorOperations.createQuaternionFromAxisAngle(1, 0, 0, -(float)Math.PI / 2.0f);
+					float[] quat = VectorOperations.createQuaternionFromAxisAngle(1, 0, 0, -(float) Math.PI / 2.0f);
+					Pose pose = Pose.makeTranslation(node.getPositionF()).compose(Pose.makeRotation(quat));
+					ObjectInReference objectInReference = new ObjectInReference(anchorNode, pose);
+
+					objectInReference.recalculatePosition(graphToWorld);
+
+					label2D.setObjectInReference(objectInReference);
+					labels.add(label2D);
+				});
+			}
+			else {
+				float[] quat = VectorOperations.createQuaternionFromAxisAngle(1, 0, 0, -(float) Math.PI / 2.0f);
 				Pose pose = Pose.makeTranslation(node.getPositionF()).compose(Pose.makeRotation(quat));
-				ObjectInReference objectInReference = new ObjectInReference(anchorNode, pose);
 
-				objectInReference.recalculatePosition(graphToWorld);
-				labels.add(objectInReference);
-
-				labelView.setObjectInReference(objectInReference);
-				labelViews.add(labelView);
-			});
+				Label3D.createDuck(arFragment.getArSceneView().getScene(), pose, node, this);
+			}
 		}
 	}
 
 	private void updateLabelOrientation(){
 		//update anchorNodes! :) mit folgendem Link
 		//https://creativetech.blog/home/ui-elements-for-arcore-renderable
-
-
 		// calculate current rotation for labels
-		for (ObjectInReference label : labels) {
-			float[] labelPosition = label.getPoseInReference().getTranslation();
+		for (Label label : labels) {
+			if (label instanceof Label2D) {
+				float[] labelPosition = label.getObjectInReference().getPoseInReference().getTranslation();
 
-			Pose translation = label.getPoseInReference().extractTranslation();
+				Pose translation = label.getObjectInReference().getPoseInReference().extractTranslation();
 
-			Vector3 labelPosition3 = new Vector3(labelPosition[0], labelPosition[1], labelPosition[2]);
-			Vector3 cameraPosition3 = new Vector3(cameraPositionInGraph[0], cameraPositionInGraph[1], cameraPositionInGraph[2]);
+				Vector3 labelPosition3 = new Vector3(labelPosition[0], labelPosition[1], labelPosition[2]);
+				Vector3 cameraPosition3 = new Vector3(cameraPositionInGraph[0], cameraPositionInGraph[1], cameraPositionInGraph[2]);
 
-			Vector3 direction3 = labelPosition3.subtract(cameraPosition3, labelPosition3);
-			//direction3.z=0.0f;
+				Vector3 direction3 = labelPosition3.subtract(cameraPosition3, labelPosition3);
+				//direction3.z=0.0f;
 
-			Quaternion lookRotation = Quaternion.lookRotation(direction3, new Vector3(0, 0, -1));
-			Pose rotation = Pose.makeRotation(lookRotation.x, lookRotation.y, lookRotation.z, lookRotation.w);
+				Quaternion lookRotation = Quaternion.lookRotation(direction3, new Vector3(0, 0, -1));
+				Pose rotation = Pose.makeRotation(lookRotation.x, lookRotation.y, lookRotation.z, lookRotation.w);
 
-			label.setPoseInReference(translation.compose(rotation));
-			label.recalculatePosition(graphToWorld);
+				label.getObjectInReference().setPoseInReference(translation.compose(rotation));
+				label.getObjectInReference().recalculatePosition(graphToWorld);
+			}
 		}
 
 	}
 
 	private void updateLabelVisibility(){
-		for (LabelView label: labelViews){
+		for (Label label: labels){
 			if (inRadius(label, 1.5)){
-				label.setVisible(true);
+				label.setEnabled(true);
 			}
-			else label.setVisible(false);
+			else label.setEnabled(false);
 		}
 	}
 
 	// check if label in Radius
-	private boolean inRadius(LabelView labelView, double radius){
-		float[] position = labelView.getObjectInReference().getPoseInReference().getTranslation();
+	private boolean inRadius(Label label, double radius){
+		float[] position = label.getObjectInReference().getPoseInReference().getTranslation();
 		double distanceFromCamera = VectorOperations.v3dist(position, cameraPositionInGraph);
 
 		return distanceFromCamera<=radius;
