@@ -16,7 +16,7 @@ SQLite (https://www.sqlite.org/index.html)                                  |
 
 
 ## Installation
-There are two options to install an app
+There are following options to install an app.
 
 #### Option 1: Install the release version on the smartphone
 The app is developed for Android 7.0 (API Level 24, Nougat) or higher. To use the app you need a smartphone 
