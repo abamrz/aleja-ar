@@ -61,14 +61,29 @@ The two options are described in detail in the following parts.
 
 ### Step 2: Make a new plan
 
-* Go to **Make Plan** page (to be updated)
+* Click **Make Plan** button on the start screen
+* This is the screen to make a new plan:
+![MakePlanScreen Image](./makeplan_screen.png)
+TODO Image
 
+#### Functionality of the buttons
+* Add to Branch: Adds a new node to the graph at the current position of the smartphone. This node is connected to the previous added node.
+* New Branch: Adds a new node to the graph at the current position of the smartphone. This node is connected to the closest edge. The connection point to the edge is shown by a red ball.
+* Close Circle: Adds an edge from the last added node to the point at the closest edge which is again identified by a red ball.
+* Set Attributes: Opens a dialog to change the attributes to the closest node to the current smartphone position. The attributes are
+    - the label: title of the information at this point (e.g. "office of christian")
+    - the type: the kind of object the point refers to (e.g. kitchen). The type waypoint is used for points that are only used to navigate along, put should not provide any information.
+    - the description: only available, when the type is "office". Can be used to add some more information to the use of the office or similar.
+* Save Graph: A dialog is shown to save the graph with an arbitrary name that can be chosen by the user. By this name the graph can later be loaded to navigate on.
+* Undo: This option deletes the last added node.
 
 ### Step 3: Use an existing plan
 
 * After you are landed at **Use Existing Plan** page, you have to choose desired plan saved before
 * Choose the plan (map) from the list
 * Let the AlejaAR to navigate!
+
+* TODO Image
 
 **Note**: the steps 1-3 should be followed in strict order during the first launching the app, i.e. should you do not have any plan (graph) in the database, you first create a new plan (step 2).
 
