@@ -25,7 +25,24 @@ public class Node implements Serializable {
     private String label;
     private String description;
 
-    public static final Map<NodeType, String> typeStrings = new HashMap();
+    private static  Map<NodeType, String> typeStrings;
+
+    public static Map<NodeType, String> getTypeStrings() {
+        if(typeStrings == null) {
+            typeStrings = new HashMap<>();
+
+            typeStrings.put(NodeType.WAYPOINT, "Waypoint");
+            typeStrings.put(NodeType.KITCHEN, "Kitchen");
+            typeStrings.put(NodeType.EXIT, "Exit");
+            typeStrings.put(NodeType.COFFEE, "Coffee");
+            typeStrings.put(NodeType.OFFICE, "Office");
+            typeStrings.put(NodeType.ELEVATOR, "Elevator");
+            typeStrings.put(NodeType.TOILETTE, "Toilette");
+            typeStrings.put(NodeType.FIRE_EXTINGUISHER, "Fire Extinguisher");
+        }
+
+        return typeStrings;
+    }
 
     private static ArrayList<String> allLabels = new ArrayList<>();
 
@@ -37,17 +54,8 @@ public class Node implements Serializable {
         this.z = z;
         this.id = id;
 
-        typeStrings.put(NodeType.WAYPOINT, "Waypoint");
-        typeStrings.put(NodeType.KITCHEN, "Kitchen");
-        typeStrings.put(NodeType.EXIT, "Exit");
-        typeStrings.put(NodeType.COFFEE, "Coffee");
-        typeStrings.put(NodeType.OFFICE, "Office");
-        typeStrings.put(NodeType.ELEVATOR, "Elevator");
-        typeStrings.put(NodeType.TOILETTE, "Toilette");
-        typeStrings.put(NodeType.FIRE_EXTINGUISHER, "Fire Extinguisher");
-
-        this.description = "";
-        this.label = "";
+        this.description = null;
+        this.label = null;
     }
 
     public Node(float[] v, String id) {
@@ -116,8 +124,8 @@ public class Node implements Serializable {
             newLabel = String.format("%s (%02d)", label, count + 1);
         }
 
-        allLabels.add(label);
-        this.label = label;
+        allLabels.add(newLabel);
+        this.label = newLabel;
     }
 
     public String getDescription() {

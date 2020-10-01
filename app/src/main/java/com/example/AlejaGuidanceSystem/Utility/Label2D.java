@@ -18,7 +18,6 @@ Still missing Waypoints
 public class Label2D extends Label{
 
     private LinearLayout layoutView;
-    private boolean visible;
 
     public Label2D(Context context, Node node) {
         super(node);
@@ -26,15 +25,10 @@ public class Label2D extends Label{
         layoutView = new LinearLayout(context);
         layoutView.setOrientation(LinearLayout.VERTICAL);
 
-        visible = false;
-
-        Log.d("CreateLabel2DType", node.getType().toString());
 
         if (node.getType() == Node.NodeType.OFFICE) {
             final TextView title = new TextView(context);
-            String text = node.getType().toStringInContext(context) + (node.getLabel() != null ? (": " + node.getLabel()) : "");
-            Log.d("CreateLabel2D", text);
-            // title.setText(Node.typeStrings.get(node.getType()) + (node.getLabel() != null ? (": " + node.getLabel()) : ""));
+            String text = Node.getTypeStrings().get(node.getType()) + (node.getLabel() != null ? (": " + node.getLabel()) : "");
             title.setText(text);
             title.setInputType(InputType.TYPE_CLASS_TEXT);
             title.setTextColor(android.graphics.Color.WHITE);
@@ -59,7 +53,7 @@ public class Label2D extends Label{
             final TextView popUpInfo = new TextView(context);
             String labelText = node.getLabel();
             //popUpInfo.setText(node.typeStrings.get(node.getType()) + (labelText != null && !labelText.equals("") ? (": " + labelText) : ""));
-            popUpInfo.setText(node.getType().toStringInContext(context) + (labelText != null && !labelText.equals("") ? (": " + labelText) : ""));
+            popUpInfo.setText(Node.getTypeStrings().get(node.getType()) + (labelText != null && !labelText.equals("") ? (": " + labelText) : ""));
             popUpInfo.setInputType(InputType.TYPE_CLASS_TEXT);
             popUpInfo.setTextColor(android.graphics.Color.WHITE);
             layoutView.addView(popUpInfo);

@@ -246,8 +246,8 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			/*String[] typeStrings = {"Waypoint", "Kitchen", "Exit", "Coffee", "Office", "Elevator", "Toilette", "Fire Extinguisher"};
 			Node.NodeType[] types = {Node.NodeType.WAYPOINT, Node.NodeType.KITCHEN, Node.NodeType.EXIT, Node.NodeType.COFFEE,
 					Node.NodeType.OFFICE, Node.NodeType.ELEVATOR, Node.NodeType.TOILETTE, Node.NodeType.FIRE_EXTINGUISHER};*/
-			Node.NodeType[] types = Node.typeStrings.keySet().toArray(new Node.NodeType[0]);
-			String[] typeStrings = Node.typeStrings.values().toArray(new String[0]);
+			Node.NodeType[] types = Node.getTypeStrings().keySet().toArray(new Node.NodeType[0]);
+			String[] typeStrings = Node.getTypeStrings().values().toArray(new String[0]);
 
 			final ArrayAdapter<String> adp = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, typeStrings);
 

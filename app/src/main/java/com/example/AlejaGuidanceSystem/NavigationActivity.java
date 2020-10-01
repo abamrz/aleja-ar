@@ -287,7 +287,7 @@ public class NavigationActivity extends AppCompatActivity {
 						image.getCenterPose().getRotationQuaternion()
 				);
 				gripMap.put(image.getName(), grip);
-				//this.gripVisualisator.updateGrip(image.getName(), image.getCenterPose());
+				this.gripVisualisator.updateGrip(image.getName(), image.getCenterPose());
 
 				this.updateGraphToWorldByGrip();
 			}
@@ -490,48 +490,58 @@ public class NavigationActivity extends AppCompatActivity {
 
 // creates LabelView objects and adds as anchors to scene
 	private void showLabels(ARGraph graph){
-
-
-		Log.d("ShowLabels", "" + graph.vertexSet().size());
 		for (Node node: graph.vertexSet()) {
+			switch(node.getType()) {
+				case COFFEE:
+				case EXIT:
+				case ELEVATOR:
+				case KITCHEN:
+				case OFFICE:
+				case TOILETTE:
+				case FIRE_EXTINGUISHER: {
 
-			Log.d("NodeType", "xyz " + node.getType());
 
-			if (node.getType() == Node.NodeType.OFFICE) {
+					Label2D label2D = new Label2D(this, node);
 
-				Label2D label2D = new Label2D(this, node);
+					CompletableFuture<ViewRenderable>
+							future = ViewRenderable
+							.builder()
+							.setView((Context) NavigationActivity.this, label2D.getLayoutView())
+							.build();
+					future.thenAccept(viewRenderable -> {
 
-				CompletableFuture<ViewRenderable>
-						future = ViewRenderable
-						.builder()
-						.setView((Context) NavigationActivity.this, label2D.getLayoutView())
-						.build();
-				future.thenAccept(viewRenderable -> {
+						viewRenderable.setHorizontalAlignment(ViewRenderable.HorizontalAlignment.CENTER);
+						viewRenderable.setVerticalAlignment(ViewRenderable.VerticalAlignment.CENTER);
+						viewRenderable.setSizer(new DpToMetersViewSizer(550));
 
-					viewRenderable.setHorizontalAlignment(ViewRenderable.HorizontalAlignment.CENTER);
-					viewRenderable.setVerticalAlignment(ViewRenderable.VerticalAlignment.CENTER);
-					viewRenderable.setSizer(new DpToMetersViewSizer(550));
+						AnchorNode anchorNode = new AnchorNode();
+						anchorNode.setRenderable(viewRenderable);
+						arFragment.getArSceneView().getScene().addChild(anchorNode);
 
-					AnchorNode anchorNode = new AnchorNode();
-					anchorNode.setRenderable(viewRenderable);
-					arFragment.getArSceneView().getScene().addChild(anchorNode);
+						float[] quat = VectorOperations.createQuaternionFromAxisAngle(1, 0, 0, -(float) Math.PI / 2.0f);
+						Pose pose = Pose.makeTranslation(node.getPositionF()).compose(Pose.makeRotation(quat));
+						ObjectInReference objectInReference = new ObjectInReference(anchorNode, pose);
 
+						objectInReference.recalculatePosition(graphToWorld);
+
+						label2D.setObjectInReference(objectInReference);
+						labels.add(label2D);
+					});
+
+				}
+				break;
+
+				case WAYPOINT: {
+
+				    /*
 					float[] quat = VectorOperations.createQuaternionFromAxisAngle(1, 0, 0, -(float) Math.PI / 2.0f);
 					Pose pose = Pose.makeTranslation(node.getPositionF()).compose(Pose.makeRotation(quat));
-					ObjectInReference objectInReference = new ObjectInReference(anchorNode, pose);
 
-					objectInReference.recalculatePosition(graphToWorld);
-
-					label2D.setObjectInReference(objectInReference);
-					labels.add(label2D);
-				});
-			}
-			else {
-				float[] quat = VectorOperations.createQuaternionFromAxisAngle(1, 0, 0, -(float) Math.PI / 2.0f);
-				Pose pose = Pose.makeTranslation(node.getPositionF()).compose(Pose.makeRotation(quat));
-
-				Label3D.createDuck(arFragment.getArSceneView().getScene(), pose, node, this)
+					Label3D.createDuck(arFragment.getArSceneView().getScene(), pose, node, this)
 							.thenAccept(label -> this.labels.add(label));
+				     */
+				} break;
+
 			}
 		}
 	}
@@ -554,10 +564,7 @@ public class NavigationActivity extends AppCompatActivity {
 				direction3.y=0.0f;
 
 				Quaternion lookRotation = Quaternion.lookRotation(direction3, new Vector3(0, 1, 0));
-				float x = (float) (System.currentTimeMillis() - startTime) / 1000.0f;
-				Log.d("Time", " " + (float) x);
 				Pose rotation = Pose.makeRotation(lookRotation.x, lookRotation.y, lookRotation.z, lookRotation.w);
-				// Pose.makeRotation(VectorOperations.createQuaternionFromAxisAngle(0, 1, 0, x)); //
 
 				label.getObjectInReference().setPoseInReference(translation.compose(graphToWorld.extractRotation().inverse()).compose(rotation));
 				label.getObjectInReference().recalculatePosition(graphToWorld);
