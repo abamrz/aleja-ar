@@ -32,7 +32,8 @@ public class LabelView {
 
         if (node.getType() == Node.NodeType.OFFICE) {
             final TextView title = new TextView(context);
-            title.setText(Node.typeStrings.get(node.getType()) + (node.getLabel() != null ? (": " + node.getLabel()) : ""));
+            // title.setText(Node.typeStrings.get(node.getType()) + (node.getLabel() != null ? (": " + node.getLabel()) : ""));
+            title.setText(node.getType().toStringInContext(context) + (node.getLabel() != null ? (": " + node.getLabel()) : ""));
             title.setInputType(InputType.TYPE_CLASS_TEXT);
             title.setTextColor(android.graphics.Color.WHITE);
             title.setBackgroundColor(android.graphics.Color.argb(160, 0, 0, 255));
@@ -55,7 +56,8 @@ public class LabelView {
 
             final TextView popUpInfo = new TextView(context);
             String labelText = node.getLabel();
-            popUpInfo.setText(Node.typeStrings.get(node.getType()) + (labelText != null && !labelText.equals("") ? (": " + labelText) : ""));
+            //popUpInfo.setText(node.typeStrings.get(node.getType()) + (labelText != null && !labelText.equals("") ? (": " + labelText) : ""));
+            popUpInfo.setText(node.getType().toStringInContext(context) + (labelText != null && !labelText.equals("") ? (": " + labelText) : ""));
             popUpInfo.setInputType(InputType.TYPE_CLASS_TEXT);
             popUpInfo.setTextColor(android.graphics.Color.WHITE);
             layoutView.addView(popUpInfo);
