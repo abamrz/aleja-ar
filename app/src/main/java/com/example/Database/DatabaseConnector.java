@@ -78,8 +78,6 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         // looping through all rows and adding to list
         if (c.moveToFirst()) {
             do {
-                //ARGraph graphModel = new ARGraph();
-                //graphModel.setName(c.getString(c.getColumnIndex(KEY_NAME)));
                 ARGraphWithGrip graphModel = readGraphFromByte(c.getBlob(c.getColumnIndex(GRAPH_DATA)));
                 graphsModelArrayList.add(graphModel);
             } while (c.moveToNext());
@@ -88,17 +86,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return graphsModelArrayList;
     }
 
-    // update by name, if needed
-    public int updateGraph(@NonNull String name) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(KEY_NAME, name);
-        // update row
-        return db.update(TABLE_GRAPH, values, KEY_NAME + " = ?",
-                new String[]{String.valueOf(name)});
-    }
-
-    // delete
+    // delete, if needed
     public void deleteGraph(@NonNull String name) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_GRAPH, KEY_NAME + " = ?",
