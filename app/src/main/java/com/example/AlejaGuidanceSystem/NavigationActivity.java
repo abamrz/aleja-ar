@@ -110,11 +110,10 @@ public class NavigationActivity extends AppCompatActivity {
 		graphWithGrip = (ARGraphWithGrip) getIntent().getSerializableExtra("Graph");
 		if(graphWithGrip == null) throw new IllegalStateException("No graph was supplied!");
 
+		showLabels(graphWithGrip.getGraph());
+
 		arFragment = (CustomArFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
 		arFragment.getArSceneView().getScene().addOnUpdateListener(this::onUpdateFrame);
-
-		//TODO: Wo soll diese Methode hin? :)
-		showLabels(graphWithGrip.getGraph());
 
 		gripVisualisator = new GripVisualisator(this, arFragment.getArSceneView().getScene());
 
@@ -302,12 +301,10 @@ public class NavigationActivity extends AppCompatActivity {
 			Pose cameraToWorld = frame.getCamera().getPose();
 			Pose cameraToReference = graphToWorld.inverse().compose(cameraToWorld);
 			cameraPositionInGraph = cameraToReference.transformPoint(new float[]{0.0f, 0.0f, 0.0f});
-			//TODO: Wo sollen diese Methoden hin?
+
 			updateLabelOrientation();
 			updateLabelVisibility();
 		}
-
-
 
 		//during navigation
 		if (search_button.isActivated()) {
@@ -388,7 +385,6 @@ public class NavigationActivity extends AppCompatActivity {
 
 			referencePoints.add(VectorOperations.vec3(foundGrip.gripPosition));
 			pointsToTransform.add(VectorOperations.vec3(graphGrip.gripPosition));
-
 		}
 
 		VectorOperations.scaleMatrix(numericalStabilityMatrix, 0.2);
@@ -517,7 +513,6 @@ public class NavigationActivity extends AppCompatActivity {
 				Pose pose = Pose.makeTranslation(node.getPositionF()).compose(Pose.makeRotation(quat));
 				ObjectInReference objectInReference = new ObjectInReference(anchorNode, pose);
 
-				//TODO: ist graphTOWorld gleich referenceToWOrld??
 				objectInReference.recalculatePosition(graphToWorld);
 				labels.add(objectInReference);
 
@@ -528,7 +523,7 @@ public class NavigationActivity extends AppCompatActivity {
 	}
 
 	private void updateLabelOrientation(){
-		//based on following link
+		//update anchorNodes! :) mit folgendem Link
 		//https://creativetech.blog/home/ui-elements-for-arcore-renderable
 
 
@@ -546,9 +541,6 @@ public class NavigationActivity extends AppCompatActivity {
 
 			Quaternion lookRotation = Quaternion.lookRotation(direction3, new Vector3(0, 0, -1));
 			Pose rotation = Pose.makeRotation(lookRotation.x, lookRotation.y, lookRotation.z, lookRotation.w);
-			//rotation by 90 degrees
-			Pose rotation90 = Pose.makeRotation(0,0,-0.7071f, 0.7071f);
-			//rotation.compose(rotation90);
 
 			label.setPoseInReference(translation.compose(rotation));
 			label.recalculatePosition(graphToWorld);
