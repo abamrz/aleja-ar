@@ -5,18 +5,11 @@
 ### What's AlejaAR?
 AlejaAR is an Android application, that provides navigation service inside a building using Augmented Reality.
 
-Please consider and follow the guidelines below to get to know an application better.
-
-## Requirements
-Library and Frameworks                                                      |
-----------------------------------------------------------------------------|
-ARCore (https://developers.google.com/ar)                                   |
-JGraphT (https://jgrapht.org/)                                              |
-SQLite (https://www.sqlite.org/index.html)                                  |
+Please consider and follow the guidelines below to get to know the application better.
 
 
 ## Installation
-There are following options to install an app.
+There are following options to install the app.
 
 #### Option 1: Install the release version on the smartphone
 The app is developed for Android 7.0 (API Level 24, Nougat) or higher. To use the app you need a smartphone 
@@ -26,14 +19,14 @@ To install the app simply download the app/release/app-release.apk file. Since t
 * On devices running Android 8.0 (API level 26) and higher, users must navigate to the Install unknown apps system settings screen to enable app installations from a particular source.
 * On devices running Android 7.1.1 (API level 25) and lower, users must either enable the Unknown sources system setting or allow a single installation of an unknown app.
 
-#### Option 2: Clone this repository and import into your **Android Studio** and follow the steps below
+#### Option 2: Clone this repository and build your own APK using **Android Studio**
 
 ```bash
 git@github.com:abamrz/aleja-ar.git
 ```
 
-## Configuration
-### Keystores:
+##### Configuration to build a release APK
+###### Keystores:
 Create `app/keystore.gradle` with the following data:
 ```gradle
 ext.key_alias='...'
@@ -43,11 +36,11 @@ ext.store_password='...'
 Then place both keystores under `app/keystores/` directory.
 
 
-### Build variants
-Use the Android Studio *Build Variants* button.
+###### Build variants
+Use the Android Studio *Build Variants* button to select release build.
 
 
-### Generating signed APK
+###### Generating signed APK
 From Android Studio:
 1. ***Build*** menu
 2. ***Generate Signed APK...***
@@ -72,6 +65,15 @@ Launch AlejaAR and you will be landed on the following page with some options:
 * Let the AlejaAR to navigate!
 
 **Note**: the steps 1-3 should be followed in strict order during the first launching the app, i.e. should you do not have any plan (graph) in the database, you first create a new plan (step 2).
+
+
+## Used Libraries and Frameworks
+Library and Frameworks                                                      |
+----------------------------------------------------------------------------|
+ARCore (https://developers.google.com/ar)                                   |
+JGraphT (https://jgrapht.org/)                                              |
+SQLite (https://www.sqlite.org/index.html)                                  |
+
 
 ## Developers
 This project has been implemented during itestra Coding Camp 2020 by:
