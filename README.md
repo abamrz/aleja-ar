@@ -43,11 +43,11 @@ ext.store_password='...'
 Then place both keystores under `app/keystores/` directory.
 
 
-## Build variants
+### Build variants
 Use the Android Studio *Build Variants* button.
 
 
-## Generating signed APK
+### Generating signed APK
 From Android Studio:
 1. ***Build*** menu
 2. ***Generate Signed APK...***
