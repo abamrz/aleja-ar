@@ -53,6 +53,12 @@ Launch AlejaAR and you will be landed on the following page with some options:
 
 ![WelcomeScreen Image](./welcome_screen.png)
 
+From here you can choose between navigation (Use an existing plan) and making an own new plan of a specific place/floor (Make a new plan). 
+On navigation you can search for a desired destinations or simply look around and inspect the labeling of all information points saved in the map.
+When making a new plan you can build up a graph and add information to points of interest.
+
+The two options are described in detail in the following parts.
+
 ### Step 2: Make a new plan
 
 * Go to **Make Plan** page (to be updated)
