@@ -235,6 +235,7 @@ public class NavigationActivity extends AppCompatActivity {
 							searchDialog.dismiss();
 						} else if (labels.contains(target)){
 							Node[] sinks = (Node[]) graphWithGrip.getGraph().vertexSet().stream()
+									.filter(node -> node.getLabel() != null)
 									.filter((node) -> node.getLabel().equals(target)).toArray(Node[]::new);
 							showPath(cameraPositionInGraph, sinks);
 							search_button.setActivated(true);
