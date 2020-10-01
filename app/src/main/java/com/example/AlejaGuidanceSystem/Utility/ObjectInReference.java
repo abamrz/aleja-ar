@@ -7,6 +7,7 @@ public class ObjectInReference {
 	private Pose poseInReference;
 	private AnchorNode node;
 
+
 	public ObjectInReference(AnchorNode node, Pose p) {
 		this.node = node;
 		this.poseInReference = p;
@@ -31,5 +32,14 @@ public class ObjectInReference {
 	public void recalculatePosition(Pose referenceToWorld) {
 		Pose nodePose = referenceToWorld.compose(this.poseInReference);
 		VectorOperations.applyPoseToAnchorNode(this.node, nodePose);
+	}
+
+	public void setEnable(boolean enable){
+		if (enable){
+			this.node.getScene().addChild(this.node);
+		}
+		else {
+			this.node.getScene().removeChild(this.node);
+		}
 	}
 }

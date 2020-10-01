@@ -105,7 +105,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return instance;
     }
 
-    private byte[] makebyte(ARGraphWithGrip modeldata) {
+    public byte[] makebyte(ARGraphWithGrip modeldata) {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(baos);
@@ -121,7 +121,7 @@ public class DatabaseConnector extends SQLiteOpenHelper {
         return null;
     }
 
-    private ARGraphWithGrip readGraphFromByte(byte[] data) {
+    public ARGraphWithGrip readGraphFromByte(byte[] data) {
         try {
             ByteArrayInputStream baip = new ByteArrayInputStream(data);
             ObjectInputStream ois = new ObjectInputStream(baip);
