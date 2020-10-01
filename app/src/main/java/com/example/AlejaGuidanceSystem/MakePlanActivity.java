@@ -298,6 +298,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 		findViewById(R.id.deleteButton).setOnClickListener(v -> {
 			graph = new ARGraph();
 			regenerateScene = true;
+			lastFocusedNode =null;
 
 			if(nearestPosNode != null)
 				arFragment.getArSceneView().getScene().removeChild(nearestPosNode);

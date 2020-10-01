@@ -2,8 +2,8 @@
 
 ## Overview 
 
-### What's a AlejaAR?
-AlejaAR is an Android application available on API levels 21 (Lollipop)+. It provides navigation service inside the office buildings using Augmented Reality in mobile camera.
+### What's AlejaAR?
+AlejaAR is an Android application, that provides navigation service inside a building using Augmented Reality.
 
 Please consider and follow the guidelines below to get to know an application better.
 
