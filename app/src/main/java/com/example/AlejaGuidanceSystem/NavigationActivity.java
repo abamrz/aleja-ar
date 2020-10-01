@@ -61,6 +61,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static java.lang.Thread.*;
@@ -413,12 +414,25 @@ public class NavigationActivity extends AppCompatActivity {
 		// adding the current position of the user as a node to the copied graph
 		graphCopy.addVertex(user);
 
-		// removing closest edge to user and adding new edges from its endpoints to user
-		DefaultWeightedEdge closestEdge = graphCopy.nearestPointInGraph(startPos).bestEdge;
-		Node edgeSource = graphCopy.getEdgeSource(closestEdge), edgeTarget = graphCopy.getEdgeTarget(closestEdge);
-		graphCopy.addEdge(user, edgeSource);
-		graphCopy.addEdge(user, edgeTarget);
-		graphCopy.removeEdge(closestEdge);
+		if(graphCopy.edgeSet().size() > 0) {
+			// removing closest edge to user and adding new edges from its endpoints to user
+			DefaultWeightedEdge closestEdge = graphCopy.nearestPointInGraph(startPos).bestEdge;
+			Node edgeSource = graphCopy.getEdgeSource(closestEdge), edgeTarget = graphCopy.getEdgeTarget(closestEdge);
+			graphCopy.addEdge(user, edgeSource);
+			graphCopy.addEdge(user, edgeTarget);
+			graphCopy.removeEdge(closestEdge);
+		}
+		else {
+			Optional<Node> closestOpt = graphWithGrip.getGraph().vertexSet().stream().min((n1, n2) -> {
+				return VectorOperations.v3dist(n1.getPositionF(), startPos) < VectorOperations.v3dist(n2.getPositionF(), startPos) ? -1 : 1;
+			});
+			if (!closestOpt.isPresent()) {
+				throw new IllegalStateException();
+			}
+			final Node closest = closestOpt.get();
+
+			graphCopy.addEdge(user, closest);
+		}
 
 		// setting edge weights
 		for(DefaultWeightedEdge e : graphCopy.edgeSet()) {
