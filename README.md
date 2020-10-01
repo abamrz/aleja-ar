@@ -15,7 +15,7 @@ JGraphT (https://jgrapht.org/)                                              |
 SQLite (https://www.sqlite.org/index.html)                                  |
 
 ## Start the app
-TODO: WelcomeScreen image
+![WelcomeScreen Image](./welcome_screen.png)
 
 
 ## Installation
