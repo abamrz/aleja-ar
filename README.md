@@ -63,7 +63,7 @@ The two options are described in detail in the following parts.
 
 * Click **Make Plan** button on the start screen
 * This is the screen to make a new plan:
-![MakePlanScreen Image](./makeplan_screen.png)  
+![MakePlanScreen Image](./makeplan_screen.jpg)  
 TODO Image
 
 #### Functionality of the buttons
@@ -84,7 +84,7 @@ TODO Image
 * After you clicked at the **Use Existing Plan** button, you have to choose a desired plan saved before.  
 This plan is than loaded with all the information and enables navigation in the building where the plan were recorded.
 * After the plan is loaded you end up with this screen
-![NavigationScreen Image](./navigation_screen.png)  
+![NavigationScreen Image](./navigation_screen.jpg)  
 TODO Image
 * Now you should scan at least one marker to reference your position.
 * When the navigation is possible a search button in the upper right corner is shown.
