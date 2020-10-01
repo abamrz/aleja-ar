@@ -2,7 +2,7 @@
 
 ## Overview 
 
-### What's a [AlejaAR][]?
+### What's a [AlejaAR]?
 AlejaAR is an Android system application available on API levels 21 (Lollipop)+. It provides navigation service inside the office buildings using Augmented Reality in mobile camera.
 
 Please consider and follow the guidelines below to get to know an application better.
@@ -10,9 +10,9 @@ Please consider and follow the guidelines below to get to know an application be
 ## Requirements
 Library and Frameworks                                                      |
 ----------------------------------------------------------------------------|
-[ARCore] (https://developers.google.com/ar)                                 |
-JGraphT                                                                     |
-[SQLite]                                                                    |
+ARCore (https://developers.google.com/ar)                                   |
+JGraphT (https://jgrapht.org/)                                              |
+SQLite (https://www.sqlite.org/index.html)                                  |
 
 
 ## Installation
@@ -47,11 +47,11 @@ From Android Studio:
 
 ## Developers
 This project has been implemented by:
-* [Antonia] (https://github.com/antschum)
+* [Antonia](https://github.com/antschum)
 * [Lukas](https://github.com/thenxmetti)
-* [Erik] (https://github.com/TheStealthReporter)
+* [Erik](https://github.com/TheStealthReporter)
 * [Jakob](https://github.com/j-stoll)
-* [Aba] (https://github.com/abamrz) 
+* [Aba](https://github.com/abamrz) 
 
 
 ## Contributing
