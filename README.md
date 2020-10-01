@@ -63,7 +63,7 @@ The two options are described in detail in the following parts.
 
 * Click **Make Plan** button on the start screen
 * This is the screen to make a new plan:
-![MakePlanScreen Image](./makeplan_screen.png)
+![MakePlanScreen Image](./makeplan_screen.png)  
 TODO Image
 
 #### Functionality of the buttons
@@ -77,15 +77,24 @@ TODO Image
 * Save Graph: A dialog is shown to save the graph with an arbitrary name that can be chosen by the user. By this name the graph can later be loaded to navigate on.
 * Undo: This option deletes the last added node.
 
+**Note**: You should scan some markers (ar_pattern*.png) to have a reference to the real world.
+
 ### Step 3: Use an existing plan
 
-* After you are landed at **Use Existing Plan** page, you have to choose desired plan saved before
-* Choose the plan (map) from the list
-* Let the AlejaAR to navigate!
+* After you clicked at the **Use Existing Plan** button, you have to choose a desired plan saved before.  
+This plan is than loaded with all the information and enables navigation in the building where the plan were recorded.
+* After the plan is loaded you end up with this screen
+![NavigationScreen Image](./navigation_screen.png)  
+TODO Image
+* Now you should scan at least one marker to reference your position.
+* When the navigation is possible a search button in the upper right corner is shown.
+* When looking around the different information at each point is shown and you can discover the floor on your own by walking around.
+* When you want to navigate to a specific location you can press the search button.  
+You can search for the type or the label of the desired target location. By focusing the textview all possibilities are listed.  
+When searching for a type, the navigation will lead you to the closest point with this type.
+* By following the balls the goal can be reached. When you want to end the navigation earlier you can cancel it by pressing the x in the upper right corner.
 
-* TODO Image
-
-**Note**: the steps 1-3 should be followed in strict order during the first launching the app, i.e. should you do not have any plan (graph) in the database, you first create a new plan (step 2).
+**Note**: The steps 1-3 should be followed in strict order during the first launching the app, i.e. should you do not have any plan (graph) in the database, you first create a new plan (step 2).
 
 
 ## Used Libraries and Frameworks
