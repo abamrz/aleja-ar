@@ -1,5 +1,6 @@
 package com.example.AlejaGuidanceSystem;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -32,7 +33,7 @@ public class WelcomeActivity extends Activity {
     private Button use_existing_button;
     private Button exit_button;
 
-    private DatabaseConnector databaseConnector;
+    private DatabaseConnector databaseConnector = new DatabaseConnector(this);
 
     public WelcomeActivity() {
         super();
@@ -128,31 +129,24 @@ public class WelcomeActivity extends Activity {
         super.onCreateContextMenu(menu, v, menuInfo);
         menu.setHeaderTitle(getResources().getString(R.string.graph_select));
 
-        ArrayList<String> mapNames = new ArrayList<>(); //TODO: Load the names of all Graphs in the database and save them in mapNames
-        /*mapNames.add("Dummy1"); //TODO: delete when names loaded from database
-        mapNames.add("Dummy2");*/ //Todo: delete when names loaded from database
-
-        mapNames.addAll(databaseConnector.getAllGraphs().stream().map(g -> g.getName()).collect(Collectors.toList()));
+        ArrayList<String> mapNames = new ArrayList<>();
+        mapNames.addAll(databaseConnector.getAllGraphs().stream().map(g -> g.getGraph().getName()).collect(Collectors.toList()));
 
         for (String map : mapNames){
             menu.add(map);
         }
     }
 
+    @SuppressLint("ShowToast")
     @Override
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         String graphName = item.getTitle().toString();
-
-        //TODO: load graph by name (graphName) from database and save as ARGraphWithGrip graph
-        ARGraphWithGrip graph = (ARGraphWithGrip) Utility.loadObject(this, graphName); //TODO: delete, when load from database is done
+        ARGraphWithGrip graph = databaseConnector.getAllGraphs().stream().filter(g -> (g.getGraph().getName().equals(graphName))).findAny().get();
         if(graph != null) {
             openUseExistingPlanActivity(graph);
         } else {
-            Toast.makeText(this, "No graph saved!", Toast.LENGTH_LONG);
+            Toast.makeText(this, "No graph saved! Make a new plan!", Toast.LENGTH_LONG);
         }
-
-
-
         return super.onContextItemSelected(item);
     }
 
