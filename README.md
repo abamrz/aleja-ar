@@ -14,9 +14,6 @@ ARCore (https://developers.google.com/ar)                                   |
 JGraphT (https://jgrapht.org/)                                              |
 SQLite (https://www.sqlite.org/index.html)                                  |
 
-## Start the app
-![WelcomeScreen Image](./welcome_screen.png)
-
 
 ## Installation
 There are two options to install an app
@@ -55,6 +52,21 @@ From Android Studio:
 1. ***Build*** menu
 2. ***Generate Signed APK...***
 3. Fill in the keystore information *(you only need to do this once manually and then let Android Studio remember it)*
+
+## How to use the app? 
+### Start the app  
+
+Launch AlejaAR and you will be landed on the following page with some options:
+
+![WelcomeScreen Image](./welcome_screen.png)
+
+### Make a new plan
+
+Create a new plan of the floor (to be updated)
+
+### Use an existing plan
+
+To be added
 
 ## Developers
 This project has been implemented during itestra Coding Camp 2020 by:
