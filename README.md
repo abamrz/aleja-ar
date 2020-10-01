@@ -3,7 +3,7 @@
 ## Overview 
 
 ### What's a AlejaAR?
-AlejaAR is an Android application available on API levels 21 (Lollipop)+. It provides navigation service inside the office buildings using Augmented Reality in mobile camera.
+AlejaAR is an Android application available on API levels 24 (Nougat) and higher. It provides navigation service inside the office buildings using Augmented Reality in mobile camera.
 
 Please consider and follow the guidelines below to get to know an application better.
 
@@ -43,11 +43,11 @@ ext.store_password='...'
 Then place both keystores under `app/keystores/` directory.
 
 
-## Build variants
+### Build variants
 Use the Android Studio *Build Variants* button.
 
 
-## Generating signed APK
+### Generating signed APK
 From Android Studio:
 1. ***Build*** menu
 2. ***Generate Signed APK...***
