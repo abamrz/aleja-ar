@@ -527,7 +527,8 @@ public class NavigationActivity extends AppCompatActivity {
 				float[] quat = VectorOperations.createQuaternionFromAxisAngle(1, 0, 0, -(float) Math.PI / 2.0f);
 				Pose pose = Pose.makeTranslation(node.getPositionF()).compose(Pose.makeRotation(quat));
 
-				Label3D.createDuck(arFragment.getArSceneView().getScene(), pose, node, this);
+				Label3D.createDuck(arFragment.getArSceneView().getScene(), pose, node, this)
+							.thenAccept(label -> this.labels.add(label));
 			}
 		}
 	}
