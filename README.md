@@ -64,7 +64,6 @@ The two options are described in detail in the following parts.
 * Click **Make Plan** button on the start screen
 * This is the screen to make a new plan:
 ![MakePlanScreen Image](./makeplan_screen.jpg)  
-TODO Image
 
 #### Functionality of the buttons
 * Add to Branch: Adds a new node to the graph at the current position of the smartphone. This node is connected to the previous added node.
@@ -85,7 +84,6 @@ TODO Image
 This plan is than loaded with all the information and enables navigation in the building where the plan were recorded.
 * After the plan is loaded you end up with this screen
 ![NavigationScreen Image](./navigation_screen.jpg)  
-TODO Image
 * Now you should scan at least one marker to reference your position.
 * When the navigation is possible a search button in the upper right corner is shown.
 * When looking around the different information at each point is shown and you can discover the floor on your own by walking around.
