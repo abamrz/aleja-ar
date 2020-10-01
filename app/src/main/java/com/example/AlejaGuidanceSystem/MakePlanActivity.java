@@ -310,7 +310,8 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 							String graphName = input.getText().toString();
 							if(graphName != null && !graphName.equals("")) {
 								graph.setName(graphName);
-								long connector = databaseConnector.addGraph(graphName, new ARGraphWithGrip(graph, gripMap.values().stream().collect(Collectors.toList())));
+								long connector = databaseConnector.addGraph(graphName, new ARGraphWithGrip(graph, new ArrayList<>(gripMap.values())));
+								//Utility.saveObject(getApplicationContext(), graphName, new ARGraphWithGrip(graph, new ArrayList<>(gripMap.values())));
 								nameDialog.dismiss();
 							}
 							else {
