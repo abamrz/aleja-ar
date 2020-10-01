@@ -16,6 +16,7 @@ import com.example.AlejaGuidanceSystem.Graph.ARGraphWithGrip;
 import com.example.AlejaGuidanceSystem.Utility.Utility;
 import com.example.AlejaGuidanceSystem.Graph.ARGraph;
 import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
+import com.example.Database.DatabaseConnector;
 import com.google.ar.core.Pose;
 
 import org.ejml.simple.SimpleMatrix;
@@ -23,12 +24,15 @@ import org.ejml.simple.SimpleSVD;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class WelcomeActivity extends Activity {
 
     private Button make_plan_button;
     private Button use_existing_button;
     private Button exit_button;
+
+    private DatabaseConnector databaseConnector;
 
     public WelcomeActivity() {
         super();
@@ -125,8 +129,10 @@ public class WelcomeActivity extends Activity {
         menu.setHeaderTitle(getResources().getString(R.string.graph_select));
 
         ArrayList<String> mapNames = new ArrayList<>(); //TODO: Load the names of all Graphs in the database and save them in mapNames
-        mapNames.add("Dummy1"); //TODO: delete when names loaded from database
-        mapNames.add("Dummy2"); //Todo: delete when names loaded from database
+        /*mapNames.add("Dummy1"); //TODO: delete when names loaded from database
+        mapNames.add("Dummy2");*/ //Todo: delete when names loaded from database
+
+        mapNames.addAll(databaseConnector.getAllGraphs().stream().map(g -> g.getName()).collect(Collectors.toList()));
 
         for (String map : mapNames){
             menu.add(map);

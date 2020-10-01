@@ -22,6 +22,7 @@
         android:layout_width="300dp"
         android:layout_height="150dp"
         android:src="@drawable/aleja_logo" />
+        <!--logo credit: Luisa Metten -->
 
     <RelativeLayout
         android:layout_width="match_parent"

@@ -45,13 +45,18 @@ import com.google.ar.sceneform.rendering.ViewRenderable;
 import org.ejml.simple.SimpleMatrix;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
+import org.jgrapht.alg.HamiltonianCycle;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.alg.DijkstraShortestPath;
+import org.jgrapht.graph.MaskSubgraph;
+import org.jgrapht.graph.SimpleWeightedGraph;
+import org.jgrapht.graph.Subgraph;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -180,6 +185,7 @@ public class NavigationActivity extends AppCompatActivity {
 				android.R.layout.simple_dropdown_item_1line);
 		searchAdapter.addAll(types);
 		searchAdapter.addAll(labels);
+		searchAdapter.addAll(getString(R.string.safety_tour));
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle(R.string.search_title);
@@ -208,7 +214,14 @@ public class NavigationActivity extends AppCompatActivity {
 
 						//Start navigation to destination
 						String target = searchView.getText().toString();
-						if (types.contains(target)) {
+						if (target.equals(getString(R.string.safety_tour))){
+							Node[] tourNodes = (Node[]) graphWithGrip.getGraph().vertexSet().stream()
+									.filter((node) -> node.getType().equals(Node.NodeType.EXIT) || node.getType().equals(Node.NodeType.FIRE_EXTINGUISHER))
+									.toArray(Node[]::new);
+							showTour(cameraPositionInGraph, tourNodes);
+							search_button.setActivated(true);
+							searchDialog.dismiss();
+						} else if (types.contains(target)) {
 							Node[] sinks = (Node[]) graphWithGrip.getGraph().vertexSet().stream()
 									.filter((node) -> node.getType().toStringInContext(getApplicationContext()).equals(target))
 									.toArray(Node[]::new);
@@ -392,16 +405,11 @@ public class NavigationActivity extends AppCompatActivity {
 		search_button.setEnabled(true);
 	}
 
-	/**
-	 * Displays a path shortest path to a destination on the screen
-	 * @param startPos current (camera-)position of the user
-	 * @param sinks the destination-nodes as a array
-	 */
-	private void showPath(float[] startPos, Node[] sinks) {
+	private ARGraph addUserPositionToGraph(float[] startPos, Node user) {
 		// creating a copy of the graph to freely add and remove nodes and edges
 		ARGraph graphCopy = new ARGraph(graphWithGrip.getGraph());
+
 		// adding the current position of the user as a node to the copied graph
-		Node user = new Node(startPos, "StartOfUser");
 		graphCopy.addVertex(user);
 
 		// removing closest edge to user and adding new edges from its endpoints to user
@@ -420,6 +428,18 @@ public class NavigationActivity extends AppCompatActivity {
 			Log.d("MyTestE", graphCopy.getEdgeSource(e).getId() + " to " + graphCopy.getEdgeTarget(e).getId());
 		}
 
+		return graphCopy;
+	}
+
+	/**
+	 * Displays a path shortest path to a destination on the screen
+	 * @param startPos current (camera-)position of the user
+	 * @param sinks the destination-nodes as a array
+	 */
+	private void showPath(float[] startPos, Node[] sinks) {
+		Node user = new Node(startPos, "StartOfUser");
+		ARGraph graphCopy = addUserPositionToGraph(startPos, user);
+
 		// List of edges on the shortest path from user to destination
 		if (sinks != null && sinks.length > 0){
 			DijkstraShortestPath dijkstraShortestPath;
@@ -437,6 +457,33 @@ public class NavigationActivity extends AppCompatActivity {
 			// creating a visible path on the screen
 			createMyBalls(shortestPath.getVertexList(), graphCopy);
 		}
+	}
+
+	/**
+	 * Displays a tour to all given nodes on on the screen
+	 * @param tourNodes nodes that get included in the tour
+	 */
+	private void showTour(float[] startPos, Node[] tourNodes) {
+		Node user = new Node(startPos, "StartOfUser");
+		ARGraph graphCopy = addUserPositionToGraph(startPos, user);
+
+		HashSet nodesOnTour = new HashSet(Arrays.asList(tourNodes));
+		nodesOnTour.add(user);
+		Subgraph inducedSubgraph = new Subgraph(graphCopy, nodesOnTour);
+		List<Node> subTourPath = HamiltonianCycle.getApproximateOptimalForCompleteGraph(new SimpleWeightedGraph<Node, DefaultWeightedEdge>(inducedSubgraph.getEdgeFactory()));
+
+		List<Node> tourPath = new ArrayList<>();
+		int offset = subTourPath.indexOf(user);
+		for (int i = 0; i < subTourPath.size(); i++){
+			DijkstraShortestPath dijkstraShortestPath = new DijkstraShortestPath(graphCopy,
+					subTourPath.get((i + offset) % subTourPath.size()),
+					subTourPath.get((i + 1 + offset) % subTourPath.size()));
+			List<Node> shortestSubPath = dijkstraShortestPath.getPath().getVertexList();
+			tourPath.addAll(shortestSubPath.subList(0, shortestSubPath.size() - 1));
+		}
+		tourPath.add(subTourPath.get(offset % subTourPath.size()));
+
+		createMyBalls(tourPath, graphCopy);
 	}
 
 

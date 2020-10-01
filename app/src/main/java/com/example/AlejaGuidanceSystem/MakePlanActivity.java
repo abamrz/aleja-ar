@@ -5,6 +5,7 @@ import androidx.core.content.res.TypedArrayUtils;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -12,21 +13,22 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.AlejaGuidanceSystem.Utility.GraphicsUtility;
-import com.example.AlejaGuidanceSystem.Utility.GripVisualisator;
 import com.example.AlejaGuidanceSystem.Utility.Utility;
 import com.example.AlejaGuidanceSystem.Utility.VectorOperations;
 import com.example.AlejaGuidanceSystem.Graph.ARGraph;
 import com.example.AlejaGuidanceSystem.Graph.ARGraphWithGrip;
 import com.example.AlejaGuidanceSystem.Graph.Node;
+import com.example.Database.DatabaseConnector;
 import com.google.ar.core.AugmentedImage;
 import com.google.ar.core.AugmentedImageDatabase;
 import com.google.ar.core.Config;
@@ -79,7 +81,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 	private float[] cameraPosition = null;
 	private Node lastFocusedNode = null;
 
-	private GripVisualisator gripVisualisator;
+	DatabaseConnector databaseConnector;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -215,22 +217,11 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle("Node Attributes");
-			// Set up the label input
+			// Set up the input
 			final EditText input = new EditText(context);
 			input.setHint("Label");
 			input.setInputType(InputType.TYPE_CLASS_TEXT);
-			if (!closest.getLabel().trim().isEmpty()) input.setText(closest.getLabel());
 			layout.addView(input);
-
-			// Set up office description
-			final EditText officeDescription = new EditText(context);
-			officeDescription.setHint("Description");
-			officeDescription.setInputType(InputType.TYPE_CLASS_TEXT);
-			if (!closest.getDescription().trim().isEmpty()) officeDescription.setText(closest.getDescription());
-			officeDescription.setVisibility(View.GONE);
-			layout.addView(officeDescription);
-
-			//Decription wird in label gespeichert, wie wenn das letzte was man eingegeben hat gespeichert wird; und es wird dauern (02) hinzugefügt.
 
 			/*String[] typeStrings = {"Waypoint", "Kitchen", "Exit", "Coffee", "Office", "Elevator", "Toilette", "Fire Extinguisher"};
 			Node.NodeType[] types = {Node.NodeType.WAYPOINT, Node.NodeType.KITCHEN, Node.NodeType.EXIT, Node.NodeType.COFFEE,
@@ -248,29 +239,12 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 				derSpinner.setSelection(typeIndex);
 			layout.addView(derSpinner);
 
-			derSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-				@Override
-				public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-					if (types[derSpinner.getSelectedItemPosition()] == Node.NodeType.OFFICE){
-						officeDescription.setVisibility(View.VISIBLE);
-					}
-					else officeDescription.setVisibility(View.GONE);
-				}
-
-				@Override
-				public void onNothingSelected(AdapterView<?> parent) {
-
-				}
-			});
-
-
 			builder.setView(layout);
 
 			// Set up the buttons
 			builder.setPositiveButton("OK", (dialog, which) -> {
 				closest.setLabel(input.getText().toString());
 				closest.setType(types[derSpinner.getSelectedItemPosition()]);
-				closest.setDescription(officeDescription.getText().toString());
 
 				Log.d("AttributesTest", closest.getId() + ": label: " + closest.getLabel() + ", type: " + closest.getType().toString());
 			});
@@ -288,13 +262,34 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 			input.setInputType(InputType.TYPE_CLASS_TEXT);
 			builder.setView(input);
 
-			builder.setPositiveButton("OK", (dialog, which) -> {
-				graph.setName(input.getText().toString());
-				Utility.saveObject(this, graph.getName(), new ARGraphWithGrip(graph, new ArrayList(gripMap.values())));
-
-			});
+			builder.setPositiveButton("OK", null);
 			builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-			builder.show();
+
+			// giving positive Button an onClickListener, to stop dialog from automatically disappearing
+			MakePlanActivity context = this;
+			AlertDialog nameDialog = builder.create();
+			nameDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+				@Override
+				public void onShow(DialogInterface dialogInterface) {
+					Button button = nameDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+					button.setOnClickListener(new View.OnClickListener() {
+						@Override
+						public void onClick(View view) {
+							String graphName = input.getText().toString();
+							if(graphName != null && !graphName.equals("")) {
+								graph.setName(graphName);
+								long connector = databaseConnector.addGraph(graphName);
+								nameDialog.dismiss();
+							}
+							else {
+								Toast.makeText(context, "Invalid Graph name!", Toast.LENGTH_LONG).show();
+							}
+						}
+					});
+				}
+			});
+			nameDialog.show();
+			//builder.show();
 		});
 
 		findViewById(R.id.deleteButton).setOnClickListener(v -> {
@@ -311,7 +306,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 		// creating the spheres
 		MaterialFactory.makeOpaqueWithColor(this, new Color(android.graphics.Color.RED))
 				.thenAccept(
-						material -> rsr = ShapeFactory.makeSphere(0.0201f, new Vector3(0.0f, 0.0f, 0.0f), material)
+						material -> rsr = ShapeFactory.makeSphere(0.02f, new Vector3(0.0f, 0.0f, 0.0f), material)
 				);
 		MaterialFactory.makeOpaqueWithColor(this, new Color(android.graphics.Color.BLUE))
 				.thenAccept(
@@ -332,14 +327,7 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 
 		regenerateScene = true;
 		gripMap = new HashMap<>();
-		gripVisualisator = new GripVisualisator(this, arFragment.getArSceneView().getScene());
 	}
-
-	/*
-	public static String getGraphName() {
-		return GRAPHNAME;
-	}*/
-
 
 	/**
 	 * setting up the Augmented Images Database by adding images that should be detected.
@@ -379,7 +367,6 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 						image.getCenterPose().getRotationQuaternion()
 				);
 				gripMap.put(image.getName(), grip);
-				gripVisualisator.updateGrip(image.getName(), image.getCenterPose());
 			}
 		}
 
@@ -392,6 +379,8 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 				regenerateScene = false;
 			}
 
+			int sceneformChildren = arFragment.getArSceneView().getScene().getChildren().size();
+			int numAnchors = session.getAllAnchors().size();
 			int numGrips = gripMap.size();
 
 			String x = "";
@@ -399,7 +388,9 @@ public class MakePlanActivity extends AppCompatActivity implements Scene.OnUpdat
 				x += Arrays.toString(grip.gripPosition) + ", ";
 			}
 
-			String logString = String.format(Locale.GERMAN, "Camera position %.3f %.3f %.3f\nNum Grips: %d %s", cameraPosition[0], cameraPosition[1], cameraPosition[2], numGrips, x);
+			String logString = String.format(Locale.GERMAN, "Camera position %.3f %.3f %.3f\n%d\n%d\nNum Grips: %d %s", cameraPosition[0], cameraPosition[1], cameraPosition[2], sceneformChildren, numAnchors, numGrips, x);
+
+			Log.d("MyApp2", logString);
 
 			TextView myAwesomeTextView = (TextView) findViewById(R.id.textView);
 			myAwesomeTextView.setText(logString);

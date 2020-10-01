@@ -48,7 +48,6 @@ public class LabelView {
         }
 
         else if(node.getType() == Node.NodeType.WAYPOINT) {
-            // TODO: green spheres
             return;
         }
 
@@ -61,7 +60,6 @@ public class LabelView {
             popUpInfo.setTextColor(android.graphics.Color.WHITE);
             layoutView.addView(popUpInfo);
 
-            // TODO: fitting colors
 
             if (node.getType() == Node.NodeType.KITCHEN) {
                 popUpInfo.setBackgroundColor(android.graphics.Color.argb(160, 9, 109, 81));
