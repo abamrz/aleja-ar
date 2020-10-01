@@ -33,15 +33,16 @@ public class Label2D extends Label{
             title.setInputType(InputType.TYPE_CLASS_TEXT);
             title.setTextColor(android.graphics.Color.WHITE);
             title.setBackgroundColor(android.graphics.Color.argb(160, 0, 0, 255));
-
-            final TextView description = new TextView(context);
-            description.setText(node.getDescription());
-            description.setInputType(InputType.TYPE_CLASS_TEXT);
-            description.setTextColor(android.graphics.Color.WHITE);
-            description.setBackgroundColor(android.graphics.Color.argb(160, 0, 0, 255));
-
             layoutView.addView(title);
-            layoutView.addView(description);
+
+            if(node.getDescription() != null) {
+                final TextView description = new TextView(context);
+                description.setText(node.getDescription());
+                description.setInputType(InputType.TYPE_CLASS_TEXT);
+                description.setTextColor(android.graphics.Color.WHITE);
+                description.setBackgroundColor(android.graphics.Color.argb(160, 0, 0, 255));
+                layoutView.addView(description);
+            }
         }
 
         else if(node.getType() == Node.NodeType.WAYPOINT) {
