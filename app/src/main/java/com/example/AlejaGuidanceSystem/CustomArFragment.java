@@ -34,18 +34,18 @@ public class CustomArFragment extends ArFragment {
 		Bitmap bitmap1 = BitmapFactory.decodeResource(getResources(), R.drawable.ar_pattern1);
 		Bitmap bitmap2 = BitmapFactory.decodeResource(getResources(), R.drawable.ar_pattern2);
 		Bitmap bitmap3 = BitmapFactory.decodeResource(getResources(), R.drawable.ar_pattern3);
-		Bitmap bitmap4 = BitmapFactory.decodeResource(getResources(), R.drawable.ar_pattern4);
+		/*Bitmap bitmap4 = BitmapFactory.decodeResource(getResources(), R.drawable.ar_pattern4);
 		Bitmap bitmap5 = BitmapFactory.decodeResource(getResources(), R.drawable.ar_pattern5);
-		Bitmap bitmap6 = BitmapFactory.decodeResource(getResources(), R.drawable.ar_pattern6);
+		Bitmap bitmap6 = BitmapFactory.decodeResource(getResources(), R.drawable.ar_pattern6);*/
 
 		AugmentedImageDatabase aid = new AugmentedImageDatabase(session);
 		// adding Augmented Images to Database
 		aid.addImage("ar_pattern1", bitmap1, 0.16f);
 		aid.addImage("ar_pattern2", bitmap2, 0.16f);
 		aid.addImage("ar_pattern3", bitmap3, 0.16f);
-		aid.addImage("ar_pattern4", bitmap4, 0.16f);
+		/*aid.addImage("ar_pattern4", bitmap4, 0.16f);
 		aid.addImage("ar_pattern5", bitmap5, 0.16f);
-		aid.addImage("ar_pattern6", bitmap6, 0.16f);
+		aid.addImage("ar_pattern6", bitmap6, 0.16f);*/
 		// aid.addImage("dr_christian_rehn", bitmap2, 0.2f);
 
 		config.setAugmentedImageDatabase(aid);

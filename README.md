@@ -3,13 +3,13 @@
 ## Overview 
 
 ### What's AlejaAR?
-AlejaAR is an Android application, that provides navigation service inside a building using Augmented Reality.
+AlejaAR is an Android application, that provides indoor navigation and mapping services using Augmented Reality.
 
-Please consider and follow the guidelines below to get to know the application better.
+Please follow the guidelines below.
 
 
 ## Installation
-There are following options to install the app.
+There are two options to install the app.
 
 #### Option 1: Install the release version on the smartphone
 The app is developed for Android 7.0 (API Level 24, Nougat) or higher. To use the app you need a smartphone 
@@ -44,55 +44,54 @@ Use the Android Studio *Build Variants* button to select release build.
 From Android Studio:
 1. ***Build*** menu
 2. ***Generate Signed APK...***
-3. Fill in the keystore information *(you only need to do this once manually and then let Android Studio remember it)*
+3. Fill in the keystore information *(you only need to do this once manually)*
 
 ## How to use the app? 
 ### Step 1: Start the app  
 
-Launch AlejaAR and you will be landed on the following page with some options:
 
 ![WelcomeScreen Image](./welcome_screen.png)
 
-From here you can choose between navigation (Use an existing plan) and making an own new plan of a specific place/floor (Make a new plan). 
-On navigation you can search for a desired destinations or simply look around and inspect the labeling of all information points saved in the map.
+From here you can choose between navigation (Use an existing plan) and making an own new plan of a specific place or floor (Make a new plan). 
+On navigation you can search for a desired destinations or simply look around and inspect the labeling of all information points saved on the map.
 When making a new plan you can build up a graph and add information to points of interest.
 
 The two options are described in detail in the following parts.
 
 ### Step 2: Make a new plan
 
-* Click **Make Plan** button on the start screen
+* Click the **Make Plan** button on the starting page
 * This is the screen to make a new plan:
 ![MakePlanScreen Image](./makeplan_screen.jpg)  
 
 #### Functionality of the buttons
-* Add to Branch: Adds a new node to the graph at the current position of the smartphone. This node is connected to the previous added node.
-* New Branch: Adds a new node to the graph at the current position of the smartphone. This node is connected to the closest edge. The connection point to the edge is shown by a red ball.
-* Close Circle: Adds an edge from the last added node to the point at the closest edge which is again identified by a red ball.
-* Set Attributes: Opens a dialog to change the attributes to the closest node to the current smartphone position. The attributes are
+* **Add to Branch**: Adds a new node to the graph at the current position of the smartphone. This node is connected to the previously added node.
+* **New Branch**: Adds a new node to the graph at the current position of the smartphone. This node is connected to the closest edge. The connection point to the edge is shown by a red ball.
+* **Close Circle**: Adds an edge from the last added node to the point at the closest edge which is again identified by a red ball.
+* **Set Attributes**: Opens a dialog to change the attributes to the closest node to the current smartphone position. The attributes are
     - the label: title of the information at this point (e.g. "office of christian")
-    - the type: the kind of object the point refers to (e.g. kitchen). The type waypoint is used for points that are only used to navigate along, put should not provide any information.
-    - the description: only available, when the type is "office". Can be used to add some more information to the use of the office or similar.
-* Save Graph: A dialog is shown to save the graph with an arbitrary name that can be chosen by the user. By this name the graph can later be loaded to navigate on.
-* Undo: This option deletes the last added node.
+    - the type: the kind of object the point refers to (e.g. kitchen). The type waypoint is used for points that are only used to navigate along, but should not provide any information.
+    - the description: only available, when the type is "office". Can be used to add some more information to an office node.
+* **Save Graph**: A dialog is shown to save the graph with an arbitrary name that can be chosen by the user. This name is later used to load the graph to navigate with it.
+* **Anti Schlabber**: This option deletes the graph, so that the user can start over.
 
 **Note**: You should scan some markers (ar_pattern*.png) to have a reference to the real world.
 
 ### Step 3: Use an existing plan
 
-* After you clicked at the **Use Existing Plan** button, you have to choose a desired plan saved before.  
-This plan is than loaded with all the information and enables navigation in the building where the plan were recorded.
-* After the plan is loaded you end up with this screen
+* After you clicked on the **Use Existing Plan** button, you have to select a desired plan that was previously stored.  
+This plan is than loaded with all the information needed and enables navigation in the building where the plan was recorded.
+* After the plan is loaded you end up with the following screen:
 ![NavigationScreen Image](./navigation_screen.jpg)  
 * Now you should scan at least one marker to reference your position.
-* When the navigation is possible a search button in the upper right corner is shown.
-* When looking around the different information at each point is shown and you can discover the floor on your own by walking around.
+* When the navigation is possible, a search button in the upper right corner is shown.
+* When looking around the different information at each point is displayed and you can discover the floor on your own by walking around.
 * When you want to navigate to a specific location you can press the search button.  
 You can search for the type or the label of the desired target location. By focusing the textview all possibilities are listed.  
 When searching for a type, the navigation will lead you to the closest point with this type.
-* By following the balls the goal can be reached. When you want to end the navigation earlier you can cancel it by pressing the x in the upper right corner.
+* By following the balls the goal can be reached. If you want to end the navigation earlier you can cancel it by pressing the x in the upper right corner.
 
-**Note**: The steps 1-3 should be followed in strict order during the first launching the app, i.e. should you do not have any plan (graph) in the database, you first create a new plan (step 2).
+**Note**: The steps 1-3 should be followed in strict order during the first launch of the app, i.e. should you not have any plan (graph) in the database, you have to create a new plan (step 2) first.
 
 
 ## Used Libraries and Frameworks
