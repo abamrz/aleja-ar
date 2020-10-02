@@ -93,6 +93,16 @@ When searching for a type, the navigation will lead you to the closest point wit
 
 **Note**: The steps 1-3 should be followed in strict order during the first launch of the app, i.e. should you not have any plan (graph) in the database, you have to create a new plan (step 2) first.
 
+## Add more marker
+We are using three marker:
+* [pattern 1] [./ar_pattern1.png]
+* [pattern 2] [./ar_pattern2.png]
+* [pattern 3] [./ar_pattern3.png]
+To add more patterns:
+* Add the pattern to the drawable folder
+* In CustomArFragment.class
+    - include the marker like ```java Bitmap bitmap3 = BitmapFactory.decodeResource(getResources(), R.drawable.ar_pattern3);```
+    - add to the pattern database with ```java aid.addImage("ar_pattern3", bitmap3, 0.16f); ```
 
 ## Used Libraries and Frameworks
 Library and Frameworks                                                      |
