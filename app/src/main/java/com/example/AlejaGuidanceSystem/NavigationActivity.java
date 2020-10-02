@@ -190,7 +190,7 @@ public class NavigationActivity extends AppCompatActivity {
 				android.R.layout.simple_dropdown_item_1line);
 		searchAdapter.addAll(types);
 		searchAdapter.addAll(labels);
-		searchAdapter.add(getString(R.string.safety_tour));
+		searchAdapter.addAll(getString(R.string.safety_tour));
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle(R.string.search_title);
