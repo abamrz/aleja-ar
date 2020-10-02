@@ -97,7 +97,7 @@ When searching for a type, the navigation will lead you to the closest point wit
 We are using three marker:
 * [pattern 1] [./ar_pattern1.png]
 * [pattern 2] [./ar_pattern2.png]
-* [pattern 3] [./ar_pattern3.png]
+* [pattern 3] [./ar_pattern3.png]  
 To add more patterns:
 * Add the pattern to the drawable folder
 * In CustomArFragment.class
